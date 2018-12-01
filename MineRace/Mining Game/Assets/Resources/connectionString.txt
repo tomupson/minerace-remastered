@@ -1,0 +1,1 @@
+Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename='D:\Thomas\Desktop\Computer Science Project\Mining Game\Assets\MineRace.mdf';Integrated Security = True
