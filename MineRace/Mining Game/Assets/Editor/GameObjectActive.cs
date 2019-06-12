@@ -9,9 +9,10 @@ public class GameObjectActive : EditorWindow
         GetWindow<GameObjectActive>("GameObject State Editor");
     }
 
-    void OnGUI()
+    private void OnGUI()
     {
         GUILayout.Label("SELECT DESIRED GAMEOBJECTS");
+
         if (GUILayout.Button("HIDE OBJECTS"))
         {
             foreach (GameObject obj in Selection.gameObjects)
@@ -19,6 +20,7 @@ public class GameObjectActive : EditorWindow
                 obj.SetActive(false);
             }
         }
+
         if (GUILayout.Button("SHOW OBJECTS"))
         {
             foreach (GameObject obj in Selection.gameObjects)
