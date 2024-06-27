@@ -1,2 +1,2 @@
 # MineRace
-A Level Computer Science Coursework 2017-18
+A revamped version of my A Level Computer Science Coursework
