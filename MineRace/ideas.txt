@@ -1,9 +1,0 @@
-Both players start at the top
-
-race down to the bottom
-
-time left when reaching the bottom is added onto your points
-
-you get points by collecting ores, which are randomly placed, but it may cost you time
-
-racing down to the bottom wont usually win unless the enemy takes longer and collects little ores
