@@ -1,8 +1,8 @@
-﻿using System.Collections;
+﻿// TODO: NETWORKING
+using System.Collections;
 using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
-using UnityEngine.Networking;
-using UnityEngine.Networking.Match;
 using UnityEngine.UI;
 
 public class JoinGame : MonoBehaviour
@@ -26,17 +26,17 @@ public class JoinGame : MonoBehaviour
 
     List<GameObject> gameList = new List<GameObject>();
 
-    MatchInfoSnapshot matchToJoin;
+    //MatchInfoSnapshot matchToJoin;
 
     void Start()
     {
-        netMan = NetworkManager.singleton;
-        if (netMan.matchMaker == null)
-            netMan.StartMatchMaker();
+        netMan = NetworkManager.Singleton;
+        //if (netMan.matchMaker == null)
+        //    netMan.StartMatchMaker();
 
         passwordCanvas.SetActive(false);
 
-        loggedInAsText.text = "LOGGED IN AS: " + UserAccountManager.instance.userInfo.Username;
+        loggedInAsText.text = "LOGGED IN AS: " + UserAccountManager.Instance.userInfo.Username;
 
         RefreshGameList();
     }
@@ -51,44 +51,43 @@ public class JoinGame : MonoBehaviour
 
         statusText.text = "Searching for open games.";
 
-        if (netMan.matchMaker == null)
-            netMan.StartMatchMaker();
+        //if (netMan.matchMaker == null)
+        //    netMan.StartMatchMaker();
 
-        netMan.matchMaker.ListMatches(0, 20, filterMatchField.text, false, 0, 0, OnMatchList);
+        //netMan.matchMaker.ListMatches(0, 20, filterMatchField.text, false, 0, 0, OnMatchList);
         #endif
     }
 
     public void RefreshButtonPressed()
     {
-        AudioManager.instance.PlaySound("button_press");
+        AudioManager.Instance.PlaySound("button_press");
         RefreshGameList();
     }
 
-    public void OnMatchList(bool success, string extendedInfo, List<MatchInfoSnapshot> matchList)
-    {
-        statusText.text = "";
-        if (matchList == null)
-        {
-            statusText.text = "Failed to fetch games.";
-            return;
-        }
+    //public void OnMatchList(bool success, string extendedInfo, List<MatchInfoSnapshot> matchList)
+    //{
+    //    statusText.text = "";
+    //    if (matchList == null)
+    //    {
+    //        statusText.text = "Failed to fetch games.";
+    //        return;
+    //    }
 
-        foreach (MatchInfoSnapshot match in matchList)
-        {
-            GameObject gameListItemGO = Instantiate(gameListItemPrefab);
-            gameListItemGO.transform.SetParent(gameListTransform);
+    //    foreach (MatchInfoSnapshot match in matchList)
+    //    {
+    //        GameObject gameListItemGO = Instantiate(gameListItemPrefab);
+    //        gameListItemGO.transform.SetParent(gameListTransform);
 
-            GameListItem gameListItem = gameListItemGO.GetComponent<GameListItem>();
-            if (gameListItem != null)
-                gameListItem.Setup(match, JoinRoom);
+    //        GameListItem gameListItem = gameListItemGO.GetComponent<GameListItem>();
+    //        if (gameListItem != null)
+    //            gameListItem.Setup(match, JoinRoom);
 
-            gameList.Add(gameListItemGO);
-        }
+    //        gameList.Add(gameListItemGO);
+    //    }
 
-        if (gameList.Count == 0)
-            statusText.text = "No Games available.";
-
-    }
+    //    if (gameList.Count == 0)
+    //        statusText.text = "No Games available.";
+    //}
 
     void ClearGameList()
     {
@@ -100,47 +99,47 @@ public class JoinGame : MonoBehaviour
         gameList.Clear();
     }
 
-    public void JoinRoom(MatchInfoSnapshot _match)
-    {
-        matchToJoin = _match;
+    //public void JoinRoom(MatchInfoSnapshot _match)
+    //{
+    //    matchToJoin = _match;
 
-        if (_match.isPrivate)
-        {
-            joinGamePasswordButton.enabled = true;
-            passwordCanvas.SetActive(true);
-            passwordStatusText.text = "";
-            Animation anim = passwordCanvas.transform.GetChild(0).GetComponent<Animation>();
-            anim["grow"].speed = 1;
-            anim["grow"].time = 0;
-            anim.Play("grow");
-            return;
-        } else
-        {
-            netMan.matchMaker.JoinMatch(_match.networkId, "", "", "", 0, 0, netMan.OnMatchJoined);
-        }
-    }
+    //    if (_match.isPrivate)
+    //    {
+    //        joinGamePasswordButton.enabled = true;
+    //        passwordCanvas.SetActive(true);
+    //        passwordStatusText.text = "";
+    //        Animation anim = passwordCanvas.transform.GetChild(0).GetComponent<Animation>();
+    //        anim["grow"].speed = 1;
+    //        anim["grow"].time = 0;
+    //        anim.Play("grow");
+    //        return;
+    //    } else
+    //    {
+    //        netMan.matchMaker.JoinMatch(_match.networkId, "", "", "", 0, 0, netMan.OnMatchJoined);
+    //    }
+    //}
 
-    public void JoinRoomPassword()
-    {
-        if (matchPasswordInputField.text == null || matchPasswordInputField.text == "")
-        {
-            AudioManager.instance.PlaySound("error_message");
-            passwordStatusText.text = "The field 'Match Password' is required.";
-        } else
-        {
-            joinGamePasswordButton.enabled = false;
+    //public void JoinRoomPassword()
+    //{
+    //    if (matchPasswordInputField.text == null || matchPasswordInputField.text == "")
+    //    {
+    //        AudioManager.instance.PlaySound("error_message");
+    //        passwordStatusText.text = "The field 'Match Password' is required.";
+    //    } else
+    //    {
+    //        joinGamePasswordButton.enabled = false;
 
-            AudioManager.instance.PlaySound("button_press");
-            ClosePasswordCanvas();
+    //        AudioManager.instance.PlaySound("button_press");
+    //        ClosePasswordCanvas();
 
-            if (matchToJoin == null)
-                return;
+    //        if (matchToJoin == null)
+    //            return;
 
-            Debug.Log("Joining: " + matchToJoin.name);
-            netMan.matchMaker.JoinMatch(matchToJoin.networkId, matchPasswordInputField.text, "", "", 0, 0, netMan.OnMatchJoined);
-            StartCoroutine(WaitForSuccessfulJoin());
-        }
-    }
+    //        Debug.Log("Joining: " + matchToJoin.name);
+    //        netMan.matchMaker.JoinMatch(matchToJoin.networkId, matchPasswordInputField.text, "", "", 0, 0, netMan.OnMatchJoined);
+    //        StartCoroutine(WaitForSuccessfulJoin());
+    //    }
+    //}
 
     public void ClosePasswordCanvas()
     {
@@ -175,17 +174,17 @@ public class JoinGame : MonoBehaviour
         }
 
         // If you're still on the same scene when the countdown is over.
-        AudioManager.instance.PlaySound("connection_error");
+        AudioManager.Instance.PlaySound("connection_error");
         statusText.text = "Failed to connect.";
         yield return new WaitForSeconds(2.5f);
-        MatchInfo matchInfo = netMan.matchInfo;
-        if (matchInfo != null)
-        {
-            netMan.matchMaker.DropConnection(matchInfo.networkId, matchInfo.nodeId, 0, netMan.OnDropConnection);
-            netMan.StopHost();
-        }
+        //MatchInfo matchInfo = netMan.matchInfo;
+        //if (matchInfo != null)
+        //{
+        //    netMan.matchMaker.DropConnection(matchInfo.networkId, matchInfo.nodeId, 0, netMan.OnDropConnection);
+        //    netMan.StopHost();
+        //}
 
-        matchToJoin = null;
+        //matchToJoin = null;
 
         RefreshGameList();
     }

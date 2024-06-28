@@ -14,7 +14,7 @@ public class Profile : MonoBehaviour
 
     void Start()
     {
-        userInfo = UserAccountManager.instance.userInfo;
+        userInfo = UserAccountManager.Instance.userInfo;
         SetProfileText();
     }
 

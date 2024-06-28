@@ -1,7 +1,8 @@
-﻿using System.Collections.Generic;
-using UnityEngine;
+﻿// TODO: NETWORKING
 using System.Collections;
-using UnityEngine.Networking;
+using System.Collections.Generic;
+using Unity.Netcode;
+using UnityEngine;
 
 public class ChatManager : NetworkBehaviour
 {
@@ -11,40 +12,40 @@ public class ChatManager : NetworkBehaviour
 
     public float messageExpireTime = 5;
 
-    public static ChatManager instance;
+    public static ChatManager Instance;
 
     void Awake()
     {
-        instance = this;
+        Instance = this;
     }
 
     public void ChatSendMessage(string sender, string message)
     {
-        if (isServer)
-            CmdChatSendMessage(sender, message);
+        //if (IsServer)
+        //    CmdChatSendMessage(sender, message);
     }
 
-    [Command]
-    void CmdChatSendMessage(string sender, string message)
-    {
-        GameObject chatItem = Instantiate(chatItemPrefab);
-        chatItem.transform.SetParent(chat.transform);
-        ChatItem messageSettings = chatItem.GetComponent<ChatItem>();
-        messageSettings.Setup(sender, message);
-        messageSettings.chatNetId = chat.GetComponent<NetworkIdentity>().netId;
-        NetworkServer.Spawn(chatItem);
-        StartCoroutine(WaitForExpire(chatItem));
-    }
+    //[Command]
+    //void CmdChatSendMessage(string sender, string message)
+    //{
+    //    GameObject chatItem = Instantiate(chatItemPrefab);
+    //    chatItem.transform.SetParent(chat.transform);
+    //    ChatItem messageSettings = chatItem.GetComponent<ChatItem>();
+    //    messageSettings.Setup(sender, message);
+    //    messageSettings.chatNetId = chat.GetComponent<NetworkIdentity>().netId;
+    //    NetworkServer.Spawn(chatItem);
+    //    StartCoroutine(WaitForExpire(chatItem));
+    //}
 
     public IEnumerator WaitForExpire(GameObject chatItem)
     {
         yield return new WaitForSeconds(messageExpireTime);
-        CmdDestroyChatMessage(chatItem);
+        //CmdDestroyChatMessage(chatItem);
     }
 
-    [Command]
-    void CmdDestroyChatMessage(GameObject chatItem)
-    {
-        NetworkServer.Destroy(chatItem);
-    }
+    //[Command]
+    //void CmdDestroyChatMessage(GameObject chatItem)
+    //{
+    //    NetworkServer.Destroy(chatItem);
+    //}
 }

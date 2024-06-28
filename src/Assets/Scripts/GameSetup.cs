@@ -1,4 +1,5 @@
-﻿using UnityEngine.Networking;
+﻿// TODO: NETWORKING
+using Unity.Netcode;
 using UnityEngine;
 
 public class GameSetup : NetworkBehaviour
@@ -8,6 +9,6 @@ public class GameSetup : NetworkBehaviour
     void Start()
     {
         GameObject go = Instantiate(gameManPrefab);
-        NetworkServer.Spawn(go);
+        //NetworkServer.Spawn(go);
     }
 }

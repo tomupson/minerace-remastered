@@ -1,6 +1,7 @@
-using UnityEngine;
+// TODO: NETWORKING
 using System.Collections.Generic;
-using UnityEngine.Networking;
+using Unity.Netcode;
+using UnityEngine;
 
 /// <summary>
 /// Block.cs holds information about the different blocks in the game
@@ -21,13 +22,12 @@ public class Block : NetworkBehaviour
     public List<Sprite> blockOutlineTextures; // A list of all the block outline textures.
     public string blockBreakSoundName; // The name of the sound that is played when the block is broken.
 
-    [SyncVar] public NetworkInstanceId parentNetId; // The network id of the level generator object.
+    //[SyncVar] public NetworkInstanceId parentNetId; // The network id of the level generator object.
 
-    void Start()
-    {
-        GameObject parent = ClientScene.FindLocalObject(parentNetId); // Find the level generator object in the local scene by using its network id
-        transform.SetParent(parent.transform); // and parent ourselves to it.
-        // We're doing this because for the player who joins, we're checking the server for if a block has been spawned however that information doesn't contain anything about what its parent is so for all remote clients we need to parent it back semi-manually.
-    }
-
+    //void Start()
+    //{
+    //    GameObject parent = ClientScene.FindLocalObject(parentNetId); // Find the level generator object in the local scene by using its network id
+    //    transform.SetParent(parent.transform); // and parent ourselves to it.
+    //    // We're doing this because for the player who joins, we're checking the server for if a block has been spawned however that information doesn't contain anything about what its parent is so for all remote clients we need to parent it back semi-manually.
+    //}
 }

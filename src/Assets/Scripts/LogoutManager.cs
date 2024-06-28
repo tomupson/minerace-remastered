@@ -1,7 +1,7 @@
-﻿using UnityEngine.SceneManagement;
-using System.IO;
+﻿using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class LogoutManager : MonoBehaviour
 {

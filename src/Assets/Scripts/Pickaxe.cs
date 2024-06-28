@@ -12,15 +12,16 @@ public class Pickaxe : MonoBehaviour
 
     void Update()
     {
-        if (player.mode == Player.Mode.completed)
+        if (player.mode == Player.Mode.Completed)
         {
             GetComponent<SpriteRenderer>().enabled = false;
-        } else
+        }
+        else
         {
             GetComponent<SpriteRenderer>().enabled = true;
         }
 
-        if (player.mode == Player.Mode.inGame && !player.isPaused)
+        if (player.mode == Player.Mode.InGame && !player.isPaused)
         {
             Vector3 d = playerCam.ScreenToWorldPoint(Input.mousePosition) - transform.position;
             d.Normalize();

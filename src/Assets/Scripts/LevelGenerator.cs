@@ -1,7 +1,8 @@
-using UnityEngine;
+// TODO: NETWORKING
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine.Networking;
+using Unity.Netcode;
+using UnityEngine;
 
 public class LevelGenerator : NetworkBehaviour
 {
@@ -15,12 +16,12 @@ public class LevelGenerator : NetworkBehaviour
 
     void Start()
     {
-        if (isServer)
-            CmdSpawnMap();
+        if (IsServer)
+            SpawnMapServerRpc();
     }
 
-    [Command]
-    public void CmdSpawnMap()
+    [ServerRpc]
+    public void SpawnMapServerRpc()
     {
         resourceBlocks = blocks.Where(z => z.GetComponent<Block>().blockType == "Resource").ToList(); // List of all the blocks that are tagged as resources.
         
@@ -55,9 +56,9 @@ public class LevelGenerator : NetworkBehaviour
                     blockInstance.transform.SetParent(transform, false);
                     blockInstance.name = block.blockName + " => " + x + ", " + y;
 
-                    block.parentNetId = GetComponent<NetworkIdentity>().netId;
+                    //block.parentNetId = GetComponent<NetworkIdentity>().netId;
 
-                    NetworkServer.Spawn(blockInstance);
+                    //NetworkServer.Spawn(blockInstance);
                     continue;
                 }
 
@@ -80,9 +81,9 @@ public class LevelGenerator : NetworkBehaviour
                         blockInstance.name = block.blockName + " => " + x + ", " + y;
                         resourceSpawned = true;
 
-                        block.parentNetId = GetComponent<NetworkIdentity>().netId;
+                        //block.parentNetId = GetComponent<NetworkIdentity>().netId;
 
-                        NetworkServer.Spawn(blockInstance);
+                        //NetworkServer.Spawn(blockInstance);
                         break;
                     }
                 }
@@ -102,9 +103,9 @@ public class LevelGenerator : NetworkBehaviour
                     blockInstance.transform.SetParent(transform, false);
                     blockInstance.name = block.blockName + " => " + x + ", " + y;
 
-                    block.parentNetId = GetComponent<NetworkIdentity>().netId;
+                    //block.parentNetId = GetComponent<NetworkIdentity>().netId;
 
-                    NetworkServer.Spawn(blockInstance);
+                    //NetworkServer.Spawn(blockInstance);
                 }
 
                 resourceSpawned = false;
@@ -118,14 +119,16 @@ public class LevelGenerator : NetworkBehaviour
             leftBorder.transform.position = new Vector3(-1 * blockSize, y * blockSize, 0);
             leftBorder.transform.SetParent(transform, false);
             leftBorder.name = "BORDER_BLOCK_LEFT";
-            NetworkServer.Spawn(leftBorder);
+
+            //NetworkServer.Spawn(leftBorder);
+
             rightBorder.transform.position = new Vector3(mapWidth * blockSize, y * blockSize, 0);
             rightBorder.transform.SetParent(transform, false);
             rightBorder.name = "BORDER_BLOCK_RIGHT";
             Vector3 s = rightBorder.transform.localScale;
             rightBorder.transform.localScale = new Vector3(s.x * -1, s.y, s.z);
 
-            NetworkServer.Spawn(rightBorder);
+            //NetworkServer.Spawn(rightBorder);
         }
 
         for (int x = 0; x < mapWidth; x++)
@@ -135,7 +138,7 @@ public class LevelGenerator : NetworkBehaviour
             endBlock.transform.SetParent(transform, false);
             endBlock.name = "END_GAME_BLOCK";
 
-            NetworkServer.Spawn(endBlock);
+            //NetworkServer.Spawn(endBlock);
         }
     }
 }

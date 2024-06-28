@@ -8,7 +8,7 @@ public class ButtonHover : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     public void OnPointerEnter(PointerEventData eventData)
     {
         GetComponentInChildren<Text>().transform.localScale = new Vector3(1.05f, 1.05f, 1.05f); // Shrink it by a little
-        AudioManager.instance.PlaySound("button_hover"); // And play the button hover sound effect.
+        AudioManager.Instance.PlaySound("button_hover"); // And play the button hover sound effect.
     }
 
     // When the mouse exits the object this script is attached to...

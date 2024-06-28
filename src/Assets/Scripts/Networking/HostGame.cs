@@ -1,7 +1,8 @@
-﻿using UnityEngine.Networking;
+﻿// TODO: NETWORKING
+using System.Collections;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UI;
-using System.Collections;
 
 public class HostGame : MonoBehaviour
 {
@@ -20,30 +21,32 @@ public class HostGame : MonoBehaviour
     void Start()
     {
         createMatchCanvas.SetActive(false);
-        netMan = NetworkManager.singleton;
-        if (netMan.matchMaker == null)
-            netMan.StartMatchMaker();
+        netMan = NetworkManager.Singleton;
+        //if (netMan.matchMaker == null)
+        //    netMan.StartMatchMaker();
     }
 
     public void CreateRoom()
     {
         string gameName = gameNameField.text;
-        string gamePassword = gamePasswordField.text;
+        string gamePassword = gamePasswordField.text ?? string.Empty;
 
         if (gamePassword == null)
+        {
             gamePassword = "";
+        }
         else
         {
-            if (gameName != "" && gameName != null)
+            if (!string.IsNullOrWhiteSpace(gameName))
             {
                 createGameButton.enabled = false;
-                AudioManager.instance.PlaySound("button_press");
+                AudioManager.Instance.PlaySound("button_press");
                 Debug.Log("Creating Game");
-                netMan.matchMaker.CreateMatch(gameName, gameSize, true, gamePassword, "", "", 0, 0, netMan.OnMatchCreate);
+                //netMan.matchMaker.CreateMatch(gameName, gameSize, true, gamePassword, "", "", 0, 0, netMan.OnMatchCreate);
             }
             else
             {
-                AudioManager.instance.PlaySound("error_message");
+                AudioManager.Instance.PlaySound("error_message");
                 createGameStatusText.text = "The field 'Game Name' is required.";
             }
         }
@@ -51,7 +54,7 @@ public class HostGame : MonoBehaviour
 
     public void OpenCreateMatch()
     {
-        AudioManager.instance.PlaySound("button_press");
+        AudioManager.Instance.PlaySound("button_press");
         createMatchCanvas.SetActive(true);
         Animation anim = createMatchCanvas.transform.GetChild(0).GetComponent<Animation>();
         anim["grow"].speed = 1;

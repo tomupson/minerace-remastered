@@ -38,7 +38,7 @@ public class Sound
 
 public class AudioManager : MonoBehaviour
 {
-    public static AudioManager instance;
+    public static AudioManager Instance;
 
     [SerializeField] Sound[] sounds; // List of all sounds.
 
@@ -51,8 +51,8 @@ public class AudioManager : MonoBehaviour
             Destroy(gameObject); // Remove it
         }
 
-        if (instance == null)
-            instance = this;
+        if (Instance == null)
+            Instance = this;
     }
 
     void Start()

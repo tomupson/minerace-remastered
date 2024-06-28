@@ -1,7 +1,7 @@
+using System.Collections;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UI;
-using System.Collections;
-using UnityEngine.Networking;
 
 public class UIManager : NetworkBehaviour
 {
@@ -25,14 +25,14 @@ public class UIManager : NetworkBehaviour
         gameFinishedPanel.SetActive(false);
     }
 
-    [Command]
-    public void CmdTimesUp()
+    [ServerRpc]
+    public void TimesUpServerRpc()
     {
-        RpcShowTimesUp();
+        ShowTimesUpClientRpc();
     }
 
     [ClientRpc]
-    public void RpcShowTimesUp()
+    public void ShowTimesUpClientRpc()
     {
         timesUpPanel.SetActive(true);
         timesUpText.GetComponent<Animation>().Play("timesUp");
@@ -76,9 +76,9 @@ public class UIManager : NetworkBehaviour
             finalPointsText[i].enabled = true;
             int counted = 0;
 
-            while (counted < players[i].points)
+            while (counted < players[i].points.Value)
             {
-                counted += (int)(players[i].points / 1 * Time.deltaTime);
+                counted += (int)(players[i].points.Value / 1 * Time.deltaTime);
                 finalPointsText[i].text = "Points: +" + counted;
                 yield return null;
             }
@@ -87,10 +87,10 @@ public class UIManager : NetworkBehaviour
 
             finalMoneyText[i].text = "Points: +" + counted;
             counted = 0;
-            while (counted < Mathf.FloorToInt(players[i].points / 4))
+            while (counted < Mathf.FloorToInt(players[i].points.Value / 4))
             {
-                if (counted % 4 == 0) AudioManager.instance.PlaySound("money_gain");
-                counted += (int)((players[i].points / 4) / 1 * Time.deltaTime);
+                if (counted % 4 == 0) AudioManager.Instance.PlaySound("money_gain");
+                counted += (int)((players[i].points.Value / 4) / 1 * Time.deltaTime);
                 finalMoneyText[i].text = "Money: +$" + counted;
                 yield return null;
             }

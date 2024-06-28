@@ -1,10 +1,9 @@
 ﻿using System;
-using System.IO;
 using UnityEngine;
 
 public class UserAccountManager : MonoBehaviour
 {
-    public static UserAccountManager instance;
+    public static UserAccountManager Instance;
     public UserInfo userInfo;
 
     void Awake()
@@ -16,7 +15,7 @@ public class UserAccountManager : MonoBehaviour
             Destroy(gameObject); // Remove it
         }
 
-        instance = this;
+        Instance = this;
 
         int myId = new System.Random().Next(1000, 10000);
 

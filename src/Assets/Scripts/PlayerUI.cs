@@ -1,10 +1,10 @@
-﻿using System.Linq;
-using System.Data;
+﻿// TODO: NETWORKING
 using System.Collections;
+using System.Data;
+using System.Linq;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.Networking;
-using Mono.Data.Sqlite;
 
 public class PlayerUI : NetworkBehaviour
 {
@@ -56,9 +56,9 @@ public class PlayerUI : NetworkBehaviour
             else PauseGame();
         }
 
-        usernameText.text = player.username;
+        usernameText.text = player.username.Value;
 
-        if (player.mode == Player.Mode.inGame)
+        if (player.mode == Player.Mode.InGame)
         {
             if (!usernameCanvas.activeSelf) usernameCanvas.SetActive(true);
 
@@ -67,7 +67,8 @@ public class PlayerUI : NetworkBehaviour
             pointsText.text = "POINTS: " + player.points;
 
             spectateText.enabled = false;
-        } else if (player.mode == Player.Mode.completed && FindObjectOfType<GameManager>().playing)
+        }
+        else if (player.mode == Player.Mode.Completed && FindObjectOfType<GameManager>().playing.Value)
         {
             spectateText.enabled = true;
             if (Input.GetKeyDown(KeyCode.Space))
@@ -80,27 +81,30 @@ public class PlayerUI : NetworkBehaviour
                 player.GetComponentInChildren<Camera>().enabled = false;
                 player.GetComponentInChildren<AudioListener>().enabled = false;
 
-                player.mode = Player.Mode.spectating;
+                player.mode = Player.Mode.Spectating;
             }
-        } else if (player.mode == Player.Mode.spectating)
+        }
+        else if (player.mode == Player.Mode.Spectating)
         {
             spectateText.enabled = false;
             youAreSpectatingText.enabled = true;
             Player otherPlayer = FindObjectsOfType<Player>().Where(z => z != player).FirstOrDefault();
             pointsText.text = "POINTS: " + otherPlayer.points;
             youAreSpectatingText.text = "YOU ARE SPECTATING: " + otherPlayer.username;
-        } else if (player.mode == Player.Mode.waitingForPlayers)
+        }
+        else if (player.mode == Player.Mode.WaitingForPlayers)
         {
             usernameCanvas.SetActive(false);
-        } else if (player.mode == Player.Mode.completed)
+        }
+        else if (player.mode == Player.Mode.Completed)
         {
-            if (player.points > UserAccountManager.instance.userInfo.HighScore)
+            if (player.points.Value > UserAccountManager.Instance.userInfo.HighScore)
             {
                 if (!updatedHighScore)
                 {
-                    if (player.isLocalPlayer)
+                    if (player.IsLocalPlayer)
                     {
-                        FindObjectOfType<GameManager>().AddHighScoreQuery(player.points, UserAccountManager.instance.userInfo.UserId);
+                        FindObjectOfType<GameManager>().AddHighScoreQuery(player.points.Value, UserAccountManager.Instance.userInfo.UserId);
                         updatedHighScore = true;
                     }
                 }
@@ -118,16 +122,16 @@ public class PlayerUI : NetworkBehaviour
         readyPanel.SetActive(false);
         readyButton.enabled = false;
 
-        player.mode = Player.Mode.waitingForPlayerReady;
+        player.mode = Player.Mode.WaitingForPlayerReady;
 
-        player.CmdChangeReadyState();
+        player.ChangeReadyStateServerRpc();
         waitingForPlayerReadyPanel.SetActive(true);
         StartCoroutine(UpdateWaitingForReadyText());
     }
 
     IEnumerator UpdateWaitingForReadyText()
     {
-        while (player.mode == Player.Mode.readyUp)
+        while (player.mode == Player.Mode.ReadyUp)
         {
             waitingForPlayerReadyText.text = "WAITING FOR '" + FindObjectsOfType<Player>().Where(z => z != player).FirstOrDefault().username + "' TO READY UP.";
             yield return null;
@@ -143,21 +147,21 @@ public class PlayerUI : NetworkBehaviour
     {
         readyPanel.SetActive(true);
     }
-    
+
     void PauseGame()
     {
         switch (player.mode)
         {
-            case Player.Mode.readyUp:
+            case Player.Mode.ReadyUp:
                 pauseMenu.SetActive(true);
                 readyPanel.SetActive(false);
                 break;
-            case Player.Mode.waitingForPlayerReady:
+            case Player.Mode.WaitingForPlayerReady:
                 pauseMenu.SetActive(true);
                 waitingForPlayerReadyPanel.SetActive(false);
                 break;
             default:
-            case Player.Mode.inGame:
+            case Player.Mode.InGame:
                 pauseMenu.SetActive(true);
                 break;
         }
@@ -171,16 +175,16 @@ public class PlayerUI : NetworkBehaviour
 
         switch (player.mode)
         {
-            case Player.Mode.readyUp:
+            case Player.Mode.ReadyUp:
                 pauseMenu.SetActive(false);
                 readyPanel.SetActive(true);
                 break;
-            case Player.Mode.waitingForPlayerReady:
+            case Player.Mode.WaitingForPlayerReady:
                 pauseMenu.SetActive(false);
                 waitingForPlayerReadyPanel.SetActive(true);
                 break;
             default:
-            case Player.Mode.inGame:
+            case Player.Mode.InGame:
                 pauseMenu.SetActive(false);
                 break;
         }
@@ -188,10 +192,10 @@ public class PlayerUI : NetworkBehaviour
 
     public void LeaveButtonPressed()
     {
-        NetworkManager netMan = NetworkManager.singleton;
-        if (player.isServer)
-            netMan.StopHost();
-        else
-            netMan.StopClient();
+        //NetworkManager netMan = NetworkManager.Singleton;
+        //if (player.IsServer)
+        //    netMan.StopHost();
+        //else
+        //    netMan.StopClient();
     }
 }

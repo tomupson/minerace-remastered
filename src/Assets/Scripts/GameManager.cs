@@ -1,11 +1,11 @@
-﻿using UnityEngine;
-using UnityEngine.UI;
-using UnityEngine.Networking;
-using System.Collections;
-using System.Linq;
+﻿using System.Collections;
 using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 using Mono.Data.Sqlite;
+using Unity.Netcode;
+using UnityEngine;
+using UnityEngine.UI;
 
 /// <summary>
 /// GameManager.cs handles lots of different functionalities that are mostly things that all players should experience e.g. the game countdown timer.
@@ -23,11 +23,11 @@ public class GameManager : NetworkBehaviour
     [SerializeField] private Text waitingForPlayersText;
     [SerializeField] private GameObject pregameTimePanel;
     [SerializeField] private Text pregameTimeText;
-    
-    [SyncVar] [HideInInspector] public int timeLeft;
-    [SyncVar] [HideInInspector] public int currentCountdownTimeLeft;
-    [SyncVar] [HideInInspector] public bool playing = false;
-    [SyncVar] [HideInInspector] public bool preGame = false;
+
+    [HideInInspector] public NetworkVariable<int> timeLeft = new NetworkVariable<int>();
+    [HideInInspector] public NetworkVariable<int> currentCountdownTimeLeft = new NetworkVariable<int>();
+    [HideInInspector] public NetworkVariable<bool> playing = new NetworkVariable<bool>();
+    [HideInInspector] public NetworkVariable<bool> preGame = new NetworkVariable<bool>();
 
     Player[] players;
 
@@ -35,11 +35,11 @@ public class GameManager : NetworkBehaviour
 
     void Start()
     {
-        playing = false;
-        preGame = true;
+        playing.Value = false;
+        preGame.Value = true;
         pregameTimePanel.SetActive(false);
-        timeLeft = gameTime;
-        currentCountdownTimeLeft = preGameCountdownTime;
+        timeLeft.Value = gameTime;
+        currentCountdownTimeLeft.Value = preGameCountdownTime;
         StartCoroutine(WaitForPlayers());
     }
 
@@ -47,7 +47,7 @@ public class GameManager : NetworkBehaviour
     {
         if (highScoreQueries.Count >= 2)
         {
-            CmdUpdateHighScores();
+            UpdateHighScoresServerRpc();
         }
     }
 
@@ -70,7 +70,7 @@ public class GameManager : NetworkBehaviour
 
         foreach (Player p in players)
         {
-            p.mode = Player.Mode.readyUp;
+            p.mode = Player.Mode.ReadyUp;
             p.GetComponentInChildren<PlayerUI>().ShowReadyUp();
         }
 
@@ -81,14 +81,14 @@ public class GameManager : NetworkBehaviour
 
     public IEnumerator WaitForReady()
     {
-        while (players.Where(z => z.ready).Count() < 2)
+        while (players.Where(z => z.ready.Value).Count() < 2)
         {
             yield return null;
         }
 
         foreach (Player p in players)
         {
-            p.mode = Player.Mode.pregameCountdown;
+            p.mode = Player.Mode.PregameCountdown;
             p.GetComponentInChildren<PlayerUI>().HideWaitingForPlayerReady();
         }
 
@@ -105,13 +105,13 @@ public class GameManager : NetworkBehaviour
         {
             yield return new WaitForSeconds(1);
             tL--;
-            if (isServer)
-                CmdPregameTime();
+            if (IsServer)
+                PregameTimeServerRpc();
         }
 
         foreach (Player p in players)
         {
-            p.mode = Player.Mode.inGame;
+            p.mode = Player.Mode.InGame;
         }
 
         StartCoroutine(GameCountdown(gameTime));
@@ -126,51 +126,51 @@ public class GameManager : NetworkBehaviour
         {
             yield return new WaitForSeconds(1);
             tL--;
-            if (isServer)
-                CmdTime();
+            if (IsServer)
+                TimeServerRpc();
         }
 
         yield return null;
 
     }
 
-    [Command]
-    public void CmdGameOver()
+    [ServerRpc]
+    public void GameOverServerRpc()
     {
-        RpcGameFinished();
-        playing = false;
+        GameFinishedClientRpc();
+        playing.Value = false;
     }
 
     [ClientRpc]
-    void RpcGameFinished()
+    void GameFinishedClientRpc()
     {
         foreach (Player p in players)
         {
-            p.mode = Player.Mode.gameOver;
+            p.mode = Player.Mode.GameOver;
         }
 
         UIManager ui = FindObjectOfType<UIManager>();
         ui.GameFinished();
     }
 
-    [Command]
-    public void CmdTime() // Send a command to the server to decrease the time.
+    [ServerRpc]
+    public void TimeServerRpc() // Send a command to the server to decrease the time.
     {
-        timeLeft--;
-        RpcDecreaseTime(timeLeft);
+        timeLeft.Value--;
+        DecreaseTimeClientRpc(timeLeft.Value);
     }
 
-    [Command]
-    public void CmdPregameTime()
+    [ServerRpc]
+    public void PregameTimeServerRpc()
     {
-        currentCountdownTimeLeft--;
-        RpcDecreasePregameTime(currentCountdownTimeLeft);
+        currentCountdownTimeLeft.Value--;
+        DecreasePregameTimeClientRpc(currentCountdownTimeLeft.Value);
     }
 
     [ClientRpc]
-    void RpcDecreaseTime(int newTime) // Emitt the servers version of the time to all clients.
+    void DecreaseTimeClientRpc(int newTime) // Emitt the servers version of the time to all clients.
     {
-        if (playing)
+        if (playing.Value)
         {
             string minutes = Mathf.Floor(newTime / 60).ToString("00");
             string seconds = (newTime % 60).ToString("00");
@@ -178,27 +178,27 @@ public class GameManager : NetworkBehaviour
             if (newTime <= 0)
             {
                 UIManager ui = FindObjectOfType<UIManager>();
-                ui.CmdTimesUp();
-                playing = false;
+                ui.TimesUpServerRpc();
+                playing.Value = false;
                 foreach (Player p in FindObjectsOfType<Player>())
                 {
-                    p.mode = Player.Mode.completed;
+                    p.mode = Player.Mode.Completed;
                 }
             }
         }
     }
 
     [ClientRpc]
-    void RpcDecreasePregameTime(int newTime)
+    void DecreasePregameTimeClientRpc(int newTime)
     {
-        if (preGame)
+        if (preGame.Value)
         {
             string seconds = newTime.ToString("00");
             pregameTimeText.text = seconds;
             if (newTime <= 0)
             {
-                preGame = false;
-                playing = true;
+                preGame.Value = false;
+                playing.Value = true;
                 pregameTimeText.enabled = false;
             }
         }
@@ -209,13 +209,12 @@ public class GameManager : NetworkBehaviour
         highScoreQueries.Add(string.Format("UPDATE USERS SET highScore = {0} WHERE id = {1}", points, id));
     }
 
-    [Command]
-    void CmdUpdateHighScores()
+    [ServerRpc]
+    void UpdateHighScoresServerRpc()
     {
         string conn = "URI=file:" + Application.streamingAssetsPath + "/MineRace.db";
 
-        IDbConnection dbConnection;
-        dbConnection = (IDbConnection)new SqliteConnection(conn);
+        using SqliteConnection dbConnection = new SqliteConnection(conn);
         dbConnection.Open();
 
         foreach (string query in highScoreQueries)
@@ -227,12 +226,9 @@ public class GameManager : NetworkBehaviour
             command.ExecuteNonQuery();
 
             command.Dispose();
-            command = null;
         }
 
         // Cleanup
         highScoreQueries.Clear();
-        dbConnection.Close();
-        dbConnection = null;
     }
 }

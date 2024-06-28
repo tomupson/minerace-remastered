@@ -1,11 +1,11 @@
-﻿using UnityEngine;
-using UnityEngine.UI;
+﻿using System;
 using System.Data;
-using Mono.Data.Sqlite;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
+using Mono.Data.Sqlite;
+using UnityEngine;
 using UnityEngine.SceneManagement;
-using System;
+using UnityEngine.UI;
 
 public class LoginManager : MonoBehaviour
 {
@@ -47,7 +47,7 @@ public class LoginManager : MonoBehaviour
 
             if (userInfo.UserId != 0)
             {
-                UserAccountManager.instance.userInfo = userInfo;
+                UserAccountManager.Instance.userInfo = userInfo;
                 SceneManager.LoadScene("Menu");
             }
         }
@@ -57,37 +57,27 @@ public class LoginManager : MonoBehaviour
     {
         Crypto crypto = new Crypto();
 
-        IDbConnection dbConnection;
-        dbConnection = (IDbConnection)new SqliteConnection(conn);
+        using SqliteConnection dbConnection = new SqliteConnection(conn);
         dbConnection.Open();
 
-        IDbCommand command = dbConnection.CreateCommand();
+        using IDbCommand command = dbConnection.CreateCommand();
+        // TODO: SQL injection
         string sqlQuery = string.Format("SELECT id, password FROM USERS WHERE username = '{0}'", usernameInputField.text);
 
         command.CommandText = sqlQuery;
 
-        IDataReader reader = command.ExecuteReader();
+        using IDataReader reader = command.ExecuteReader();
 
         while (reader.Read())
         {
             if (crypto.DecryptString(reader["password"].ToString()) == passwordInputField.text)
             {
                 UserInfo info = FetchUserInfo((long)reader["id"]);
-                UserAccountManager.instance.userInfo = info;
+                UserAccountManager.Instance.userInfo = info;
                 if (rememberMeToggle.isOn) WriteSessionInfo(info);
                 SceneManager.LoadScene("Menu");
             }
         }
-
-        // Cleanup
-        reader.Close();
-        reader = null;
-
-        command.Dispose();
-        command = null;
-
-        dbConnection.Close();
-        dbConnection = null;
     }
 
     void WriteSessionInfo(UserInfo userInfo)
@@ -102,16 +92,16 @@ public class LoginManager : MonoBehaviour
     {
         UserInfo userInfo = new UserInfo();
 
-        IDbConnection dbConnection;
-        dbConnection = (IDbConnection)new SqliteConnection(conn);
+        using SqliteConnection dbConnection = new SqliteConnection(conn);
         dbConnection.Open();
 
-        IDbCommand command = dbConnection.CreateCommand();
-        string sqlQuery = "SELECT * FROM USERS WHERE id = " + userId;
+        using IDbCommand command = dbConnection.CreateCommand();
+        // TODO: SQL injection
+        string sqlQuery = $"SELECT * FROM USERS WHERE id = {userId}";
 
         command.CommandText = sqlQuery;
        
-        IDataReader reader = command.ExecuteReader();
+        using IDataReader reader = command.ExecuteReader();
         while (reader.Read())
         {
             userInfo.UserId = userId;
@@ -124,16 +114,6 @@ public class LoginManager : MonoBehaviour
                 Debug.Log(p.Name + ": " + p.GetValue(userInfo, null));
             }
         }
-
-        // Cleanup
-        reader.Close();
-        reader = null;
-
-        command.Dispose();
-        command = null;
-
-        dbConnection.Close();
-        dbConnection = null;
 
         return userInfo;
     }

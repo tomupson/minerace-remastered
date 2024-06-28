@@ -1,15 +1,20 @@
-﻿using UnityEngine;
-using UnityEngine.Networking;
+﻿using Unity.Netcode;
+using UnityEngine;
 
 public class Player_SyncScale : NetworkBehaviour
 {
-    [SyncVar(hook = "FacingCallback")] public bool netFacingRight = true;
+    public NetworkVariable<bool> netFacingRight = new NetworkVariable<bool>(true);
 
-    [Command]
-    public void CmdFlipSprite(bool facing)
+    private void Awake()
     {
-        netFacingRight = facing;
-        if (netFacingRight)
+        netFacingRight.OnValueChanged += FacingCallback;
+    }
+
+    [ServerRpc]
+    public void FlipSpriteServerRpc(bool facing)
+    {
+        netFacingRight.Value = facing;
+        if (facing)
         {
             Vector3 s = transform.localScale;
             s.x = 1;
@@ -23,10 +28,9 @@ public class Player_SyncScale : NetworkBehaviour
         }
     }
 
-    void FacingCallback(bool facing)
+    void FacingCallback(bool oldFacingRight, bool newFacingRight)
     {
-        netFacingRight = facing;
-        if (netFacingRight)
+        if (newFacingRight)
         {
             Vector3 s = transform.localScale;
             s.x = 1;

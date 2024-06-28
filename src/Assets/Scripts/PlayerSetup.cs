@@ -1,5 +1,5 @@
-﻿using UnityEngine;
-using UnityEngine.Networking;
+﻿using Unity.Netcode;
+using UnityEngine;
 
 public class PlayerSetup : NetworkBehaviour
 {
@@ -9,13 +9,14 @@ public class PlayerSetup : NetworkBehaviour
 
     void Start()
     {
-        if (!isLocalPlayer)
+        if (!IsLocalPlayer)
         {
             for (int i = 0; i < componentsToDisable.Length; i++)
             {
                 componentsToDisable[i].enabled = false;
             }
-        } else
+        }
+        else
         {
             sceneCamera = Camera.main;
             if (sceneCamera != null)

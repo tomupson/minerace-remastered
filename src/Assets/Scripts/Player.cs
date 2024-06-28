@@ -1,6 +1,6 @@
-using UnityEngine;
 using System.Collections;
-using UnityEngine.Networking;
+using Unity.Netcode;
+using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody2D))]
 public class Player : NetworkBehaviour
@@ -13,11 +13,11 @@ public class Player : NetworkBehaviour
 
     private bool facingRight = true; // Whether the player is facing right or not.
 
-    [HideInInspector] [SyncVar] public int points; // How many points the player has.
-    [SyncVar] [HideInInspector] public bool ready; // If the player is ready to play.
+    [HideInInspector] public NetworkVariable<int> points; // How many points the player has.
+    [HideInInspector] public NetworkVariable<bool> ready; // If the player is ready to play.
     private bool canMine; // Determines if the player can mine the block.
 
-    [SyncVar] public string username; // The players username.
+    public NetworkVariable<string> username; // The players username.
 
     public bool isPaused;
 
@@ -27,14 +27,14 @@ public class Player : NetworkBehaviour
 
     public enum Mode
     {
-        waitingForPlayers, // When waiting for players to join the game
-        readyUp, // When the "Ready" button is enabled.
-        waitingForPlayerReady, // When you're waiting for the other player to ready up.
-        pregameCountdown, // When the 10 second countdown is counting down.
-        inGame, // When playing the game.
-        completed, // When you reach the end of the game or the time runs out.
-        spectating, // When you're spectating another player.
-        gameOver // When the game is finished for all players.
+        WaitingForPlayers, // When waiting for players to join the game
+        ReadyUp, // When the "Ready" button is enabled.
+        WaitingForPlayerReady, // When you're waiting for the other player to ready up.
+        PregameCountdown, // When the 10 second countdown is counting down.
+        InGame, // When playing the game.
+        Completed, // When you reach the end of the game or the time runs out.
+        Spectating, // When you're spectating another player.
+        GameOver // When the game is finished for all players.
     }
 
     void Awake()
@@ -49,29 +49,28 @@ public class Player : NetworkBehaviour
 
         isPaused = false;
 
-        CmdSetUsername(UserAccountManager.instance.userInfo.Username);
+        SetUsernameServerRpc(UserAccountManager.Instance.userInfo.Username);
 
-        mode = Mode.waitingForPlayers; // Start off waiting for players.
+        mode = Mode.WaitingForPlayers; // Start off waiting for players.
         canMine = true; // You can mine at the start of the game.
     }
 
-    [Command]
-    void CmdSetUsername(string _username)
+    [ServerRpc]
+    void SetUsernameServerRpc(string username)
     {
-        username = _username; // Set your username to the username of the logged in player from the database.
-        if (username == null || username == "")
-            username = "Guest"; // Set your username to a guest name if there is no username somehow.
+        username = !string.IsNullOrEmpty(username) ? username : "Guest";
+        this.username.Value = username; // Set your username to the username of the logged in player from the database.
     }
 
     void FixedUpdate()
     {
-        if (mode == Mode.inGame && !isPaused) // If playing...
+        if (mode == Mode.InGame && !isPaused) // If playing...
         {
             float horizontalSpeed = Input.GetAxis("Horizontal") * moveSpeed; // Speed left or right
 
             if (horizontalSpeed > 0 && !facingRight || horizontalSpeed < 0 && facingRight) // If you were moving left and now have a right velocity
             { // or were moving right and now have a left velocity,
-                syncScale.CmdFlipSprite(facingRight);
+                syncScale.FlipSpriteServerRpc(facingRight);
             }
 
             rb.velocity = new Vector2(horizontalSpeed, 0); // Move in the direction of the speed. Y is 0 as jumping isn't enabled in this game.
@@ -97,10 +96,10 @@ public class Player : NetworkBehaviour
     {
         if (Input.GetKeyDown(KeyCode.M))
         {
-            ChatManager.instance.ChatSendMessage(username, "Hey I'm good");
+            ChatManager.Instance.ChatSendMessage(username.Value, "Hey I'm good");
         }
 
-        if (mode == Mode.inGame && !isPaused) // If playing...
+        if (mode == Mode.InGame && !isPaused) // If playing...
         {
             Camera playerCam = GetComponentInChildren<Camera>(); // Fetch My Camera (there are two cameras but because we are fetching one it's the first one).
             Vector3 direction = playerCam.ScreenToWorldPoint(Input.mousePosition) - transform.position;
@@ -125,9 +124,9 @@ public class Player : NetworkBehaviour
 
                 if (Input.GetButtonDown("BreakBlock") && canMine)
                 {
-                    AudioManager.instance.PlaySound(b.blockBreakSoundName);
+                    AudioManager.Instance.PlaySound(b.blockBreakSoundName);
                     hit.transform.gameObject.SetActive(false); // Temporarily set it to hidden so that even if it takes the server some time to destroy it, you cant mine it twice.
-                    CmdBreakBlockOnServer(hit.transform.gameObject);
+                    BreakBlockServerRpc(hit.transform.gameObject.GetComponent<Block>());
                     StartCoroutine(PickaxeCooldown());
                 }
             } else
@@ -149,30 +148,32 @@ public class Player : NetworkBehaviour
         canMine = true;
     }
 
-    [Command]
-    void CmdBreakBlockOnServer(GameObject obj)
+    [ServerRpc]
+    void BreakBlockServerRpc(NetworkBehaviourReference reference)
     {
-        NetworkServer.Destroy(obj);
-        Block b = obj.GetComponent<Block>();
-        RpcAddPoints(b.blockPointsValue);
+        //NetworkServer.Destroy(obj);
+        if (reference.TryGet(out Block b))
+        {
+            AddPointsClientRpc(b.blockPointsValue);
+        }
     }
 
     [ClientRpc]
-    void RpcAddPoints(int p)
+    void AddPointsClientRpc(int p)
     {
-        points += p;
+        points.Value += p;
     }
 
-    [Command]
-    public void CmdReachedEnd()
+    [ServerRpc]
+    public void ReachedEndServerRpc()
     {
-        RpcAddPoints(Mathf.FloorToInt(FindObjectOfType<GameManager>().timeLeft / 4f));
+        AddPointsClientRpc(Mathf.FloorToInt(FindObjectOfType<GameManager>().timeLeft.Value / 4f));
     }
 
-    [Command]
-    public void CmdChangeReadyState()
+    [ServerRpc]
+    public void ChangeReadyStateServerRpc()
     {
-        ready = true;
+        ready.Value = true;
     }
 
     void OnDirectionChange(bool facingRight)
