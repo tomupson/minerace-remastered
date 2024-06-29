@@ -7,8 +7,6 @@ using UnityEngine.UI;
 
 public class JoinGame : MonoBehaviour
 {
-    private NetworkManager netMan;
-
     [Header("Game List References")]
     [SerializeField] private Text statusText;
     [SerializeField] private GameObject gameListItemPrefab;
@@ -30,9 +28,8 @@ public class JoinGame : MonoBehaviour
 
     void Start()
     {
-        netMan = NetworkManager.Singleton;
-        //if (netMan.matchMaker == null)
-        //    netMan.StartMatchMaker();
+        //if (NetworkManager.Singleton.matchMaker == null)
+        //    NetworkManager.Singleton.StartMatchMaker();
 
         passwordCanvas.SetActive(false);
 
@@ -51,10 +48,10 @@ public class JoinGame : MonoBehaviour
 
         statusText.text = "Searching for open games.";
 
-        //if (netMan.matchMaker == null)
-        //    netMan.StartMatchMaker();
+        //if (NetworkManager.Singleton.matchMaker == null)
+        //    NetworkManager.Singleton.StartMatchMaker();
 
-        //netMan.matchMaker.ListMatches(0, 20, filterMatchField.text, false, 0, 0, OnMatchList);
+        //NetworkManager.Singleton.matchMaker.ListMatches(0, 20, filterMatchField.text, false, 0, 0, OnMatchList);
         #endif
     }
 
@@ -115,7 +112,7 @@ public class JoinGame : MonoBehaviour
     //        return;
     //    } else
     //    {
-    //        netMan.matchMaker.JoinMatch(_match.networkId, "", "", "", 0, 0, netMan.OnMatchJoined);
+    //        NetworkManager.Singleton.matchMaker.JoinMatch(_match.networkId, "", "", "", 0, 0, NetworkManager.Singleton.OnMatchJoined);
     //    }
     //}
 
@@ -136,7 +133,7 @@ public class JoinGame : MonoBehaviour
     //            return;
 
     //        Debug.Log("Joining: " + matchToJoin.name);
-    //        netMan.matchMaker.JoinMatch(matchToJoin.networkId, matchPasswordInputField.text, "", "", 0, 0, netMan.OnMatchJoined);
+    //        NetworkManager.Singleton.matchMaker.JoinMatch(matchToJoin.networkId, matchPasswordInputField.text, "", "", 0, 0, NetworkManager.Singleton.OnMatchJoined);
     //        StartCoroutine(WaitForSuccessfulJoin());
     //    }
     //}
@@ -177,11 +174,11 @@ public class JoinGame : MonoBehaviour
         AudioManager.Instance.PlaySound("connection_error");
         statusText.text = "Failed to connect.";
         yield return new WaitForSeconds(2.5f);
-        //MatchInfo matchInfo = netMan.matchInfo;
+        //MatchInfo matchInfo = NetworkManager.Singleton.matchInfo;
         //if (matchInfo != null)
         //{
-        //    netMan.matchMaker.DropConnection(matchInfo.networkId, matchInfo.nodeId, 0, netMan.OnDropConnection);
-        //    netMan.StopHost();
+        //    NetworkManager.Singleton.matchMaker.DropConnection(matchInfo.networkId, matchInfo.nodeId, 0, NetworkManager.Singleton.OnDropConnection);
+        //    NetworkManager.Singleton.StopHost();
         //}
 
         //matchToJoin = null;
@@ -191,11 +188,11 @@ public class JoinGame : MonoBehaviour
 
     public void TEMP_LAN_HOST()
     {
-        netMan.StartHost();
+        NetworkManager.Singleton.StartHost();
     }
 
     public void TEMP_LAN_CLIENT()
     {
-        netMan.StartClient();
+        NetworkManager.Singleton.StartClient();
     }
 }

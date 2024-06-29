@@ -3,7 +3,7 @@ using UnityEngine.UI;
 
 public class Profile : MonoBehaviour
 {
-    UserInfo userInfo;
+    private UserInfo userInfo;
 
     [Header("User Info")]
     [SerializeField] private Text titleText;

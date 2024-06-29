@@ -5,29 +5,25 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody2D))]
 public class Player : NetworkBehaviour
 {
-    private Rigidbody2D rb; // The players Rigidbody.
+    private Rigidbody2D rb;
+    private Player_SyncScale syncScale;
+    private bool canMine;
+    private bool facingRight = true;
 
     [Header("Player Settings")]
     [SerializeField] private float moveSpeed; // Player's Speed
     [SerializeField] private float pickaxeCooldownTime; // Player's Pickaxe cooldown time.
 
-    private bool facingRight = true; // Whether the player is facing right or not.
-
-    [HideInInspector] public NetworkVariable<int> points; // How many points the player has.
-    [HideInInspector] public NetworkVariable<bool> ready; // If the player is ready to play.
-    private bool canMine; // Determines if the player can mine the block.
-
-    public NetworkVariable<string> username; // The players username.
+    [HideInInspector] public NetworkVariable<int> points;
+    [HideInInspector] public NetworkVariable<bool> ready;
+    [HideInInspector] public NetworkVariable<string> username;
 
     public bool isPaused;
-
-    public Mode mode; // The players in-match mode.
-
-    private Player_SyncScale syncScale;
+    public Mode mode;
 
     public enum Mode
     {
-        WaitingForPlayers, // When waiting for players to join the game
+        WaitingForPlayers, // When waiting for players to join the game.
         ReadyUp, // When the "Ready" button is enabled.
         WaitingForPlayerReady, // When you're waiting for the other player to ready up.
         PregameCountdown, // When the 10 second countdown is counting down.
@@ -45,48 +41,47 @@ public class Player : NetworkBehaviour
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
-        facingRight = true; // Start facing right
+        facingRight = true;
 
         isPaused = false;
 
         SetUsernameServerRpc(UserAccountManager.Instance.userInfo.Username);
 
-        mode = Mode.WaitingForPlayers; // Start off waiting for players.
-        canMine = true; // You can mine at the start of the game.
+        mode = Mode.WaitingForPlayers;
+        canMine = true;
     }
 
     [ServerRpc]
     void SetUsernameServerRpc(string username)
     {
         username = !string.IsNullOrEmpty(username) ? username : "Guest";
-        this.username.Value = username; // Set your username to the username of the logged in player from the database.
+        this.username.Value = username;
     }
 
     void FixedUpdate()
     {
-        if (mode == Mode.InGame && !isPaused) // If playing...
+        if (mode == Mode.InGame && !isPaused)
         {
-            float horizontalSpeed = Input.GetAxis("Horizontal") * moveSpeed; // Speed left or right
+            float horizontalSpeed = Input.GetAxis("Horizontal") * moveSpeed;
 
-            if (horizontalSpeed > 0 && !facingRight || horizontalSpeed < 0 && facingRight) // If you were moving left and now have a right velocity
-            { // or were moving right and now have a left velocity,
+            if (horizontalSpeed > 0 && !facingRight || horizontalSpeed < 0 && facingRight)
+            {
                 syncScale.FlipSpriteServerRpc(facingRight);
             }
 
-            rb.velocity = new Vector2(horizontalSpeed, 0); // Move in the direction of the speed. Y is 0 as jumping isn't enabled in this game.
+            rb.velocity = new Vector2(horizontalSpeed, 0);
         }
     }
-    
-    /*[Command]
-    void CmdSetFlipState()
+
+    /*[ServerRpc]
+    void SetFlipStateServerRpc()
     {
         facingRight = !facingRight; // Change your direction
-        RpcChangeFlipStateOnClients();
-
+        ChangeFlipStateOnClientsClientRpc();
     }
 
     [ClientRpc]
-    void RpcChangeFlipStateOnClients()
+    void ChangeFlipStateOnClientsClientRpc()
     {
         Vector3 s = transform.localScale;
         transform.localScale = new Vector3(s.x * -1, s.y, s.z); // Flip the player when the direction has been switched.
@@ -99,7 +94,7 @@ public class Player : NetworkBehaviour
             ChatManager.Instance.ChatSendMessage(username.Value, "Hey I'm good");
         }
 
-        if (mode == Mode.InGame && !isPaused) // If playing...
+        if (mode == Mode.InGame && !isPaused)
         {
             Camera playerCam = GetComponentInChildren<Camera>(); // Fetch My Camera (there are two cameras but because we are fetching one it's the first one).
             Vector3 direction = playerCam.ScreenToWorldPoint(Input.mousePosition) - transform.position;

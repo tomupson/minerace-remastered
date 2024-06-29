@@ -1,5 +1,4 @@
-﻿// TODO: NETWORKING
-using System.Collections;
+﻿using System.Collections;
 using System.Data;
 using System.Linq;
 using Unity.Netcode;
@@ -8,13 +7,16 @@ using UnityEngine.UI;
 
 public class PlayerUI : NetworkBehaviour
 {
+    private Player player;
+    private bool updatedHighScore = false;
+
     [Header("Screen Space UI")]
     [SerializeField] private Text pointsText;
 
     [Header("Username Overhead UI")]
     [SerializeField] private GameObject usernameCanvas;
     [SerializeField] private Text usernameText;
-    public Text spectateText;
+    [SerializeField] private Text spectateText;
 
     [Header("Ready Button")]
     [SerializeField] private GameObject readyPanel;
@@ -29,11 +31,6 @@ public class PlayerUI : NetworkBehaviour
 
     [Header("Spectating")]
     [SerializeField] private Text youAreSpectatingText;
-
-    private Player player;
-    private Vector3 oldPos;
-
-    private bool updatedHighScore = false;
 
     void Start()
     {
@@ -58,62 +55,67 @@ public class PlayerUI : NetworkBehaviour
 
         usernameText.text = player.username.Value;
 
-        if (player.mode == Player.Mode.InGame)
+        switch (player.mode)
         {
-            if (!usernameCanvas.activeSelf) usernameCanvas.SetActive(true);
-
-            usernameCanvas.GetComponent<RectTransform>().position = new Vector3(player.transform.position.x, player.transform.position.y + 0.5f, 0);
-
-            pointsText.text = "POINTS: " + player.points;
-
-            spectateText.enabled = false;
-        }
-        else if (player.mode == Player.Mode.Completed && FindObjectOfType<GameManager>().playing.Value)
-        {
-            spectateText.enabled = true;
-            if (Input.GetKeyDown(KeyCode.Space))
-            {
-                Player[] players = FindObjectsOfType<Player>();
-                Player otherPlayer = players.Where(z => z != player).FirstOrDefault();
-                otherPlayer.GetComponentInChildren<Camera>().enabled = true;
-                otherPlayer.GetComponentInChildren<AudioListener>().enabled = true;
-
-                player.GetComponentInChildren<Camera>().enabled = false;
-                player.GetComponentInChildren<AudioListener>().enabled = false;
-
-                player.mode = Player.Mode.Spectating;
-            }
-        }
-        else if (player.mode == Player.Mode.Spectating)
-        {
-            spectateText.enabled = false;
-            youAreSpectatingText.enabled = true;
-            Player otherPlayer = FindObjectsOfType<Player>().Where(z => z != player).FirstOrDefault();
-            pointsText.text = "POINTS: " + otherPlayer.points;
-            youAreSpectatingText.text = "YOU ARE SPECTATING: " + otherPlayer.username;
-        }
-        else if (player.mode == Player.Mode.WaitingForPlayers)
-        {
-            usernameCanvas.SetActive(false);
-        }
-        else if (player.mode == Player.Mode.Completed)
-        {
-            if (player.points.Value > UserAccountManager.Instance.userInfo.HighScore)
-            {
-                if (!updatedHighScore)
+            case Player.Mode.InGame:
+                if (!usernameCanvas.activeSelf)
                 {
-                    if (player.IsLocalPlayer)
+                    usernameCanvas.SetActive(true);
+                }
+
+                usernameCanvas.GetComponent<RectTransform>().position = new Vector3(player.transform.position.x, player.transform.position.y + 0.5f, 0);
+
+                pointsText.text = "POINTS: " + player.points;
+
+                spectateText.enabled = false;
+                break;
+            case Player.Mode.Completed when FindObjectOfType<GameManager>().playing.Value:
+                {
+                    spectateText.enabled = true;
+                    if (Input.GetKeyDown(KeyCode.Space))
                     {
-                        FindObjectOfType<GameManager>().AddHighScoreQuery(player.points.Value, UserAccountManager.Instance.userInfo.UserId);
-                        updatedHighScore = true;
+                        Player[] players = FindObjectsOfType<Player>();
+                        Player otherPlayer = players.Where(z => z != player).FirstOrDefault();
+                        otherPlayer.GetComponentInChildren<Camera>().enabled = true;
+                        otherPlayer.GetComponentInChildren<AudioListener>().enabled = true;
+
+                        player.GetComponentInChildren<Camera>().enabled = false;
+                        player.GetComponentInChildren<AudioListener>().enabled = false;
+
+                        player.mode = Player.Mode.Spectating;
+                    }
+
+                    break;
+                }
+            case Player.Mode.Spectating:
+                {
+                    spectateText.enabled = false;
+                    youAreSpectatingText.enabled = true;
+                    Player otherPlayer = FindObjectsOfType<Player>().Where(z => z != player).FirstOrDefault();
+                    pointsText.text = "POINTS: " + otherPlayer.points;
+                    youAreSpectatingText.text = "YOU ARE SPECTATING: " + otherPlayer.username;
+                    break;
+                }
+            case Player.Mode.WaitingForPlayers:
+                usernameCanvas.SetActive(false);
+                break;
+            case Player.Mode.Completed:
+                if (player.points.Value > UserAccountManager.Instance.userInfo.HighScore)
+                {
+                    if (!updatedHighScore)
+                    {
+                        if (player.IsLocalPlayer)
+                        {
+                            FindObjectOfType<GameManager>().AddHighScoreQuery(player.points.Value, UserAccountManager.Instance.userInfo.UserId);
+                            updatedHighScore = true;
+                        }
                     }
                 }
-            }
-        }
-        else
-        {
-            spectateText.enabled = false;
-            youAreSpectatingText.enabled = false;
+                break;
+            default:
+                spectateText.enabled = false;
+                youAreSpectatingText.enabled = false;
+                break;
         }
     }
 
@@ -133,7 +135,8 @@ public class PlayerUI : NetworkBehaviour
     {
         while (player.mode == Player.Mode.ReadyUp)
         {
-            waitingForPlayerReadyText.text = "WAITING FOR '" + FindObjectsOfType<Player>().Where(z => z != player).FirstOrDefault().username + "' TO READY UP.";
+            Player otherPlayer = FindObjectsOfType<Player>().Where(z => z != player).FirstOrDefault();
+            waitingForPlayerReadyText.text = $"WAITING FOR '{otherPlayer.username}' TO READY UP.";
             yield return null;
         }
     }
@@ -192,10 +195,6 @@ public class PlayerUI : NetworkBehaviour
 
     public void LeaveButtonPressed()
     {
-        //NetworkManager netMan = NetworkManager.Singleton;
-        //if (player.IsServer)
-        //    netMan.StopHost();
-        //else
-        //    netMan.StopClient();
+        NetworkManager.Singleton.Shutdown();
     }
 }

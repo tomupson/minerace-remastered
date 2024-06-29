@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class PlayerSetup : NetworkBehaviour
 {
-    [SerializeField] Behaviour[] componentsToDisable;
+    [SerializeField] private Behaviour[] componentsToDisable;
 
     Camera sceneCamera;
 
@@ -20,13 +20,17 @@ public class PlayerSetup : NetworkBehaviour
         {
             sceneCamera = Camera.main;
             if (sceneCamera != null)
+            {
                 sceneCamera.gameObject.SetActive(false);
+            }
         }
     }
 
     void OnDisable()
     {
         if (sceneCamera != null)
+        {
             sceneCamera.gameObject.SetActive(true);
+        }
     }
 }

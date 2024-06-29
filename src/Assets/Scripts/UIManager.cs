@@ -5,8 +5,9 @@ using UnityEngine.UI;
 
 public class UIManager : NetworkBehaviour
 {
-    [SerializeField] private GameObject timesUpPanel;
     private Text timesUpText;
+
+    [SerializeField] private GameObject timesUpPanel;
     [SerializeField] private GameObject finalScoresPanel;
     [SerializeField] private Text[] playerNameText;
     [SerializeField] private Text[] finalPointsText;
@@ -98,5 +99,4 @@ public class UIManager : NetworkBehaviour
             finalMoneyText[i].text = "Money: +$" + counted;
         }
     }
-
 }

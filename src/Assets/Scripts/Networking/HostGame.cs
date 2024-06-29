@@ -1,13 +1,10 @@
 ﻿// TODO: NETWORKING
 using System.Collections;
-using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class HostGame : MonoBehaviour
 {
-    private NetworkManager netMan;
-
     [Header("Match Settings")]
     [SerializeField] private uint gameSize = 2;
 
@@ -21,9 +18,8 @@ public class HostGame : MonoBehaviour
     void Start()
     {
         createMatchCanvas.SetActive(false);
-        netMan = NetworkManager.Singleton;
-        //if (netMan.matchMaker == null)
-        //    netMan.StartMatchMaker();
+        //if (NetworkManager.Singleton.matchMaker == null)
+        //    NetworkManager.Singleton.StartMatchMaker();
     }
 
     public void CreateRoom()
@@ -42,7 +38,7 @@ public class HostGame : MonoBehaviour
                 createGameButton.enabled = false;
                 AudioManager.Instance.PlaySound("button_press");
                 Debug.Log("Creating Game");
-                //netMan.matchMaker.CreateMatch(gameName, gameSize, true, gamePassword, "", "", 0, 0, netMan.OnMatchCreate);
+                //NetworkManager.Singleton.matchMaker.CreateMatch(gameName, gameSize, true, gamePassword, "", "", 0, 0, netMan.OnMatchCreate);
             }
             else
             {

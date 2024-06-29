@@ -8,7 +8,7 @@ public class MenuManager : MonoBehaviour
 
     void Update()
     {
-        loginNameText.text = "LOGGED IN AS: " + UserAccountManager.Instance.userInfo.Username;
+        loginNameText.text = $"LOGGED IN AS: {UserAccountManager.Instance.userInfo.Username}";
     }
 
     public void PlayGame()

@@ -1,26 +1,31 @@
 // TODO: NETWORKING
+using System;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 
 /// <summary>
-/// Block.cs holds information about the different blocks in the game
+/// Holds information about a block
 /// </summary>
-
-[System.Serializable]
+[Serializable]
 public class Block : NetworkBehaviour
 {
-    public string blockName; // Block Name e.g Ground
-    public string blockType; // Block Type e.g Resource
-    public int rarity; // Block rarity, determines in what order the game tries to spawn (ideally should be set up so that rarer materials are attempted to spawn first)
-    public int blockPointsValue; // How many points the user gains for destroying this block.
-    public float basePercentage; // Base spawn % at the top y-level
-    public float percentageMultiplier; // Multiplier as it goes down each y-level.
-    [HideInInspector] public float[] spawnPercentagesAtLevels; // A list of all these spawn %s
-    [HideInInspector] public int textureIndex; // For each block, this will hold its current texture 
-    public List<Sprite> blockTextures; // A list of all the block textures (to add randomness)
-    public List<Sprite> blockOutlineTextures; // A list of all the block outline textures.
-    public string blockBreakSoundName; // The name of the sound that is played when the block is broken.
+    public string blockName;
+    public string blockType;
+    [Tooltip("Determines in what order the game tries to spawn (ideally should be set up so that rarer materials are attempted to spawn first)")]
+    public int rarity;
+    public int blockPointsValue;
+    [Tooltip("Base spawn % at the top y-level")]
+    public float basePercentage;
+    [Tooltip("Multiplier as the level generator goes down each y-level")]
+    public float percentageMultiplier;
+    [HideInInspector] public float[] spawnPercentagesAtLevels;
+    [HideInInspector] public int textureIndex;
+    [Tooltip("Set of block textures, to allow variance between blocks of the same type")]
+    public List<Sprite> blockTextures;
+    [Tooltip("Set of block outline textures, to allow variance between blocks of the same type")]
+    public List<Sprite> blockOutlineTextures;
+    public string blockBreakSoundName;
 
     //[SyncVar] public NetworkInstanceId parentNetId; // The network id of the level generator object.
 

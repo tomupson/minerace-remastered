@@ -20,5 +20,4 @@ public class FollowPlayer : MonoBehaviour
         Debug.Log("Changing player to follow to: " + np.username);
         playerToFollow = np;
     }
-
 }

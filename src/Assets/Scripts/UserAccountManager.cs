@@ -1,5 +1,6 @@
 ﻿using System;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 public class UserAccountManager : MonoBehaviour
 {
@@ -10,22 +11,19 @@ public class UserAccountManager : MonoBehaviour
     {
         DontDestroyOnLoad(this);
 
-        if (FindObjectsOfType(GetType()).Length > 1) // If one already exists
+        if (FindObjectsOfType(GetType()).Length > 1)
         {
-            Destroy(gameObject); // Remove it
+            Destroy(gameObject);
         }
 
         Instance = this;
 
-        int myId = new System.Random().Next(1000, 10000);
+        int id = Random.Range(1000, 10000);
 
-        userInfo = new UserInfo()
+        userInfo = new UserInfo
         {
-            Experience = 0,
-            HighScore = 0,
-            Password = "1234",
-            UserId = myId,
-            Username = "User#" + myId
+            UserId = id,
+            Username = $"User#{id}"
         };
     }
 
@@ -33,7 +31,7 @@ public class UserAccountManager : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.F12))
         {
-            ScreenCapture.CaptureScreenshot(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\screenshot.png");
+            ScreenCapture.CaptureScreenshot($"MineRace_Screenshot_{DateTime.Now:s}.png");
         }
     }
 }

@@ -8,9 +8,8 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// GameManager.cs handles lots of different functionalities that are mostly things that all players should experience e.g. the game countdown timer.
+/// Handles lots of different functionalities that are mostly things that all players should experience e.g. the game countdown timer.
 /// </summary>
-
 public class GameManager : NetworkBehaviour
 {
     [Header("Game Settings")]
@@ -60,8 +59,7 @@ public class GameManager : NetworkBehaviour
             yield return new WaitForSeconds(1);
             waitingForPlayersText.text = "WAITING FOR PLAYERS" + new string('.', index);
             index++;
-            if (index > 3)
-                index = 0;
+            index %= 4;
         }
 
         waitingForPlayersPanel.SetActive(false);

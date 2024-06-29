@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class Player_SyncScale : NetworkBehaviour
 {
-    public NetworkVariable<bool> netFacingRight = new NetworkVariable<bool>(true);
+    private NetworkVariable<bool> netFacingRight = new NetworkVariable<bool>(true);
 
     private void Awake()
     {

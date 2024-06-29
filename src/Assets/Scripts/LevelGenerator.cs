@@ -6,11 +6,13 @@ using UnityEngine;
 
 public class LevelGenerator : NetworkBehaviour
 {
-    [SerializeField] private List<GameObject> blocks; // Blocks are pre-defined in the Unity Editor.
-    [SerializeField] private int mapWidth; // How wide the map is.
-    [SerializeField] private int mapHeight; // How deep the map is.
-    public const int blockSize = 1;
+    private const int BlockSize = 1;
+
     private List<GameObject> resourceBlocks = new List<GameObject>();
+
+    [SerializeField] private List<GameObject> blocks;
+    [SerializeField] private int mapWidth;
+    [SerializeField] private int mapHeight;
     [SerializeField] private GameObject borderBlockPrefab;
     [SerializeField] private GameObject endBlockPrefab;
 
@@ -23,21 +25,23 @@ public class LevelGenerator : NetworkBehaviour
     [ServerRpc]
     public void SpawnMapServerRpc()
     {
-        resourceBlocks = blocks.Where(z => z.GetComponent<Block>().blockType == "Resource").ToList(); // List of all the blocks that are tagged as resources.
+        resourceBlocks = blocks
+            .Select(o => new { gameObject = o, block = o.GetComponent<Block>() })
+            .Where(x => x.block.blockType == "Resource")
+            .OrderBy(x => x.block.rarity)
+            .Select(x => x.gameObject)
+            .ToList();
         
-        resourceBlocks = resourceBlocks.OrderBy(z => z.GetComponent<Block>().rarity).ToList();
-
-        for (int r = 0; r < resourceBlocks.Count; r++)
+        foreach (GameObject blockObject in resourceBlocks)
         {
-            Block b = resourceBlocks[r].GetComponent<Block>();
-            b.spawnPercentagesAtLevels = new float[mapHeight];
-            for (int s = 1; s < b.spawnPercentagesAtLevels.Length; s++)
+            Block block = blockObject.GetComponent<Block>();
+            block.spawnPercentagesAtLevels = new float[mapHeight];
+            for (int spawnLevel = 1; spawnLevel < block.spawnPercentagesAtLevels.Length; spawnLevel++)
             {
-                b.spawnPercentagesAtLevels[s] = b.basePercentage * Mathf.Pow(b.percentageMultiplier, b.spawnPercentagesAtLevels.Length - s);
+                block.spawnPercentagesAtLevels[spawnLevel] = block.basePercentage * Mathf.Pow(block.percentageMultiplier, block.spawnPercentagesAtLevels.Length - spawnLevel);
             }
         }
 
-        // For every block in the map.
         System.Random random = new System.Random();
         for (int x = 0; x < mapWidth; x++)
         {
@@ -52,7 +56,7 @@ public class LevelGenerator : NetworkBehaviour
                     int blockTextureIndex = random.Next(0, block.blockTextures.Count - 1);
                     blockRenderer.sprite = block.blockTextures[blockTextureIndex];
                     block.textureIndex = blockTextureIndex;
-                    blockInstance.transform.position = new Vector3(x * blockSize, y * blockSize, 0);
+                    blockInstance.transform.position = new Vector3(x * BlockSize, y * BlockSize, 0);
                     blockInstance.transform.SetParent(transform, false);
                     blockInstance.name = block.blockName + " => " + x + ", " + y;
 
@@ -76,7 +80,7 @@ public class LevelGenerator : NetworkBehaviour
                         blockRenderer.sprite = block.blockTextures[blockTextureIndex];
                         block.textureIndex = blockTextureIndex;
 
-                        blockInstance.transform.position = new Vector3(x * blockSize, y * blockSize, 0);
+                        blockInstance.transform.position = new Vector3(x * BlockSize, y * BlockSize, 0);
                         blockInstance.transform.SetParent(transform, false);
                         blockInstance.name = block.blockName + " => " + x + ", " + y;
                         resourceSpawned = true;
@@ -99,7 +103,7 @@ public class LevelGenerator : NetworkBehaviour
                     blockRenderer.sprite = block.blockTextures[blockTextureIndex];
                     block.textureIndex = blockTextureIndex;
 
-                    blockInstance.transform.position = new Vector3(x * blockSize, y * blockSize, 0);
+                    blockInstance.transform.position = new Vector3(x * BlockSize, y * BlockSize, 0);
                     blockInstance.transform.SetParent(transform, false);
                     blockInstance.name = block.blockName + " => " + x + ", " + y;
 
@@ -116,13 +120,13 @@ public class LevelGenerator : NetworkBehaviour
         {
             GameObject leftBorder = Instantiate(borderBlockPrefab);
             GameObject rightBorder = Instantiate(borderBlockPrefab);
-            leftBorder.transform.position = new Vector3(-1 * blockSize, y * blockSize, 0);
+            leftBorder.transform.position = new Vector3(-1 * BlockSize, y * BlockSize, 0);
             leftBorder.transform.SetParent(transform, false);
             leftBorder.name = "BORDER_BLOCK_LEFT";
 
             //NetworkServer.Spawn(leftBorder);
 
-            rightBorder.transform.position = new Vector3(mapWidth * blockSize, y * blockSize, 0);
+            rightBorder.transform.position = new Vector3(mapWidth * BlockSize, y * BlockSize, 0);
             rightBorder.transform.SetParent(transform, false);
             rightBorder.name = "BORDER_BLOCK_RIGHT";
             Vector3 s = rightBorder.transform.localScale;
@@ -134,7 +138,7 @@ public class LevelGenerator : NetworkBehaviour
         for (int x = 0; x < mapWidth; x++)
         {
             GameObject endBlock = Instantiate(endBlockPrefab);
-            endBlock.transform.position = new Vector3(x * blockSize, -1, 0);
+            endBlock.transform.position = new Vector3(x * BlockSize, -1, 0);
             endBlock.transform.SetParent(transform, false);
             endBlock.name = "END_GAME_BLOCK";
 

@@ -5,14 +5,14 @@ using UnityEngine.UI;
 
 public class ChatItem : NetworkBehaviour
 {
+    private readonly NetworkVariable<string> sender = new NetworkVariable<string>();
+    private readonly NetworkVariable<string> message = new NetworkVariable<string>();
+
     [Header("Message Settings")]
-    [SerializeField] private Text senderText; // Text elements of the chat message.
+    [SerializeField] private Text senderText;
     [SerializeField] private Text messageText;
 
     //[SyncVar] public NetworkInstanceId chatNetId; // Network ID of the chat box.
-
-    public NetworkVariable<string> sender; // The sender 
-    public NetworkVariable<string> message;
 
     //void Start()
     //{
@@ -24,7 +24,7 @@ public class ChatItem : NetworkBehaviour
 
     public void Setup(string sender, string message)
     {
-        senderText.text = string.Format("[{0}]:", sender);
+        senderText.text = $"[{sender}]:";
         messageText.text = message;
         this.sender.Value = sender;
         this.message.Value = message;

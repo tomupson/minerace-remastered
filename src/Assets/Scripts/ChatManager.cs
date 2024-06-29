@@ -25,7 +25,7 @@ public class ChatManager : NetworkBehaviour
         //    CmdChatSendMessage(sender, message);
     }
 
-    //[Command]
+    //[ServerRpc]
     //void CmdChatSendMessage(string sender, string message)
     //{
     //    GameObject chatItem = Instantiate(chatItemPrefab);
@@ -43,7 +43,7 @@ public class ChatManager : NetworkBehaviour
         //CmdDestroyChatMessage(chatItem);
     }
 
-    //[Command]
+    //[ServerRpc]
     //void CmdDestroyChatMessage(GameObject chatItem)
     //{
     //    NetworkServer.Destroy(chatItem);
