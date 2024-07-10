@@ -5,32 +5,36 @@ using UnityEngine.UI;
 public class MenuManager : MonoBehaviour
 {
     [SerializeField] private Text loginNameText;
+    [SerializeField] private Button playButton;
+    [SerializeField] private Button exitButton;
+    [SerializeField] private Button profileButton;
+    [SerializeField] private Button logoutButton;
 
-    void Update()
+    private void Start()
     {
-        loginNameText.text = $"LOGGED IN AS: {UserAccountManager.Instance.userInfo.Username}";
-    }
+        loginNameText.text = $"LOGGED IN AS: {UserAccountManager.Instance.UserInfo.Username}";
 
-    public void PlayGame()
-    {
-        AudioManager.Instance.PlaySound("button_press");
-        SceneManager.LoadScene("Lobby");
-    }
+        playButton.onClick.AddListener(() =>
+        {
+            AudioManager.Instance.PlaySound("button_press");
+            SceneManager.LoadScene("Lobby");
+        });
 
-    public void Options()
-    {
-        Debug.Log("Options feature not currently available.");
-        //SceneManager.LoadScene("Options");
-    }
+        exitButton.onClick.AddListener(() =>
+        {
+            AudioManager.Instance.PlaySound("button_press");
+            Application.Quit();
+        });
 
-    public void ExitGame()
-    {
-        AudioManager.Instance.PlaySound("button_press");
-        Application.Quit();
-    }
+        profileButton.onClick.AddListener(() =>
+        {
+            SceneManager.LoadScene("Profile");
+        });
 
-    public void OpenProfile()
-    {
-        SceneManager.LoadScene("Profile");
+        logoutButton.onClick.AddListener(() =>
+        {
+            // TODO: Handle logout
+            SceneManager.LoadScene("Login");
+        });
     }
 }

@@ -1,16 +1,18 @@
 ﻿using System;
+using Unity.Services.Authentication;
+using Unity.Services.Core;
 using UnityEngine;
-using Random = UnityEngine.Random;
 
 public class UserAccountManager : MonoBehaviour
 {
-    public static UserAccountManager Instance;
-    public UserInfo userInfo;
+    public static UserAccountManager Instance { get; private set; }
+    public UserInfo UserInfo { get; private set; }
 
-    void Awake()
+    private void Awake()
     {
         DontDestroyOnLoad(this);
 
+        // TODO: Look at removing this once Login scene is properly used
         if (FindObjectsOfType(GetType()).Length > 1)
         {
             Destroy(gameObject);
@@ -18,16 +20,41 @@ public class UserAccountManager : MonoBehaviour
 
         Instance = this;
 
-        int id = Random.Range(1000, 10000);
+        int id = UnityEngine.Random.Range(1000, 10000);
 
-        userInfo = new UserInfo
+        UserInfo = new UserInfo
         {
             UserId = id,
             Username = $"User#{id}"
         };
     }
 
-    void Update()
+    private async void Start()
+    {
+        InitializationOptions hostOptions = new InitializationOptions().SetProfile("host");
+        InitializationOptions clientOptions = new InitializationOptions().SetProfile("client");
+
+        await UnityServices.InitializeAsync(hostOptions);
+
+        AuthenticationService.Instance.SignedIn += () =>
+        {
+            Debug.Log($"Signed in: {AuthenticationService.Instance.PlayerId}");
+        };
+
+        if (AuthenticationService.Instance.IsAuthorized)
+        {
+            Debug.Log("Authorized");
+            AuthenticationService.Instance.SignOut();
+            await UnityServices.InitializeAsync(clientOptions);
+        }
+
+        await AuthenticationService.Instance.SignInAnonymouslyAsync();
+
+        //await UnityServices.InitializeAsync();
+        //await AuthenticationService.Instance.SignInAnonymouslyAsync();
+    }
+
+    private void Update()
     {
         if (Input.GetKeyDown(KeyCode.F12))
         {

@@ -1,4 +1,3 @@
-// TODO: NETWORKING
 using System;
 using System.Collections.Generic;
 using Unity.Netcode;
@@ -26,13 +25,4 @@ public class Block : NetworkBehaviour
     [Tooltip("Set of block outline textures, to allow variance between blocks of the same type")]
     public List<Sprite> blockOutlineTextures;
     public string blockBreakSoundName;
-
-    //[SyncVar] public NetworkInstanceId parentNetId; // The network id of the level generator object.
-
-    //void Start()
-    //{
-    //    GameObject parent = ClientScene.FindLocalObject(parentNetId); // Find the level generator object in the local scene by using its network id
-    //    transform.SetParent(parent.transform); // and parent ourselves to it.
-    //    // We're doing this because for the player who joins, we're checking the server for if a block has been spawned however that information doesn't contain anything about what its parent is so for all remote clients we need to parent it back semi-manually.
-    //}
 }

@@ -1,32 +1,42 @@
-﻿// TODO: NETWORKING
+﻿using Unity.Collections;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class ChatItem : NetworkBehaviour
 {
-    private readonly NetworkVariable<string> sender = new NetworkVariable<string>();
-    private readonly NetworkVariable<string> message = new NetworkVariable<string>();
+    private readonly NetworkVariable<FixedString64Bytes> sender = new NetworkVariable<FixedString64Bytes>();
+    private readonly NetworkVariable<FixedString512Bytes> message = new NetworkVariable<FixedString512Bytes>();
 
     [Header("Message Settings")]
     [SerializeField] private Text senderText;
     [SerializeField] private Text messageText;
 
-    //[SyncVar] public NetworkInstanceId chatNetId; // Network ID of the chat box.
+    public override void OnNetworkSpawn()
+    {
+        sender.OnValueChanged += OnSenderChanged;
+        message.OnValueChanged += OnMessageChanged;
+    }
 
-    //void Start()
-    //{
-    //    GameObject chatParent = ClientScene.FindLocalObject(chatNetId);
-    //    transform.SetParent(chatParent.transform);
-    //    senderText.text = $"[{sender}]:";
-    //    messageText.text = message.Value;
-    //}
+    public override void OnNetworkDespawn()
+    {
+        sender.OnValueChanged -= OnSenderChanged;
+        message.OnValueChanged -= OnMessageChanged;
+    }
 
     public void Setup(string sender, string message)
     {
-        senderText.text = $"[{sender}]:";
-        messageText.text = message;
         this.sender.Value = sender;
         this.message.Value = message;
+    }
+
+    private void OnSenderChanged(FixedString64Bytes previousSender, FixedString64Bytes newSender)
+    {
+        senderText.text = $"[{newSender}]:";
+    }
+
+    private void OnMessageChanged(FixedString512Bytes previousMessage, FixedString512Bytes newMessage)
+    {
+        messageText.text = newMessage.ToString();
     }
 }

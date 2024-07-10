@@ -5,16 +5,16 @@ public class Pickaxe : MonoBehaviour
     private Player player;
     [SerializeField] private Camera playerCam;
 
-    void Start()
+    private void Start()
     {
         player = GetComponentInParent<Player>();
     }
 
-    void Update()
+    private void Update()
     {
-        GetComponent<SpriteRenderer>().enabled = player.mode != Player.Mode.Completed;
+        GetComponent<SpriteRenderer>().enabled = player.State.Value != PlayerState.Completed;
 
-        if (player.mode == Player.Mode.InGame && !player.isPaused)
+        if (player.State.Value == PlayerState.InGame && !player.isPaused)
         {
             Vector3 d = playerCam.ScreenToWorldPoint(Input.mousePosition) - transform.position;
             d.Normalize();

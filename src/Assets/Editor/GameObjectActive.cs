@@ -3,17 +3,16 @@ using UnityEditor;
 
 public class GameObjectActive : EditorWindow
 {
-    [MenuItem("Window/GameObject State Editor")]
+    [MenuItem("Custom/GameObject State Editor")]
     public static void ShowWindow()
     {
-        GetWindow<GameObjectActive>("GameObject State Editor");
+        GameObjectActive window = GetWindow<GameObjectActive>("GameObject State Editor");
+        window.position = new Rect(window.position.position, new Vector2(window.position.size.x, 0));
     }
 
     private void OnGUI()
     {
-        GUILayout.Label("SELECT DESIRED GAMEOBJECTS");
-
-        if (GUILayout.Button("HIDE OBJECTS"))
+        if (GUILayout.Button("HIDE"))
         {
             foreach (GameObject obj in Selection.gameObjects)
             {
@@ -21,7 +20,7 @@ public class GameObjectActive : EditorWindow
             }
         }
 
-        if (GUILayout.Button("SHOW OBJECTS"))
+        if (GUILayout.Button("SHOW"))
         {
             foreach (GameObject obj in Selection.gameObjects)
             {

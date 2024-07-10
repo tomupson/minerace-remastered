@@ -1,232 +1,157 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using System.Data;
 using System.Linq;
-using Mono.Data.Sqlite;
 using Unity.Netcode;
 using UnityEngine;
-using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 /// <summary>
-/// Handles lots of different functionalities that are mostly things that all players should experience e.g. the game countdown timer.
+/// Handles functionalities that all players should experience e.g. the game countdown timer.
 /// </summary>
 public class GameManager : NetworkBehaviour
 {
+    public static GameManager Instance { get; private set; }
+
+    private Player[] players;
+
+    [SerializeField] private GameObject playerPrefab;
+
     [Header("Game Settings")]
-    public int gameTime = 300;
-    public int preGameCountdownTime = 10;
+    [SerializeField] private int gameTime = 300;
+    [SerializeField] private int preGameCountdownTime = 10;
 
-    [Header("Waiting For Players")]
-    [SerializeField] private Text timeText;
-    [SerializeField] private GameObject waitingForPlayersPanel;
-    [SerializeField] private Text waitingForPlayersText;
-    [SerializeField] private GameObject pregameTimePanel;
-    [SerializeField] private Text pregameTimeText;
+    public NetworkVariable<GameState> State { get; } = new NetworkVariable<GameState>(GameState.PreGame);
 
-    [HideInInspector] public NetworkVariable<int> timeLeft = new NetworkVariable<int>();
-    [HideInInspector] public NetworkVariable<int> currentCountdownTimeLeft = new NetworkVariable<int>();
-    [HideInInspector] public NetworkVariable<bool> playing = new NetworkVariable<bool>();
-    [HideInInspector] public NetworkVariable<bool> preGame = new NetworkVariable<bool>();
+    public NetworkVariable<int> PreGameTimeRemaining { get; } = new NetworkVariable<int>();
 
-    Player[] players;
+    public NetworkVariable<int> TimeRemaining { get; } = new NetworkVariable<int>();
 
-    private List<string> highScoreQueries = new List<string>();
-
-    void Start()
+    private void Awake()
     {
-        playing.Value = false;
-        preGame.Value = true;
-        pregameTimePanel.SetActive(false);
-        timeLeft.Value = gameTime;
-        currentCountdownTimeLeft.Value = preGameCountdownTime;
-        StartCoroutine(WaitForPlayers());
+        Instance = this;
     }
 
-    void Update()
+    private void Update()
     {
-        if (highScoreQueries.Count >= 2)
+        if (!IsServer)
         {
-            UpdateHighScoresServerRpc();
+            return;
+        }
+
+        // TODO: Move Coroutines to here
+    }
+
+    public override void OnNetworkSpawn()
+    {
+        TimeRemaining.Value = gameTime;
+        PreGameTimeRemaining.Value = preGameCountdownTime;
+        if (IsServer)
+        {
+            NetworkManager.OnClientConnectedCallback += OnClientConnected;
+            NetworkManager.SceneManager.OnLoadEventCompleted += OnSceneLoadEventCompleted;
         }
     }
 
-    public IEnumerator WaitForPlayers()
+    private void OnClientConnected(ulong connectedClientId)
     {
-        waitingForPlayersPanel.SetActive(true);
-        int index = 0;
-        while (FindObjectsOfType<Player>().Length < 2)
+        SpawnPlayer(connectedClientId);
+
+        if (NetworkManager.ConnectedClientsIds.Count == 2)
         {
-            yield return new WaitForSeconds(1);
-            waitingForPlayersText.text = "WAITING FOR PLAYERS" + new string('.', index);
-            index++;
-            index %= 4;
+            players = FindObjectsOfType<Player>();
+
+            foreach (Player player in players)
+            {
+                player.SetModeServerRpc(PlayerState.ReadyUp);
+            }
+
+            StartCoroutine(WaitForReady());
         }
-
-        waitingForPlayersPanel.SetActive(false);
-
-        players = FindObjectsOfType<Player>();
-
-        foreach (Player p in players)
-        {
-            p.mode = Player.Mode.ReadyUp;
-            p.GetComponentInChildren<PlayerUI>().ShowReadyUp();
-        }
-
-        StartCoroutine(WaitForReady());
-
-        yield return null;
     }
 
-    public IEnumerator WaitForReady()
+    private void OnSceneLoadEventCompleted(string sceneName, LoadSceneMode loadSceneMode, List<ulong> clientsCompleted, List<ulong> clientsTimedOut)
     {
-        while (players.Where(z => z.ready.Value).Count() < 2)
+        // TODO: Check if Game scene
+        foreach (ulong clientId in clientsCompleted)
+        {
+            SpawnPlayer(clientId);
+        }
+    }
+
+    // For the main player, we start the network manager then transition the scene.
+    // Because of this, the player would spawn on the Lobby scene before being moved to the Game scene.
+    // This means OnNetworkSpawn runs whilst still on the Lobby, which causes the player to feel the effects of gravity and lose its proper spawn point.
+    // Thus, we configure the network manager to not spawn the player, and do it ourselves manually when the SceneManager completes the scene transition for the host.
+    // For the clients, they don't exist when the scene transition starts, so aren't listed in the connected clients when the OnLoadEventCompleted event fires.
+    // However, they will be automatically transitioned to the Game scene when the connect, therefore we can spawn them then.
+    private void SpawnPlayer(ulong clientId)
+    {
+        GameObject playerObject = Instantiate(playerPrefab);
+        playerObject.GetComponent<NetworkObject>().SpawnAsPlayerObject(clientId, destroyWithScene: true);
+    }
+
+    private IEnumerator WaitForReady()
+    {
+        while (players.Count(p => p.State.Value == PlayerState.WaitingForPlayerReady) < 2)
         {
             yield return null;
         }
 
-        foreach (Player p in players)
+        foreach (Player player in players)
         {
-            p.mode = Player.Mode.PregameCountdown;
-            p.GetComponentInChildren<PlayerUI>().HideWaitingForPlayerReady();
+            player.SetModeServerRpc(PlayerState.PregameCountdown);
         }
 
-        StartCoroutine(PreGameCountdown(preGameCountdownTime));
-
-        yield return null;
+        StartCoroutine(PreGameCountdown());
     }
 
-    public IEnumerator PreGameCountdown(int countdownTime)
+    private IEnumerator PreGameCountdown()
     {
-        pregameTimePanel.SetActive(true);
-        float tL = countdownTime;
-        while (tL > 0)
+        while (PreGameTimeRemaining.Value > 0)
         {
             yield return new WaitForSeconds(1);
-            tL--;
-            if (IsServer)
-                PregameTimeServerRpc();
+            PreGameTimeRemaining.Value--;
+            if (State.Value == GameState.PreGame && PreGameTimeRemaining.Value == 0)
+            {
+                State.Value = GameState.Playing;
+            }
         }
 
-        foreach (Player p in players)
+        foreach (Player player in players)
         {
-            p.mode = Player.Mode.InGame;
+            player.SetModeServerRpc(PlayerState.InGame);
         }
 
-        StartCoroutine(GameCountdown(gameTime));
-
-        yield return null;
+        StartCoroutine(GameCountdown());
     }
 
-    public IEnumerator GameCountdown(int startTime)
+    private IEnumerator GameCountdown()
     {
-        float tL = startTime;
-        while (tL > 0)
+        while (TimeRemaining.Value > 0)
         {
             yield return new WaitForSeconds(1);
-            tL--;
-            if (IsServer)
-                TimeServerRpc();
+            TimeRemaining.Value--;
+            if (State.Value == GameState.Playing && TimeRemaining.Value == 0)
+            {
+                State.Value = GameState.Completed;
+
+                foreach (Player player in players)
+                {
+                    player.SetModeServerRpc(PlayerState.Completed);
+                }
+            }
         }
 
         yield return null;
-
     }
 
     [ServerRpc]
     public void GameOverServerRpc()
     {
-        GameFinishedClientRpc();
-        playing.Value = false;
-    }
-
-    [ClientRpc]
-    void GameFinishedClientRpc()
-    {
-        foreach (Player p in players)
+        State.Value = GameState.Completed;
+        foreach (Player player in players)
         {
-            p.mode = Player.Mode.GameOver;
+            player.SetModeServerRpc(PlayerState.GameOver);
         }
-
-        UIManager ui = FindObjectOfType<UIManager>();
-        ui.GameFinished();
-    }
-
-    [ServerRpc]
-    public void TimeServerRpc() // Send a command to the server to decrease the time.
-    {
-        timeLeft.Value--;
-        DecreaseTimeClientRpc(timeLeft.Value);
-    }
-
-    [ServerRpc]
-    public void PregameTimeServerRpc()
-    {
-        currentCountdownTimeLeft.Value--;
-        DecreasePregameTimeClientRpc(currentCountdownTimeLeft.Value);
-    }
-
-    [ClientRpc]
-    void DecreaseTimeClientRpc(int newTime) // Emitt the servers version of the time to all clients.
-    {
-        if (playing.Value)
-        {
-            string minutes = Mathf.Floor(newTime / 60).ToString("00");
-            string seconds = (newTime % 60).ToString("00");
-            timeText.text = minutes + ":" + seconds + " remaining";
-            if (newTime <= 0)
-            {
-                UIManager ui = FindObjectOfType<UIManager>();
-                ui.TimesUpServerRpc();
-                playing.Value = false;
-                foreach (Player p in FindObjectsOfType<Player>())
-                {
-                    p.mode = Player.Mode.Completed;
-                }
-            }
-        }
-    }
-
-    [ClientRpc]
-    void DecreasePregameTimeClientRpc(int newTime)
-    {
-        if (preGame.Value)
-        {
-            string seconds = newTime.ToString("00");
-            pregameTimeText.text = seconds;
-            if (newTime <= 0)
-            {
-                preGame.Value = false;
-                playing.Value = true;
-                pregameTimeText.enabled = false;
-            }
-        }
-    }
-
-    public void AddHighScoreQuery(int points, long id)
-    {
-        highScoreQueries.Add(string.Format("UPDATE USERS SET highScore = {0} WHERE id = {1}", points, id));
-    }
-
-    [ServerRpc]
-    void UpdateHighScoresServerRpc()
-    {
-        string conn = "URI=file:" + Application.streamingAssetsPath + "/MineRace.db";
-
-        using SqliteConnection dbConnection = new SqliteConnection(conn);
-        dbConnection.Open();
-
-        foreach (string query in highScoreQueries)
-        {
-            IDbCommand command = dbConnection.CreateCommand();
-
-            command.CommandText = query;
-
-            command.ExecuteNonQuery();
-
-            command.Dispose();
-        }
-
-        // Cleanup
-        highScoreQueries.Clear();
     }
 }

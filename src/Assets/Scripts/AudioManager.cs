@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using UnityEngine;
-using Random = UnityEngine.Random;
 
 [Serializable]
 public class Sound
@@ -25,10 +24,10 @@ public class Sound
         source.clip = clip;
     }
 
-    public void PlayAudio() 
+    public void PlayAudio()
     {
-        source.volume = volume * (1 + Random.Range(-volumeVariance / 2f, volumeVariance / 2f));
-        source.pitch = pitch * (1 + Random.Range(-pitchVariance / 2f, pitchVariance / 2f));
+        source.volume = volume * (1 + UnityEngine.Random.Range(-volumeVariance / 2f, volumeVariance / 2f));
+        source.pitch = pitch * (1 + UnityEngine.Random.Range(-pitchVariance / 2f, pitchVariance / 2f));
         source.Play();
     }
 }
@@ -38,14 +37,15 @@ public class Sound
 /// </summary>
 public class AudioManager : MonoBehaviour
 {
-    public static AudioManager Instance;
+    public static AudioManager Instance { get; private set; }
 
     [SerializeField] private Sound[] sounds;
 
-    void Awake()
+    private void Awake()
     {
         DontDestroyOnLoad(this);
 
+        // TODO: Look at removing this once Login scene is properly used
         if (FindObjectsOfType(GetType()).Length > 1)
         {
             Destroy(gameObject);
@@ -54,7 +54,7 @@ public class AudioManager : MonoBehaviour
         Instance = this;
     }
 
-    void Start()
+    private void Start()
     {
         for (int i = 0; i < sounds.Length; i++)
         {

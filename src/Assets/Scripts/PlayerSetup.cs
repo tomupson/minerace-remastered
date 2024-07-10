@@ -5,9 +5,7 @@ public class PlayerSetup : NetworkBehaviour
 {
     [SerializeField] private Behaviour[] componentsToDisable;
 
-    Camera sceneCamera;
-
-    void Start()
+    public override void OnNetworkSpawn()
     {
         if (!IsLocalPlayer)
         {
@@ -15,22 +13,12 @@ public class PlayerSetup : NetworkBehaviour
             {
                 componentsToDisable[i].enabled = false;
             }
-        }
-        else
-        {
-            sceneCamera = Camera.main;
-            if (sceneCamera != null)
-            {
-                sceneCamera.gameObject.SetActive(false);
-            }
-        }
-    }
 
-    void OnDisable()
-    {
-        if (sceneCamera != null)
-        {
-            sceneCamera.gameObject.SetActive(true);
+            return;
         }
+
+        // TODO: Fetch from somewhere
+        const int mapWidth = 48;
+        transform.position = new Vector3(mapWidth / 2 + 12 * (OwnerClientId * 2 - 1), 100, 0);
     }
 }

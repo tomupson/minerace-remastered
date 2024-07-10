@@ -1,23 +1,29 @@
+using Unity.Netcode;
 using UnityEngine;
 
-public class FollowPlayer : MonoBehaviour
+public class FollowPlayer : NetworkBehaviour
 {
     private Player playerToFollow;
     public float lerpSmoothness = 2f;
 
-    void Start()
+    private void Start()
     {
         playerToFollow = transform.parent.GetComponentInChildren<Player>();
     }
 
-    void Update()
+    private void Update()
     {
+        if (!IsOwner)
+        {
+            return;
+        }
+
         transform.position = Vector3.Lerp(transform.position, new Vector3(playerToFollow.transform.position.x, playerToFollow.transform.position.y, transform.position.z), lerpSmoothness);
     }
 
-    public void ChangePlayer(Player np)
+    public void ChangePlayer(Player newPlayer)
     {
-        Debug.Log("Changing player to follow to: " + np.username);
-        playerToFollow = np;
+        Debug.Log($"Changing player to follow to: {newPlayer.Username.Value}");
+        playerToFollow = newPlayer;
     }
 }

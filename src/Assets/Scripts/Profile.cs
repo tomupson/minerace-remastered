@@ -12,18 +12,18 @@ public class Profile : MonoBehaviour
     [SerializeField] private Text xpText;
     [SerializeField] private Text levelText;
 
-    void Start()
+    private void Start()
     {
-        userInfo = UserAccountManager.Instance.userInfo;
+        userInfo = UserAccountManager.Instance.UserInfo;
         SetProfileText();
     }
 
-    void SetProfileText()
+    private void SetProfileText()
     {
         titleText.text = userInfo.Username.ToUpper();
         nameText.text = userInfo.Username;
         highscoreText.text = userInfo.HighScore.ToString();
-        xpText.text = string.Format("{0}xp", userInfo.Experience.ToString());
+        xpText.text = $"{userInfo.Experience}xp";
         levelText.text = Mathf.RoundToInt(userInfo.Experience / 5000).ToString();
     }
 }

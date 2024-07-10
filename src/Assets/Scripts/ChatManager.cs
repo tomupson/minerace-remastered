@@ -1,51 +1,59 @@
-﻿// TODO: NETWORKING
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections;
 using Unity.Netcode;
 using UnityEngine;
 
 public class ChatManager : NetworkBehaviour
 {
+    public static ChatManager Instance { get; private set; }
+
     [SerializeField] private GameObject chat;
     [SerializeField] private GameObject chatItemPrefab;
-    [HideInInspector] public List<ChatItem> messages;
 
     public float messageExpireTime = 5;
 
-    public static ChatManager Instance;
-
-    void Awake()
+    private void Awake()
     {
         Instance = this;
     }
 
     public void ChatSendMessage(string sender, string message)
     {
-        //if (IsServer)
-        //    CmdChatSendMessage(sender, message);
+        if (IsServer)
+        {
+            ChatSendMessageServerRpc(sender, message);
+        }
     }
 
-    //[ServerRpc]
-    //void CmdChatSendMessage(string sender, string message)
-    //{
-    //    GameObject chatItem = Instantiate(chatItemPrefab);
-    //    chatItem.transform.SetParent(chat.transform);
-    //    ChatItem messageSettings = chatItem.GetComponent<ChatItem>();
-    //    messageSettings.Setup(sender, message);
-    //    messageSettings.chatNetId = chat.GetComponent<NetworkIdentity>().netId;
-    //    NetworkServer.Spawn(chatItem);
-    //    StartCoroutine(WaitForExpire(chatItem));
-    //}
+    [ServerRpc]
+    private void ChatSendMessageServerRpc(string sender, string message)
+    {
+        GameObject chatItem = Instantiate(chatItemPrefab);
+        chatItem.GetComponent<NetworkObject>().Spawn(destroyWithScene: true);
+        chatItem.transform.SetParent(chat.transform);
 
-    public IEnumerator WaitForExpire(GameObject chatItem)
+        ChatItem messageSettings = chatItem.GetComponent<ChatItem>();
+        messageSettings.Setup(sender, message);
+        StartCoroutine(WaitForExpire(chatItem));
+    }
+
+    private IEnumerator WaitForExpire(GameObject chatItem)
     {
         yield return new WaitForSeconds(messageExpireTime);
-        //CmdDestroyChatMessage(chatItem);
+        DestroyChatMessageServerRpc(chatItem);
     }
 
-    //[ServerRpc]
-    //void CmdDestroyChatMessage(GameObject chatItem)
-    //{
-    //    NetworkServer.Destroy(chatItem);
-    //}
+    [ServerRpc]
+    private void DestroyChatMessageServerRpc(NetworkObjectReference reference)
+    {
+        DestroyChatMessageClientRpc(reference);
+    }
+
+    [ClientRpc]
+    public void DestroyChatMessageClientRpc(NetworkObjectReference reference)
+    {
+        if (reference.TryGet(out NetworkObject networkObject))
+        {
+            Destroy(networkObject);
+        }
+    }
 }

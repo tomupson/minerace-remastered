@@ -1,102 +1,75 @@
+using System;
 using System.Collections;
+using Unity.Collections;
 using Unity.Netcode;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody2D))]
 public class Player : NetworkBehaviour
 {
-    private Rigidbody2D rb;
-    private Player_SyncScale syncScale;
-    private bool canMine;
-    private bool facingRight = true;
+    private new Rigidbody2D rigidbody2D;
+    private bool canMine = true;
+    private float lastSpeed;
+
+    public static Player LocalPlayer { get; private set; }
+
+    public static EventHandler OnAnyPlayerSpawned;
 
     [Header("Player Settings")]
-    [SerializeField] private float moveSpeed; // Player's Speed
-    [SerializeField] private float pickaxeCooldownTime; // Player's Pickaxe cooldown time.
+    [SerializeField] private float moveSpeed;
+    [SerializeField] private float pickaxeCooldownTime;
 
-    [HideInInspector] public NetworkVariable<int> points;
-    [HideInInspector] public NetworkVariable<bool> ready;
-    [HideInInspector] public NetworkVariable<string> username;
+    public NetworkVariable<PlayerState> State { get; } = new NetworkVariable<PlayerState>(PlayerState.WaitingForPlayers);
+
+    public NetworkVariable<int> Points { get; } = new NetworkVariable<int>();
+
+    public NetworkVariable<FixedString64Bytes> Username { get; } = new NetworkVariable<FixedString64Bytes>(writePerm: NetworkVariableWritePermission.Owner);
 
     public bool isPaused;
-    public Mode mode;
 
-    public enum Mode
+    private void Awake()
     {
-        WaitingForPlayers, // When waiting for players to join the game.
-        ReadyUp, // When the "Ready" button is enabled.
-        WaitingForPlayerReady, // When you're waiting for the other player to ready up.
-        PregameCountdown, // When the 10 second countdown is counting down.
-        InGame, // When playing the game.
-        Completed, // When you reach the end of the game or the time runs out.
-        Spectating, // When you're spectating another player.
-        GameOver // When the game is finished for all players.
+        rigidbody2D = GetComponent<Rigidbody2D>();
     }
 
-    void Awake()
+    private void FixedUpdate()
     {
-        syncScale = GetComponent<Player_SyncScale>();
-    }
+        if (!IsOwner)
+        {
+            return;
+        }
 
-    void Start()
-    {
-        rb = GetComponent<Rigidbody2D>();
-        facingRight = true;
-
-        isPaused = false;
-
-        SetUsernameServerRpc(UserAccountManager.Instance.userInfo.Username);
-
-        mode = Mode.WaitingForPlayers;
-        canMine = true;
-    }
-
-    [ServerRpc]
-    void SetUsernameServerRpc(string username)
-    {
-        username = !string.IsNullOrEmpty(username) ? username : "Guest";
-        this.username.Value = username;
-    }
-
-    void FixedUpdate()
-    {
-        if (mode == Mode.InGame && !isPaused)
+        if (State.Value == PlayerState.InGame && !isPaused)
         {
             float horizontalSpeed = Input.GetAxis("Horizontal") * moveSpeed;
-
-            if (horizontalSpeed > 0 && !facingRight || horizontalSpeed < 0 && facingRight)
+            if (horizontalSpeed != lastSpeed)
             {
-                syncScale.FlipSpriteServerRpc(facingRight);
+                Vector3 scale = transform.localScale;
+                scale.x = horizontalSpeed >= 0 ? 1 : -1;
+                transform.localScale = scale;
+                lastSpeed = horizontalSpeed;
             }
 
-            rb.velocity = new Vector2(horizontalSpeed, 0);
+            rigidbody2D.velocity = new Vector2(horizontalSpeed, 0);
         }
     }
 
-    /*[ServerRpc]
-    void SetFlipStateServerRpc()
+    private void Update()
     {
-        facingRight = !facingRight; // Change your direction
-        ChangeFlipStateOnClientsClientRpc();
-    }
+        if (!IsOwner)
+        {
+            return;
+        }
 
-    [ClientRpc]
-    void ChangeFlipStateOnClientsClientRpc()
-    {
-        Vector3 s = transform.localScale;
-        transform.localScale = new Vector3(s.x * -1, s.y, s.z); // Flip the player when the direction has been switched.
-    }*/
-
-    void Update()
-    {
         if (Input.GetKeyDown(KeyCode.M))
         {
-            ChatManager.Instance.ChatSendMessage(username.Value, "Hey I'm good");
+            ChatManager.Instance.ChatSendMessage(Username.Value.ToString(), "Hey I'm good");
         }
 
-        if (mode == Mode.InGame && !isPaused)
+        if (State.Value == PlayerState.InGame && !isPaused)
         {
-            Camera playerCam = GetComponentInChildren<Camera>(); // Fetch My Camera (there are two cameras but because we are fetching one it's the first one).
+            // Fetch my camera (there are two cameras but because we are fetching one it's the first one)
+            Camera playerCam = GetComponentInChildren<Camera>();
             Vector3 direction = playerCam.ScreenToWorldPoint(Input.mousePosition) - transform.position;
             direction.z = 0;
             RaycastHit2D hit = Physics2D.Raycast(transform.position, direction, 0.75f);
@@ -110,8 +83,10 @@ public class Player : NetworkBehaviour
                     spriteRenderer.sprite = blocksInMap[i].blockTextures[0];
                 }
 
-                if (hit.transform.tag == "BORDER")
+                if (hit.transform.CompareTag("BORDER"))
+                {
                     return;
+                }
 
                 Block b = hit.transform.GetComponent<Block>();
                 SpriteRenderer blockRenderer = hit.transform.GetComponent<SpriteRenderer>();
@@ -121,10 +96,11 @@ public class Player : NetworkBehaviour
                 {
                     AudioManager.Instance.PlaySound(b.blockBreakSoundName);
                     hit.transform.gameObject.SetActive(false); // Temporarily set it to hidden so that even if it takes the server some time to destroy it, you cant mine it twice.
-                    BreakBlockServerRpc(hit.transform.gameObject.GetComponent<Block>());
+                    BreakBlockServerRpc(hit.transform.gameObject);
                     StartCoroutine(PickaxeCooldown());
                 }
-            } else
+            }
+            else
             {
                 Block[] blocksInMap = FindObjectsOfType<Block>();
                 for (int i = 0; i < blocksInMap.Length; i++)
@@ -135,45 +111,55 @@ public class Player : NetworkBehaviour
             }
         }
     }
-    
-    IEnumerator PickaxeCooldown()
+
+    public override void OnNetworkSpawn()
     {
-        canMine = false;
-        yield return new WaitForSecondsRealtime(pickaxeCooldownTime);
-        canMine = true;
+        if (IsOwner)
+        {
+            LocalPlayer = this;
+            Username.Value = UserAccountManager.Instance.UserInfo.Username;
+        }
+
+        OnAnyPlayerSpawned?.Invoke(this, EventArgs.Empty);
     }
 
     [ServerRpc]
-    void BreakBlockServerRpc(NetworkBehaviourReference reference)
+    private void BreakBlockServerRpc(NetworkObjectReference reference)
     {
-        //NetworkServer.Destroy(obj);
-        if (reference.TryGet(out Block b))
+        if (reference.TryGet(out NetworkObject networkObject))
         {
-            AddPointsClientRpc(b.blockPointsValue);
+            Points.Value += networkObject.GetComponent<Block>().blockPointsValue;
         }
+
+        BreakBlockClientRpc(reference);
     }
 
     [ClientRpc]
-    void AddPointsClientRpc(int p)
+    private void BreakBlockClientRpc(NetworkObjectReference reference)
     {
-        points.Value += p;
+        if (reference.TryGet(out NetworkObject networkObject))
+        {
+            Destroy(networkObject);
+        }
     }
 
     [ServerRpc]
     public void ReachedEndServerRpc()
     {
-        AddPointsClientRpc(Mathf.FloorToInt(FindObjectOfType<GameManager>().timeLeft.Value / 4f));
+        int timeRemainingSeconds = GameManager.Instance.TimeRemaining.Value;
+        Points.Value += Mathf.FloorToInt(timeRemainingSeconds / 4f);
     }
 
-    [ServerRpc]
-    public void ChangeReadyStateServerRpc()
+    [ServerRpc(RequireOwnership = false)]
+    public void SetModeServerRpc(PlayerState state)
     {
-        ready.Value = true;
+        State.Value = state;
     }
 
-    void OnDirectionChange(bool facingRight)
+    private IEnumerator PickaxeCooldown()
     {
-        Vector3 s = transform.localScale;
-        transform.localScale = new Vector3(s.x * -1, s.y, s.z);
+        canMine = false;
+        yield return new WaitForSecondsRealtime(pickaxeCooldownTime);
+        canMine = true;
     }
 }

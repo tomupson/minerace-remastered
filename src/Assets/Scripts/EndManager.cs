@@ -1,11 +1,10 @@
 ﻿using System.Linq;
-using Unity.Netcode;
 using UnityEngine;
 
 /// <summary>
 /// Handles players reaching the bottom of the map and hitting an "end block"
 /// </summary>
-public class EndManager : NetworkBehaviour
+public class EndManager : MonoBehaviour
 {
     private void OnCollisionEnter2D(Collision2D collision)
     {
@@ -18,25 +17,21 @@ public class EndManager : NetworkBehaviour
         Player finishedPlayer = collision.transform.GetComponent<Player>();
 
         // If they are for some reason not in the "in-game" state, return.
-        if (finishedPlayer.mode != Player.Mode.InGame)
+        if (finishedPlayer.State.Value != PlayerState.InGame)
         {
             return;
         }
 
         // If that other player has also finished, this means that now both players are done.
-        Player otherPlayer = players.FirstOrDefault(z => z != finishedPlayer);
-        if (otherPlayer.mode == Player.Mode.Completed)
+        Player otherPlayer = players.FirstOrDefault(p => p != finishedPlayer);
+        if (otherPlayer.State.Value == PlayerState.Completed)
         {
-            FindObjectOfType<GameManager>().GameOverServerRpc();
+            GameManager.Instance.GameOverServerRpc();
         }
-        else
+        else if (finishedPlayer.IsOwner)
         {
-            if (IsServer)
-            {
-                finishedPlayer.ReachedEndServerRpc();
-            }
-
-            finishedPlayer.mode = Player.Mode.Completed; // Set the completed players mode to completed.
+            finishedPlayer.ReachedEndServerRpc();
+            finishedPlayer.SetModeServerRpc(PlayerState.Completed);
         }
 
         // Hide player and pickaxe.
