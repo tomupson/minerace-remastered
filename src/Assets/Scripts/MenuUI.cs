@@ -2,7 +2,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-public class MenuManager : MonoBehaviour
+public class MenuUI : MonoBehaviour
 {
     [SerializeField] private Text loginNameText;
     [SerializeField] private Button playButton;
@@ -10,7 +10,7 @@ public class MenuManager : MonoBehaviour
     [SerializeField] private Button profileButton;
     [SerializeField] private Button logoutButton;
 
-    private void Start()
+    private void Awake()
     {
         loginNameText.text = $"LOGGED IN AS: {UserAccountManager.Instance.UserInfo.Username}";
 

@@ -7,13 +7,14 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody2D))]
 public class Player : NetworkBehaviour
 {
-    private new Rigidbody2D rigidbody2D;
+    private Rigidbody2D playerRigidbody;
+    private SpriteRenderer spriteRenderer;
+    private CircleCollider2D circleCollider;
     private bool canMine = true;
-    private float lastSpeed;
 
     public static Player LocalPlayer { get; private set; }
 
-    public static EventHandler OnAnyPlayerSpawned;
+    public static event EventHandler OnAnyPlayerSpawned;
 
     [Header("Player Settings")]
     [SerializeField] private float moveSpeed;
@@ -25,11 +26,15 @@ public class Player : NetworkBehaviour
 
     public NetworkVariable<FixedString64Bytes> Username { get; } = new NetworkVariable<FixedString64Bytes>(writePerm: NetworkVariableWritePermission.Owner);
 
-    public bool isPaused;
+    public NetworkVariable<bool> FacingRight { get; } = new NetworkVariable<bool>(true, writePerm: NetworkVariableWritePermission.Owner);
+
+    [HideInInspector] public bool isPaused;
 
     private void Awake()
     {
-        rigidbody2D = GetComponent<Rigidbody2D>();
+        playerRigidbody = GetComponent<Rigidbody2D>();
+        spriteRenderer = GetComponent<SpriteRenderer>();
+        circleCollider = GetComponent<CircleCollider2D>();
     }
 
     private void FixedUpdate()
@@ -39,19 +44,23 @@ public class Player : NetworkBehaviour
             return;
         }
 
-        if (State.Value == PlayerState.InGame && !isPaused)
+        if (State.Value != PlayerState.Playing || isPaused)
         {
-            float horizontalSpeed = Input.GetAxis("Horizontal") * moveSpeed;
-            if (horizontalSpeed != lastSpeed)
-            {
-                Vector3 scale = transform.localScale;
-                scale.x = horizontalSpeed >= 0 ? 1 : -1;
-                transform.localScale = scale;
-                lastSpeed = horizontalSpeed;
-            }
-
-            rigidbody2D.velocity = new Vector2(horizontalSpeed, 0);
+            return;
         }
+
+        float horizontalSpeed = Input.GetAxis("Horizontal") * moveSpeed;
+        if (horizontalSpeed > 0 && !FacingRight.Value)
+        {
+            FacingRight.Value = true;
+        }
+
+        if (horizontalSpeed < 0 && FacingRight.Value)
+        {
+            FacingRight.Value = false;
+        }
+
+        playerRigidbody.velocity = new Vector2(horizontalSpeed, 0);
     }
 
     private void Update()
@@ -63,51 +72,60 @@ public class Player : NetworkBehaviour
 
         if (Input.GetKeyDown(KeyCode.M))
         {
-            ChatManager.Instance.ChatSendMessage(Username.Value.ToString(), "Hey I'm good");
+            ChatManager.Instance.SendMessage(Username.Value.ToString(), "This is a chat message");
         }
 
-        if (State.Value == PlayerState.InGame && !isPaused)
+        if (State.Value != PlayerState.Playing || isPaused)
         {
-            // Fetch my camera (there are two cameras but because we are fetching one it's the first one)
-            Camera playerCam = GetComponentInChildren<Camera>();
-            Vector3 direction = playerCam.ScreenToWorldPoint(Input.mousePosition) - transform.position;
-            direction.z = 0;
-            RaycastHit2D hit = Physics2D.Raycast(transform.position, direction, 0.75f);
-            Debug.DrawRay(transform.position, direction, Color.red);
-            if (hit)
+            return;
+        }
+
+        Vector3 direction = Camera.main.ScreenToWorldPoint(Input.mousePosition) - transform.position;
+        direction.z = 0;
+
+        RaycastHit2D hit = Physics2D.Raycast(transform.position, direction, 0.75f);
+        Debug.DrawRay(transform.position, direction, Color.red);
+
+        if (hit)
+        {
+            // TODO: Refactor this - do we really need to look at every block on the map to reset it's block texture?
+            Block[] blocksInMap = FindObjectsOfType<Block>();
+            for (int i = 0; i < blocksInMap.Length; i++)
             {
-                Block[] blocksInMap = FindObjectsOfType<Block>();
-                for (int i = 0; i < blocksInMap.Length; i++)
-                {
-                    SpriteRenderer spriteRenderer = blocksInMap[i].gameObject.GetComponent<SpriteRenderer>();
-                    spriteRenderer.sprite = blocksInMap[i].blockTextures[0];
-                }
-
-                if (hit.transform.CompareTag("BORDER"))
-                {
-                    return;
-                }
-
-                Block b = hit.transform.GetComponent<Block>();
-                SpriteRenderer blockRenderer = hit.transform.GetComponent<SpriteRenderer>();
-                blockRenderer.sprite = b.blockOutlineTextures[b.textureIndex];
-
-                if (Input.GetButtonDown("BreakBlock") && canMine)
-                {
-                    AudioManager.Instance.PlaySound(b.blockBreakSoundName);
-                    hit.transform.gameObject.SetActive(false); // Temporarily set it to hidden so that even if it takes the server some time to destroy it, you cant mine it twice.
-                    BreakBlockServerRpc(hit.transform.gameObject);
-                    StartCoroutine(PickaxeCooldown());
-                }
+                SpriteRenderer spriteRenderer = blocksInMap[i].gameObject.GetComponent<SpriteRenderer>();
+                spriteRenderer.sprite = blocksInMap[i].blockTextures[blocksInMap[i].textureIndex];
             }
-            else
+
+            if (hit.transform.CompareTag("BORDER"))
             {
-                Block[] blocksInMap = FindObjectsOfType<Block>();
-                for (int i = 0; i < blocksInMap.Length; i++)
-                {
-                    SpriteRenderer blockRenderer = blocksInMap[i].gameObject.GetComponent<SpriteRenderer>();
-                    blockRenderer.sprite = blocksInMap[i].blockTextures[0];
-                }
+                return;
+            }
+
+            Block hitBlock = hit.transform.GetComponent<Block>();
+            SpriteRenderer hitBlockSpriteRenderer = hit.transform.GetComponent<SpriteRenderer>();
+            hitBlockSpriteRenderer.sprite = hitBlock.blockOutlineTextures[hitBlock.textureIndex];
+
+            if (Input.GetButtonDown("BreakBlock") && canMine)
+            {
+                AudioManager.Instance.PlaySound(hitBlock.blockBreakSoundName);
+
+                // Temporarily set it to hidden so that even if it takes the server some time to destroy it, you cant mine it twice
+                hit.transform.gameObject.SetActive(false);
+
+                BreakBlockServerRpc(hit.transform.gameObject);
+                StartCoroutine(PickaxeCooldown());
+            }
+
+            hitBlockSpriteRenderer.sprite = hitBlock.blockTextures[hitBlock.textureIndex];
+        }
+        else
+        {
+            // TODO: Refactor this - do we really need to look at every block on the map to reset it's block texture?
+            Block[] blocksInMap = FindObjectsOfType<Block>();
+            for (int i = 0; i < blocksInMap.Length; i++)
+            {
+                SpriteRenderer blockRenderer = blocksInMap[i].gameObject.GetComponent<SpriteRenderer>();
+                blockRenderer.sprite = blocksInMap[i].blockTextures[blocksInMap[i].textureIndex];
             }
         }
     }
@@ -118,9 +136,38 @@ public class Player : NetworkBehaviour
         {
             LocalPlayer = this;
             Username.Value = UserAccountManager.Instance.UserInfo.Username;
+            GameManager.Instance.State.OnValueChanged += OnGameStateChanged;
+
+            transform.position = new Vector3(LevelGenerator.Instance.mapWidth / 2 + 12 * ((int)OwnerClientId * 2 - 1), 100, 0);
         }
 
         OnAnyPlayerSpawned?.Invoke(this, EventArgs.Empty);
+        State.OnValueChanged += OnPlayerStateChanged;
+        FacingRight.OnValueChanged += OnFacingRightChanged;
+    }
+
+    public void ReachedEnd()
+    {
+        ReachedEndServerRpc();
+        SetModeServerRpc(PlayerState.Completed);
+    }
+
+    public void Spectate(Player player)
+    {
+        Camera.main.GetComponent<FollowPlayer>().SwitchTo(player);
+        SetModeServerRpc(PlayerState.Spectating);
+    }
+
+    public void Ready()
+    {
+        SetModeServerRpc(PlayerState.Ready);
+    }
+
+    [ServerRpc]
+    private void SetModeServerRpc(PlayerState state)
+    {
+        // TODO: Validate the state transition is valid?
+        State.Value = state;
     }
 
     [ServerRpc]
@@ -128,32 +175,18 @@ public class Player : NetworkBehaviour
     {
         if (reference.TryGet(out NetworkObject networkObject))
         {
-            Points.Value += networkObject.GetComponent<Block>().blockPointsValue;
-        }
+            networkObject.Despawn();
 
-        BreakBlockClientRpc(reference);
-    }
-
-    [ClientRpc]
-    private void BreakBlockClientRpc(NetworkObjectReference reference)
-    {
-        if (reference.TryGet(out NetworkObject networkObject))
-        {
-            Destroy(networkObject);
+            Block block = networkObject.GetComponent<Block>();
+            Points.Value += block.blockPointsValue;
         }
     }
 
     [ServerRpc]
-    public void ReachedEndServerRpc()
+    private void ReachedEndServerRpc()
     {
         int timeRemainingSeconds = GameManager.Instance.TimeRemaining.Value;
         Points.Value += Mathf.FloorToInt(timeRemainingSeconds / 4f);
-    }
-
-    [ServerRpc(RequireOwnership = false)]
-    public void SetModeServerRpc(PlayerState state)
-    {
-        State.Value = state;
     }
 
     private IEnumerator PickaxeCooldown()
@@ -161,5 +194,34 @@ public class Player : NetworkBehaviour
         canMine = false;
         yield return new WaitForSecondsRealtime(pickaxeCooldownTime);
         canMine = true;
+    }
+
+    // TODO: Think about whether the player should update it's own state based on the movement of the game,
+    // or if the game manager has authority to change the players' states (would require "RequireOwnership = false" on the ServerRpc)
+    private void OnGameStateChanged(GameState previousState, GameState newState)
+    {
+        if (newState == GameState.InGame && State.Value != PlayerState.Playing)
+        {
+            SetModeServerRpc(PlayerState.Playing);
+        }
+
+        if (newState == GameState.Completed && State.Value != PlayerState.Completed)
+        {
+            SetModeServerRpc(PlayerState.Completed);
+        }
+    }
+
+    private void OnPlayerStateChanged(PlayerState previousState, PlayerState newState)
+    {
+        if (newState == PlayerState.Completed)
+        {
+            spriteRenderer.enabled = false;
+            circleCollider.enabled = false;
+        }
+    }
+
+    private void OnFacingRightChanged(bool previousFacingRight, bool newFacingRight)
+    {
+        spriteRenderer.flipX = !newFacingRight;
     }
 }

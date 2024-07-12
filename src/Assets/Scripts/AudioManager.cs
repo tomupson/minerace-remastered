@@ -33,7 +33,7 @@ public class Sound
 }
 
 /// <summary>
-/// Handles the playing of pre-defined sounds.
+/// Handles the playing of pre-defined sounds
 /// </summary>
 public class AudioManager : MonoBehaviour
 {
@@ -58,7 +58,7 @@ public class AudioManager : MonoBehaviour
     {
         for (int i = 0; i < sounds.Length; i++)
         {
-            GameObject soundObject = new GameObject($"SOUND_{i}_{sounds[i]}");
+            GameObject soundObject = new GameObject($"Sound_{i}_{sounds[i]}");
             soundObject.transform.SetParent(transform);
             sounds[i].SetSource(soundObject.AddComponent<AudioSource>());
         }

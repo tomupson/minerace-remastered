@@ -52,31 +52,34 @@ public class UIManager : MonoBehaviour
     [SerializeField] private GameObject pauseMenu;
     [SerializeField] private Button leaveButton;
 
-    private void Start()
+    private void Awake()
     {
         GameManager.Instance.State.OnValueChanged += HandleGameStateChanged;
         GameManager.Instance.TimeRemaining.OnValueChanged += HandleTimeRemainingChanged;
-        GameManager.Instance.PreGameTimeRemaining.OnValueChanged += HandlePreGameTimeRemainingChanged;
+        GameManager.Instance.PregameTimeRemaining.OnValueChanged += HandlePregameTimeRemainingChanged;
         Player.OnAnyPlayerSpawned += OnAnyPlayedSpawned;
-
-        waitingForPlayersPanel.SetActive(true);
-        StartCoroutine(WaitForPlayers());
 
         readyButton.onClick.AddListener(() =>
         {
             readyPanel.SetActive(false);
-            readyButton.enabled = false;
-
             waitingForPlayerReadyPanel.SetActive(true);
 
-            Player.LocalPlayer.SetModeServerRpc(PlayerState.WaitingForPlayerReady);
-            StartCoroutine(UpdateWaitingForReadyText());
+            Player otherPlayer = FindObjectsOfType<Player>().FirstOrDefault(p => !p.IsLocalPlayer);
+            waitingForPlayerReadyText.text = $"WAITING FOR '{otherPlayer.Username.Value}' TO READY UP.";
+
+            Player.LocalPlayer.Ready();
         });
 
         leaveButton.onClick.AddListener(() =>
         {
             NetworkManager.Singleton.Shutdown();
         });
+    }
+
+    private void Start()
+    {
+        waitingForPlayersPanel.SetActive(true);
+        StartCoroutine(WaitForPlayers());
     }
 
     private void OnAnyPlayedSpawned(object sender, EventArgs e)
@@ -109,28 +112,40 @@ public class UIManager : MonoBehaviour
         {
             Player[] players = FindObjectsOfType<Player>();
             Player otherPlayer = players.FirstOrDefault(p => !p.IsLocalPlayer);
-            otherPlayer.GetComponentInChildren<Camera>().enabled = true;
-            otherPlayer.GetComponentInChildren<AudioListener>().enabled = true;
 
-            Player.LocalPlayer.GetComponentInChildren<Camera>().enabled = false;
-            Player.LocalPlayer.GetComponentInChildren<AudioListener>().enabled = false;
+            Player.LocalPlayer.Spectate(otherPlayer);
 
-            Player.LocalPlayer.SetModeServerRpc(PlayerState.Spectating);
+            spectateText.gameObject.SetActive(false);
+            youAreSpectatingText.gameObject.SetActive(true);
+            youAreSpectatingText.text = $"YOU ARE SPECTATING: {otherPlayer.Username.Value}";
+
+            otherPlayer.Points.OnValueChanged += HandlePlayerPointsChanged;
+            HandlePlayerPointsChanged(0, otherPlayer.Points.Value);
+
             listenForSpaceKey = false;
         }
     }
 
-    private void OnDestroy()
-    {
-        GameManager.Instance.State.OnValueChanged -= HandleGameStateChanged;
-        GameManager.Instance.TimeRemaining.OnValueChanged -= HandleTimeRemainingChanged;
-        GameManager.Instance.PreGameTimeRemaining.OnValueChanged -= HandlePreGameTimeRemainingChanged;
-        Player.LocalPlayer.Points.OnValueChanged -= HandlePlayerPointsChanged;
-        Player.LocalPlayer.State.OnValueChanged -= HandlePlayerStateChanged;
-    }
-
     private void HandleGameStateChanged(GameState previousState, GameState newState)
     {
+        if (newState == GameState.WaitingForPlayersReady)
+        {
+            waitingForPlayersPanel.SetActive(false);
+            readyPanel.SetActive(true);
+        }
+
+        if (newState == GameState.PregameCountdown)
+        {
+            waitingForPlayerReadyPanel.SetActive(false);
+            preGameTimePanel.SetActive(true);
+        }
+
+        if (newState == GameState.InGame)
+        {
+            screenspacePanel.SetActive(true);
+            preGameTimePanel.SetActive(false);
+        }
+
         if (newState == GameState.Completed && previousState != GameState.Completed)
         {
             if (GameManager.Instance.TimeRemaining.Value == 0)
@@ -155,7 +170,7 @@ public class UIManager : MonoBehaviour
         timeText.text = $"{minutes}:{seconds} remaining";
     }
 
-    private void HandlePreGameTimeRemainingChanged(int previousTime, int newTime)
+    private void HandlePregameTimeRemainingChanged(int previousTime, int newTime)
     {
         string seconds = newTime.ToString("00");
         preGameTimeText.text = seconds;
@@ -170,31 +185,14 @@ public class UIManager : MonoBehaviour
     {
         switch (newState)
         {
-            case PlayerState.ReadyUp:
-                waitingForPlayersPanel.SetActive(false);
-                readyPanel.SetActive(true);
-                break;
-            case PlayerState.PregameCountdown:
-                waitingForPlayerReadyPanel.SetActive(false);
-                preGameTimePanel.SetActive(true);
-                break;
-            case PlayerState.InGame:
-                preGameTimePanel.SetActive(false);
-                break;
-            case PlayerState.Spectating:
-                spectateText.enabled = false;
-                youAreSpectatingText.enabled = true;
-
-                Player otherPlayer = FindObjectsOfType<Player>().FirstOrDefault(p => !p.IsLocalPlayer);
-                pointsText.text = $"POINTS: {otherPlayer.Points.Value}";
-                youAreSpectatingText.text = $"YOU ARE SPECTATING: {otherPlayer.Username.Value}";
-                break;
-            case PlayerState.Completed when GameManager.Instance.State.Value == GameState.Playing:
-                spectateText.enabled = true;
+            case PlayerState.Completed when GameManager.Instance.State.Value == GameState.InGame:
+                spectateText.gameObject.SetActive(true);
                 listenForSpaceKey = true;
                 break;
             case PlayerState.Completed:
-                timeText.enabled = false;
+                screenspacePanel.SetActive(false);
+                spectateText.gameObject.SetActive(false);
+                youAreSpectatingText.gameObject.SetActive(false);
                 listenForSpaceKey = false;
                 // TODO: Update high score
                 break;
@@ -203,14 +201,16 @@ public class UIManager : MonoBehaviour
 
     private void PauseGame()
     {
-        switch (Player.LocalPlayer.State.Value)
+        if (GameManager.Instance.State.Value == GameState.WaitingForPlayersReady)
         {
-            case PlayerState.ReadyUp:
-                readyPanel.SetActive(false);
-                break;
-            case PlayerState.WaitingForPlayerReady:
+            if (Player.LocalPlayer.State.Value == PlayerState.Ready)
+            {
                 waitingForPlayerReadyPanel.SetActive(false);
-                break;
+            }
+            else
+            {
+                readyPanel.SetActive(false);
+            }
         }
 
         pauseMenu.SetActive(true);
@@ -222,14 +222,16 @@ public class UIManager : MonoBehaviour
         Player.LocalPlayer.isPaused = false;
         pauseMenu.SetActive(false);
 
-        switch (Player.LocalPlayer.State.Value)
+        if (GameManager.Instance.State.Value == GameState.WaitingForPlayersReady)
         {
-            case PlayerState.ReadyUp:
-                readyPanel.SetActive(true);
-                break;
-            case PlayerState.WaitingForPlayerReady:
+            if (Player.LocalPlayer.State.Value == PlayerState.Ready)
+            {
                 waitingForPlayerReadyPanel.SetActive(true);
-                break;
+            }
+            else
+            {
+                readyPanel.SetActive(true);
+            }
         }
     }
 
@@ -242,16 +244,6 @@ public class UIManager : MonoBehaviour
             waitingForPlayersText.text = $"WAITING FOR PLAYERS{new string('.', index)}";
             index++;
             index %= 4;
-        }
-    }
-
-    private IEnumerator UpdateWaitingForReadyText()
-    {
-        while (Player.LocalPlayer.State.Value == PlayerState.WaitingForPlayerReady)
-        {
-            Player otherPlayer = FindObjectsOfType<Player>().FirstOrDefault(p => !p.IsLocalPlayer);
-            waitingForPlayerReadyText.text = $"WAITING FOR '{otherPlayer.Username.Value}' TO READY UP.";
-            yield return null;
         }
     }
 
@@ -291,8 +283,8 @@ public class UIManager : MonoBehaviour
             }
 
             finalMoneyText[i].enabled = true;
-
             finalMoneyText[i].text = $"Points: +{counted}";
+
             counted = 0;
             while (counted < Mathf.FloorToInt(players[i].Points.Value / 4))
             {
@@ -301,7 +293,7 @@ public class UIManager : MonoBehaviour
                     AudioManager.Instance.PlaySound("money_gain");
                 }
 
-                counted += (int)((players[i].Points.Value / 4) / 1 * Time.deltaTime);
+                counted += (int)(players[i].Points.Value / 4 / 1 * Time.deltaTime);
                 finalMoneyText[i].text = $"Money: +${counted}";
                 yield return null;
             }

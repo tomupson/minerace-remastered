@@ -8,52 +8,45 @@ public class ChatManager : NetworkBehaviour
 
     [SerializeField] private GameObject chat;
     [SerializeField] private GameObject chatItemPrefab;
-
-    public float messageExpireTime = 5;
+    [SerializeField] private float messageExpireTime = 5;
 
     private void Awake()
     {
         Instance = this;
     }
 
-    public void ChatSendMessage(string sender, string message)
+    public void SendMessage(string sender, string message)
     {
-        if (IsServer)
-        {
-            ChatSendMessageServerRpc(sender, message);
-        }
+        SendChatMessageServerRpc(sender, message);
     }
 
     [ServerRpc]
-    private void ChatSendMessageServerRpc(string sender, string message)
+    private void SendChatMessageServerRpc(string sender, string message)
     {
-        GameObject chatItem = Instantiate(chatItemPrefab);
-        chatItem.GetComponent<NetworkObject>().Spawn(destroyWithScene: true);
-        chatItem.transform.SetParent(chat.transform);
+        GameObject chatItemObject = Instantiate(chatItemPrefab);
 
-        ChatItem messageSettings = chatItem.GetComponent<ChatItem>();
-        messageSettings.Setup(sender, message);
-        StartCoroutine(WaitForExpire(chatItem));
-    }
+        NetworkObject chatItemNetworkObject = chatItemObject.GetComponent<NetworkObject>();
+        chatItemNetworkObject.Spawn(destroyWithScene: true);
 
-    private IEnumerator WaitForExpire(GameObject chatItem)
-    {
-        yield return new WaitForSeconds(messageExpireTime);
-        DestroyChatMessageServerRpc(chatItem);
-    }
+        SetChatMessageParentClientRpc(chatItemObject);
 
-    [ServerRpc]
-    private void DestroyChatMessageServerRpc(NetworkObjectReference reference)
-    {
-        DestroyChatMessageClientRpc(reference);
+        ChatItem chatItem = chatItemObject.GetComponent<ChatItem>();
+        chatItem.Setup(sender, message);
+        StartCoroutine(WaitForExpire(chatItemNetworkObject));
     }
 
     [ClientRpc]
-    public void DestroyChatMessageClientRpc(NetworkObjectReference reference)
+    private void SetChatMessageParentClientRpc(NetworkObjectReference reference)
     {
         if (reference.TryGet(out NetworkObject networkObject))
         {
-            Destroy(networkObject);
+            networkObject.transform.SetParent(chat.transform);
         }
+    }
+
+    private IEnumerator WaitForExpire(NetworkObject chatItemNetworkObject)
+    {
+        yield return new WaitForSeconds(messageExpireTime);
+        chatItemNetworkObject.Despawn();
     }
 }

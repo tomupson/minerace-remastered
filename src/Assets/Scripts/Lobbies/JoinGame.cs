@@ -30,11 +30,11 @@ public class JoinGame : MonoBehaviour
     [SerializeField] private Button joinGamePasswordButton;
     [SerializeField] private Button closeJoinGameButton;
 
-    [Header("Database Info")]
+    [Header("Account Info")]
     [SerializeField] private Text loginNameText;
     [SerializeField] private Button logoutButton;
 
-    private void Start()
+    private void Awake()
     {
         refreshButton.onClick.AddListener(() =>
         {
@@ -69,7 +69,7 @@ public class JoinGame : MonoBehaviour
             catch (LobbyServiceException)
             {
                 AudioManager.Instance.PlaySound("connection_error");
-                statusText.text = "Failed to connect.";
+                statusText.text = "Failed to join lobby.";
                 RefreshGameList();
             }
         });
@@ -173,18 +173,18 @@ public class JoinGame : MonoBehaviour
         }
     }
 
-    public void ClosePasswordCanvas()
+    private void ClosePasswordCanvas()
     {
         StartCoroutine(WaitForAnimation(passwordCanvas, passwordCanvas.transform.GetChild(0).GetComponent<Animation>(), "grow"));
     }
 
-    private IEnumerator WaitForAnimation(GameObject canvas, Animation anim, string animationName)
+    private IEnumerator WaitForAnimation(GameObject canvas, Animation animation, string animationName)
     {
-        anim[animationName].speed = -1;
-        anim[animationName].time = anim[animationName].length;
-        anim.Play(animationName);
+        animation[animationName].speed = -1;
+        animation[animationName].time = animation[animationName].length;
+        animation.Play(animationName);
 
-        yield return new WaitWhile(() => anim.isPlaying);
+        yield return new WaitWhile(() => animation.isPlaying);
 
         canvas.SetActive(false);
 

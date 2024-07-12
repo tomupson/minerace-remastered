@@ -1,18 +1,18 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 /// <summary>
-/// Handles functionalities that all players should experience e.g. the game countdown timer.
+/// Handles functionalities that all players should experience e.g. the game countdown timer
 /// </summary>
 public class GameManager : NetworkBehaviour
 {
     public static GameManager Instance { get; private set; }
 
     private Player[] players;
+    private float ticker = 1f;
 
     [SerializeField] private GameObject playerPrefab;
 
@@ -20,9 +20,9 @@ public class GameManager : NetworkBehaviour
     [SerializeField] private int gameTime = 300;
     [SerializeField] private int preGameCountdownTime = 10;
 
-    public NetworkVariable<GameState> State { get; } = new NetworkVariable<GameState>(GameState.PreGame);
+    public NetworkVariable<GameState> State { get; } = new NetworkVariable<GameState>(GameState.WaitingForPlayers);
 
-    public NetworkVariable<int> PreGameTimeRemaining { get; } = new NetworkVariable<int>();
+    public NetworkVariable<int> PregameTimeRemaining { get; } = new NetworkVariable<int>();
 
     public NetworkVariable<int> TimeRemaining { get; } = new NetworkVariable<int>();
 
@@ -38,13 +38,49 @@ public class GameManager : NetworkBehaviour
             return;
         }
 
-        // TODO: Move Coroutines to here
+        if (State.Value == GameState.WaitingForPlayersReady)
+        {
+            if (!players.Any(p => p.State.Value != PlayerState.Ready))
+            {
+                State.Value = GameState.PregameCountdown;
+            }
+        }
+
+        if (State.Value == GameState.PregameCountdown)
+        {
+            ticker -= Time.deltaTime;
+            if (ticker <= 0f)
+            {
+                PregameTimeRemaining.Value--;
+                if (PregameTimeRemaining.Value == 0)
+                {
+                    State.Value = GameState.InGame;
+                }
+
+                ticker = 1f;
+            }
+        }
+
+        if (State.Value == GameState.InGame)
+        {
+            ticker -= Time.deltaTime;
+            if (ticker <= 0f)
+            {
+                TimeRemaining.Value--;
+                if (TimeRemaining.Value == 0)
+                {
+                    State.Value = GameState.Completed;
+                }
+
+                ticker = 1f;
+            }
+        }
     }
 
     public override void OnNetworkSpawn()
     {
         TimeRemaining.Value = gameTime;
-        PreGameTimeRemaining.Value = preGameCountdownTime;
+        PregameTimeRemaining.Value = preGameCountdownTime;
         if (IsServer)
         {
             NetworkManager.OnClientConnectedCallback += OnClientConnected;
@@ -55,17 +91,11 @@ public class GameManager : NetworkBehaviour
     private void OnClientConnected(ulong connectedClientId)
     {
         SpawnPlayer(connectedClientId);
+        players = FindObjectsOfType<Player>();
 
         if (NetworkManager.ConnectedClientsIds.Count == 2)
         {
-            players = FindObjectsOfType<Player>();
-
-            foreach (Player player in players)
-            {
-                player.SetModeServerRpc(PlayerState.ReadyUp);
-            }
-
-            StartCoroutine(WaitForReady());
+            State.Value = GameState.WaitingForPlayersReady;
         }
     }
 
@@ -90,68 +120,9 @@ public class GameManager : NetworkBehaviour
         playerObject.GetComponent<NetworkObject>().SpawnAsPlayerObject(clientId, destroyWithScene: true);
     }
 
-    private IEnumerator WaitForReady()
-    {
-        while (players.Count(p => p.State.Value == PlayerState.WaitingForPlayerReady) < 2)
-        {
-            yield return null;
-        }
-
-        foreach (Player player in players)
-        {
-            player.SetModeServerRpc(PlayerState.PregameCountdown);
-        }
-
-        StartCoroutine(PreGameCountdown());
-    }
-
-    private IEnumerator PreGameCountdown()
-    {
-        while (PreGameTimeRemaining.Value > 0)
-        {
-            yield return new WaitForSeconds(1);
-            PreGameTimeRemaining.Value--;
-            if (State.Value == GameState.PreGame && PreGameTimeRemaining.Value == 0)
-            {
-                State.Value = GameState.Playing;
-            }
-        }
-
-        foreach (Player player in players)
-        {
-            player.SetModeServerRpc(PlayerState.InGame);
-        }
-
-        StartCoroutine(GameCountdown());
-    }
-
-    private IEnumerator GameCountdown()
-    {
-        while (TimeRemaining.Value > 0)
-        {
-            yield return new WaitForSeconds(1);
-            TimeRemaining.Value--;
-            if (State.Value == GameState.Playing && TimeRemaining.Value == 0)
-            {
-                State.Value = GameState.Completed;
-
-                foreach (Player player in players)
-                {
-                    player.SetModeServerRpc(PlayerState.Completed);
-                }
-            }
-        }
-
-        yield return null;
-    }
-
     [ServerRpc]
     public void GameOverServerRpc()
     {
         State.Value = GameState.Completed;
-        foreach (Player player in players)
-        {
-            player.SetModeServerRpc(PlayerState.GameOver);
-        }
     }
 }

@@ -363,7 +363,7 @@ GameObject:
   - component: {fileID: 862358492}
   - component: {fileID: 862358496}
   m_Layer: 5
-  m_Name: Profile
+  m_Name: ProfileUI
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -481,7 +481,7 @@ GameObject:
   - component: {fileID: 975743570}
   - component: {fileID: 975743569}
   m_Layer: 5
-  m_Name: 'NAME:'
+  m_Name: NameLabel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -715,7 +715,7 @@ GameObject:
   - component: {fileID: 1166702160}
   - component: {fileID: 1166702159}
   m_Layer: 5
-  m_Name: PlayerName
+  m_Name: PlayerNameText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -978,7 +978,7 @@ GameObject:
   - component: {fileID: 1840547981}
   - component: {fileID: 1840547980}
   m_Layer: 5
-  m_Name: 'HIGH SCORE:'
+  m_Name: HighScoreLabel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1057,7 +1057,7 @@ GameObject:
   - component: {fileID: 1876271065}
   - component: {fileID: 1876271064}
   m_Layer: 5
-  m_Name: 'XP:'
+  m_Name: XpLabel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1136,7 +1136,7 @@ GameObject:
   - component: {fileID: 1944176361}
   - component: {fileID: 1944176360}
   m_Layer: 5
-  m_Name: XPText
+  m_Name: XpText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

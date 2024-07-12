@@ -18,12 +18,6 @@ public class ChatItem : NetworkBehaviour
         message.OnValueChanged += OnMessageChanged;
     }
 
-    public override void OnNetworkDespawn()
-    {
-        sender.OnValueChanged -= OnSenderChanged;
-        message.OnValueChanged -= OnMessageChanged;
-    }
-
     public void Setup(string sender, string message)
     {
         this.sender.Value = sender;

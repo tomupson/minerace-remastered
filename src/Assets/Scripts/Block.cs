@@ -1,16 +1,12 @@
 using System;
 using System.Collections.Generic;
-using Unity.Netcode;
 using UnityEngine;
 
-/// <summary>
-/// Holds information about a block
-/// </summary>
 [Serializable]
-public class Block : NetworkBehaviour
+public class Block : MonoBehaviour
 {
     public string blockName;
-    public string blockType;
+    public BlockType blockType;
     [Tooltip("Determines in what order the game tries to spawn (ideally should be set up so that rarer materials are attempted to spawn first)")]
     public int rarity;
     public int blockPointsValue;

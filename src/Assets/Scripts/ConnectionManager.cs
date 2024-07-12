@@ -31,7 +31,7 @@ public class ConnectionManager : MonoBehaviour
             response.Reason = "Game is full";
         }
 
-        if (GameManager.Instance != null && GameManager.Instance.State.Value != GameState.PreGame)
+        if (GameManager.Instance != null && GameManager.Instance.State.Value != GameState.WaitingForPlayers)
         {
             response.Approved = false;
             response.Reason = "Game has already started";

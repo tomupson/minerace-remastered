@@ -26,7 +26,7 @@ public class HostGame : MonoBehaviour
     [SerializeField] private Button closeCreateMatchButton;
     [SerializeField] private Button createGameButton;
 
-    private void Start()
+    private void Awake()
     {
         openCreateMatchButton.onClick.AddListener(() =>
         {
@@ -36,6 +36,8 @@ public class HostGame : MonoBehaviour
             anim["grow"].speed = 1;
             anim["grow"].time = 0;
             anim.Play("grow");
+            gameNameField.text = "";
+            gamePasswordField.text = "";
             createGameStatusText.text = "";
         });
 
@@ -96,13 +98,13 @@ public class HostGame : MonoBehaviour
 
     private IEnumerator WaitForAnimation()
     {
-        Animation anim = createMatchCanvas.transform.GetChild(0).GetComponent<Animation>();
+        Animation animation = createMatchCanvas.transform.GetChild(0).GetComponent<Animation>();
         FindObjectOfType<ButtonHighlight>().GetComponentInChildren<Text>().color = Color.white;
-        anim["grow"].speed = -1;
-        anim["grow"].time = anim["grow"].length;
-        anim.Play("grow");
+        animation["grow"].speed = -1;
+        animation["grow"].time = animation["grow"].length;
+        animation.Play("grow");
 
-        yield return new WaitWhile(() => anim.isPlaying);
+        yield return new WaitWhile(() => animation.isPlaying);
 
         createMatchCanvas.SetActive(false);
 

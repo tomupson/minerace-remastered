@@ -1,6 +1,8 @@
 ﻿public enum GameState
 {
-    PreGame,
-    Playing,
+    WaitingForPlayers,
+    WaitingForPlayersReady,
+    PregameCountdown,
+    InGame,
     Completed
 }

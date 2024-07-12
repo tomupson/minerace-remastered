@@ -3,10 +3,6 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
 
-/// <summary>
-/// Attached to each of the lobby list lobbies on the lobby screen, handles display of the game name, whether or not it's passworded,
-/// and adds a changeable callback for what to do when the join button is pressed.
-/// </summary>
 public class GameListItem : MonoBehaviour
 {
     [SerializeField] private Text matchInfoText;
