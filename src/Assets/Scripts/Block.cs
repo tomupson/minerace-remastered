@@ -1,12 +1,12 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-[Serializable]
-public class Block : MonoBehaviour
+[CreateAssetMenu(fileName = "Block", menuName = "MineRace/Block")]
+public class Block : ScriptableObject
 {
     public string blockName;
     public BlockType blockType;
+    public GameObject prefab;
     [Tooltip("Determines in what order the game tries to spawn (ideally should be set up so that rarer materials are attempted to spawn first)")]
     public int rarity;
     public int blockPointsValue;

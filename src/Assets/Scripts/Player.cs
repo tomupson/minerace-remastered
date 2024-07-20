@@ -1,8 +1,8 @@
 using System;
-using System.Collections;
 using Unity.Collections;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(Rigidbody2D))]
 public class Player : NetworkBehaviour
@@ -10,11 +10,14 @@ public class Player : NetworkBehaviour
     private Rigidbody2D playerRigidbody;
     private SpriteRenderer spriteRenderer;
     private CircleCollider2D circleCollider;
+    private PlayerInputActions inputActions;
     private bool canMine = true;
+    private float pickaxeCooldownTimer;
+    private RaycastHit2D lastRaycastHit;
 
     public static Player LocalPlayer { get; private set; }
 
-    public static event EventHandler OnAnyPlayerSpawned;
+    public static event Action<Player> OnAnyPlayerSpawned;
 
     [Header("Player Settings")]
     [SerializeField] private float moveSpeed;
@@ -35,6 +38,11 @@ public class Player : NetworkBehaviour
         playerRigidbody = GetComponent<Rigidbody2D>();
         spriteRenderer = GetComponent<SpriteRenderer>();
         circleCollider = GetComponent<CircleCollider2D>();
+
+        inputActions = new PlayerInputActions();
+        inputActions.Player.Enable();
+        inputActions.Player.Mine.performed += OnMinePerformed;
+        inputActions.Player.SendChat.performed += OnSendChatPerformed;
     }
 
     private void FixedUpdate()
@@ -49,7 +57,8 @@ public class Player : NetworkBehaviour
             return;
         }
 
-        float horizontalSpeed = Input.GetAxis("Horizontal") * moveSpeed;
+        float horizontal = inputActions.Player.Move.ReadValue<float>();
+        float horizontalSpeed = horizontal * moveSpeed;
         if (horizontalSpeed > 0 && !FacingRight.Value)
         {
             FacingRight.Value = true;
@@ -70,63 +79,38 @@ public class Player : NetworkBehaviour
             return;
         }
 
-        if (Input.GetKeyDown(KeyCode.M))
-        {
-            ChatManager.Instance.SendMessage(Username.Value.ToString(), "This is a chat message");
-        }
-
-        if (State.Value != PlayerState.Playing || isPaused)
+        if (State.Value != PlayerState.Playing)
         {
             return;
         }
 
-        Vector3 direction = Camera.main.ScreenToWorldPoint(Input.mousePosition) - transform.position;
-        direction.z = 0;
-
-        RaycastHit2D hit = Physics2D.Raycast(transform.position, direction, 0.75f);
-        Debug.DrawRay(transform.position, direction, Color.red);
-
-        if (hit)
+        if (!canMine)
         {
-            // TODO: Refactor this - do we really need to look at every block on the map to reset it's block texture?
-            Block[] blocksInMap = FindObjectsOfType<Block>();
-            for (int i = 0; i < blocksInMap.Length; i++)
-            {
-                SpriteRenderer spriteRenderer = blocksInMap[i].gameObject.GetComponent<SpriteRenderer>();
-                spriteRenderer.sprite = blocksInMap[i].blockTextures[blocksInMap[i].textureIndex];
-            }
+            pickaxeCooldownTimer -= Time.deltaTime;
+            canMine = pickaxeCooldownTimer <= 0;
+        }
 
-            if (hit.transform.CompareTag("BORDER"))
-            {
-                return;
-            }
+        if (isPaused)
+        {
+            return;
+        }
 
-            Block hitBlock = hit.transform.GetComponent<Block>();
+        RaycastHit2D hit = PerformMouseRaycast();
+
+        if (lastRaycastHit && (!hit || lastRaycastHit.transform != hit.transform))
+        {
+            Block lastHitBlock = lastRaycastHit.transform.GetComponent<BlockRenderer>().block;
+            SpriteRenderer lastHitBlockSpriteRenderer = lastRaycastHit.transform.GetComponent<SpriteRenderer>();
+            lastHitBlockSpriteRenderer.sprite = lastHitBlock.blockTextures[lastHitBlock.textureIndex];
+        }
+
+        lastRaycastHit = hit;
+
+        if (hit && !hit.transform.CompareTag("BORDER"))
+        {
+            Block hitBlock = hit.transform.GetComponent<BlockRenderer>().block;
             SpriteRenderer hitBlockSpriteRenderer = hit.transform.GetComponent<SpriteRenderer>();
             hitBlockSpriteRenderer.sprite = hitBlock.blockOutlineTextures[hitBlock.textureIndex];
-
-            if (Input.GetButtonDown("BreakBlock") && canMine)
-            {
-                AudioManager.Instance.PlaySound(hitBlock.blockBreakSoundName);
-
-                // Temporarily set it to hidden so that even if it takes the server some time to destroy it, you cant mine it twice
-                hit.transform.gameObject.SetActive(false);
-
-                BreakBlockServerRpc(hit.transform.gameObject);
-                StartCoroutine(PickaxeCooldown());
-            }
-
-            hitBlockSpriteRenderer.sprite = hitBlock.blockTextures[hitBlock.textureIndex];
-        }
-        else
-        {
-            // TODO: Refactor this - do we really need to look at every block on the map to reset it's block texture?
-            Block[] blocksInMap = FindObjectsOfType<Block>();
-            for (int i = 0; i < blocksInMap.Length; i++)
-            {
-                SpriteRenderer blockRenderer = blocksInMap[i].gameObject.GetComponent<SpriteRenderer>();
-                blockRenderer.sprite = blocksInMap[i].blockTextures[blocksInMap[i].textureIndex];
-            }
         }
     }
 
@@ -141,7 +125,7 @@ public class Player : NetworkBehaviour
             transform.position = new Vector3(LevelGenerator.Instance.mapWidth / 2 + 12 * ((int)OwnerClientId * 2 - 1), 100, 0);
         }
 
-        OnAnyPlayerSpawned?.Invoke(this, EventArgs.Empty);
+        OnAnyPlayerSpawned?.Invoke(this);
         State.OnValueChanged += OnPlayerStateChanged;
         FacingRight.OnValueChanged += OnFacingRightChanged;
     }
@@ -177,7 +161,7 @@ public class Player : NetworkBehaviour
         {
             networkObject.Despawn();
 
-            Block block = networkObject.GetComponent<Block>();
+            Block block = networkObject.GetComponent<BlockRenderer>().block;
             Points.Value += block.blockPointsValue;
         }
     }
@@ -189,11 +173,35 @@ public class Player : NetworkBehaviour
         Points.Value += Mathf.FloorToInt(timeRemainingSeconds / 4f);
     }
 
-    private IEnumerator PickaxeCooldown()
+    private void OnMinePerformed(InputAction.CallbackContext context)
     {
+        if (!canMine)
+        {
+            return;
+        }
+
+        RaycastHit2D hit = PerformMouseRaycast();
+        if (!hit || hit.transform.CompareTag("BORDER"))
+        {
+            return;
+        }
+
+        Block hitBlock = hit.transform.GetComponent<BlockRenderer>().block;
+
+        AudioManager.Instance.PlaySound(hitBlock.blockBreakSoundName);
+
+        // Temporarily set it to hidden so that even if it takes the server some time to destroy it, you can't mine it twice
+        hit.transform.gameObject.SetActive(false);
+
         canMine = false;
-        yield return new WaitForSecondsRealtime(pickaxeCooldownTime);
-        canMine = true;
+        pickaxeCooldownTimer = pickaxeCooldownTime;
+
+        BreakBlockServerRpc(hit.transform.gameObject);
+    }
+
+    private void OnSendChatPerformed(InputAction.CallbackContext context)
+    {
+        ChatManager.Instance.SendMessage(Username.Value.ToString(), "This is a chat message");
     }
 
     // TODO: Think about whether the player should update it's own state based on the movement of the game,
@@ -223,5 +231,15 @@ public class Player : NetworkBehaviour
     private void OnFacingRightChanged(bool previousFacingRight, bool newFacingRight)
     {
         spriteRenderer.flipX = !newFacingRight;
+    }
+
+    private RaycastHit2D PerformMouseRaycast()
+    {
+        Vector3 direction = Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue()) - transform.position;
+        direction.z = 0;
+
+        RaycastHit2D hit = Physics2D.Raycast(transform.position, direction, 0.75f);
+        Debug.DrawRay(transform.position, direction, Color.red);
+        return hit;
     }
 }

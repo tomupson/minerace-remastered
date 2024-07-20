@@ -14,24 +14,36 @@ public class LoginUI : MonoBehaviour
 
     private void Awake()
     {
-        loginButton.onClick.AddListener(() =>
-        {
-            // TODO: Handle login
-            SceneManager.LoadScene("Menu");
-        });
+        loginButton.onClick.AddListener(Login);
+        exitButton.onClick.AddListener(() => Application.Quit());
+        registerButton.onClick.AddListener(() => Application.OpenURL("https://tomupson.com/minerace/register"));
 
-        exitButton.onClick.AddListener(() =>
-        {
-            Application.Quit();
-        });
-
-        registerButton.onClick.AddListener(() =>
-        {
-            // TODO: Register
-        });
+        usernameInputField.onValueChanged.AddListener(OnInputChanged);
+        passwordInputField.onValueChanged.AddListener(OnInputChanged);
     }
 
     private void Start()
+    {
+        loginStatusText.text = "";
+#if DEBUG
+        Login();
+#endif
+    }
+
+    private async void Login()
+    {
+        loginStatusText.text = "";
+        bool loggedIn = await UserAccountManager.Instance.Login(usernameInputField.text);
+        if (!loggedIn)
+        {
+            loginStatusText.text = "Failed to log in.";
+            return;
+        }
+
+        SceneManager.LoadScene("Menu"); 
+    }
+
+    private void OnInputChanged(string value)
     {
         loginStatusText.text = "";
     }

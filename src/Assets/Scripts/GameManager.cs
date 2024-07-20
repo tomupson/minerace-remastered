@@ -88,6 +88,11 @@ public class GameManager : NetworkBehaviour
         }
     }
 
+    public void CompleteGame()
+    {
+        GameOverServerRpc();
+    }
+
     private void OnClientConnected(ulong connectedClientId)
     {
         SpawnPlayer(connectedClientId);
@@ -121,7 +126,7 @@ public class GameManager : NetworkBehaviour
     }
 
     [ServerRpc]
-    public void GameOverServerRpc()
+    private void GameOverServerRpc()
     {
         State.Value = GameState.Completed;
     }

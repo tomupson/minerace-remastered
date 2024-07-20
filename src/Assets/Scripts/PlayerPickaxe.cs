@@ -1,6 +1,6 @@
-﻿using System;
-using Unity.Netcode;
+﻿using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class PlayerPickaxe : NetworkBehaviour
 {
@@ -31,7 +31,7 @@ public class PlayerPickaxe : NetworkBehaviour
             return;
         }
 
-        Vector3 direction = Camera.main.ScreenToWorldPoint(Input.mousePosition) - transform.position;
+        Vector3 direction = Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue()) - transform.position;
         direction.Normalize();
 
         float rotationZ = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;

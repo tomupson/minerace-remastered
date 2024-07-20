@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 212790777195898718}
   - component: {fileID: 61647901953626802}
   - component: {fileID: 2962940494067643940}
-  - component: {fileID: 114195808143407972}
+  - component: {fileID: 7292014166895818631}
   m_Layer: 0
   m_Name: Gold Nugget
   m_TagString: Untagged
@@ -145,7 +145,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 2722492082
+  GlobalObjectIdHash: 153481926
   InScenePlacedSourceGlobalObjectIdHash: 0
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
@@ -154,7 +154,7 @@ MonoBehaviour:
   SpawnWithObservers: 1
   DontDestroyWithOwner: 0
   AutoObjectParentSync: 1
---- !u!114 &114195808143407972
+--- !u!114 &7292014166895818631
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -163,122 +163,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 1064966194276244}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 06a7e38245bc10145b084d0d90418a3f, type: 3}
+  m_Script: {fileID: 11500000, guid: f207fde7fa9079d47864c49139818b8a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  blockName: Gold Nugget
-  blockType: 1
-  rarity: 10
-  blockPointsValue: 50
-  basePercentage: 1.75
-  percentageMultiplier: 1.0125
-  spawnPercentagesAtLevels:
-  - 0
-  - 5.986159
-  - 5.9122553
-  - 5.839264
-  - 5.7671742
-  - 5.6959743
-  - 5.6256533
-  - 5.5562005
-  - 5.487605
-  - 5.4198565
-  - 5.3529444
-  - 5.2868586
-  - 5.2215886
-  - 5.1571245
-  - 5.0934563
-  - 5.030574
-  - 4.968467
-  - 4.907128
-  - 4.846546
-  - 4.7867117
-  - 4.7276163
-  - 4.6692505
-  - 4.6116056
-  - 4.554672
-  - 4.498441
-  - 4.4429045
-  - 4.3880534
-  - 4.33388
-  - 4.280375
-  - 4.227531
-  - 4.1753387
-  - 4.1237907
-  - 4.07288
-  - 4.0225973
-  - 3.9729357
-  - 3.9238865
-  - 3.8754435
-  - 3.827598
-  - 3.780344
-  - 3.7336726
-  - 3.6875777
-  - 3.6420517
-  - 3.5970883
-  - 3.5526793
-  - 3.508819
-  - 3.4655004
-  - 3.4227161
-  - 3.3804603
-  - 3.3387258
-  - 3.2975068
-  - 3.2567968
-  - 3.2165895
-  - 3.1768782
-  - 3.1376574
-  - 3.0989206
-  - 3.0606623
-  - 3.022876
-  - 2.9855566
-  - 2.9486978
-  - 2.912294
-  - 2.8763394
-  - 2.840829
-  - 2.8057568
-  - 2.7711177
-  - 2.7369063
-  - 2.7031171
-  - 2.6697452
-  - 2.6367853
-  - 2.6042323
-  - 2.572081
-  - 2.540327
-  - 2.5089648
-  - 2.4779897
-  - 2.4473972
-  - 2.4171824
-  - 2.3873403
-  - 2.357867
-  - 2.3287573
-  - 2.300007
-  - 2.271612
-  - 2.2435672
-  - 2.215869
-  - 2.1885123
-  - 2.1614935
-  - 2.1348083
-  - 2.1084526
-  - 2.0824223
-  - 2.0567133
-  - 2.0313215
-  - 2.0062432
-  - 1.981475
-  - 1.9570122
-  - 1.9328513
-  - 1.908989
-  - 1.8854212
-  - 1.8621442
-  - 1.8391547
-  - 1.816449
-  - 1.7940236
-  - 1.7718751
-  textureIndex: 0
-  blockTextures:
-  - {fileID: 21300000, guid: cea2d48ceeef50940b80d2f6a64e8d79, type: 3}
-  blockOutlineTextures:
-  - {fileID: 21300000, guid: b46c2b018ea8c5f43b0665163f4e297c, type: 3}
-  blockBreakSoundName: gold_break
+  block: {fileID: 11400000, guid: b094ec5cd6c99d248b38572a657c4244, type: 2}
 --- !u!1 &1888684495658406
 GameObject:
   m_ObjectHideFlags: 0
@@ -4961,7 +4849,6 @@ ParticleSystemRenderer:
   m_RendererPriority: 0
   m_Materials:
   - {fileID: 10301, guid: 0000000000000000f000000000000000, type: 0}
-  - {fileID: 0}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

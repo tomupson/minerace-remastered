@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 06a7e38245bc10145b084d0d90418a3f, type: 3}
+  m_Name: Ground
+  m_EditorClassIdentifier: 
+  blockName: Ground
+  blockType: 0
+  prefab: {fileID: 1468016943942178, guid: 39dba74bab1d5604e8d7c8e4d3be7c61, type: 3}
+  rarity: 0
+  pointsValue: 0
+  basePercentage: 100
+  percentageMultiplier: 1
+  spawnPercentagesAtLevels: []
+  textureIndex: 0
+  textures:
+  - {fileID: 21300000, guid: 1a06feaee0c94ca4fb6a524b7c6c414a, type: 3}
+  outlineTextures:
+  - {fileID: 21300000, guid: 73fdd7e3b0deaa04d9c46b6f8e82a21e, type: 3}
+  breakSoundName: dirt_break

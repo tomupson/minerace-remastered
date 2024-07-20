@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 
 public class FollowPlayer : MonoBehaviour
@@ -27,7 +26,7 @@ public class FollowPlayer : MonoBehaviour
         playerToFollow = player;
     }
 
-    private void OnAnyPlayedSpawned(object sender, EventArgs e)
+    private void OnAnyPlayedSpawned(Player player)
     {
         if (playerToFollow == null)
         {

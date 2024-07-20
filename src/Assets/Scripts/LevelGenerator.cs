@@ -9,7 +9,7 @@ public class LevelGenerator : NetworkBehaviour
 
     public static LevelGenerator Instance { get; private set; }
 
-    [SerializeField] private List<GameObject> blocks;
+    [SerializeField] private BlockList blockList;
     [SerializeField] private GameObject borderBlockPrefab;
     [SerializeField] private GameObject endBlockPrefab;
 
@@ -31,18 +31,17 @@ public class LevelGenerator : NetworkBehaviour
 
     private void SpawnMap()
     {
-        List<BlockData> blockDatas = blocks.Select(go => new BlockData(go)).ToList();
-        List<BlockData> resourceBlockDatas = blockDatas
-            .Where(data => data.block.blockType == BlockType.Resource)
-            .OrderBy(data => data.block.rarity)
+        List<Block> resourceBlocks = blockList.blocks
+            .Where(block => block.blockType == BlockType.Resource)
+            .OrderBy(block => block.rarity)
             .ToList();
 
-        foreach (BlockData blockData in resourceBlockDatas)
+        foreach (Block block in resourceBlocks)
         {
-            blockData.block.spawnPercentagesAtLevels = new float[mapHeight];
-            for (int spawnLevel = 1; spawnLevel < blockData.block.spawnPercentagesAtLevels.Length; spawnLevel++)
+            block.spawnPercentagesAtLevels = new float[mapHeight];
+            for (int spawnLevel = 1; spawnLevel < block.spawnPercentagesAtLevels.Length; spawnLevel++)
             {
-                blockData.block.spawnPercentagesAtLevels[spawnLevel] = blockData.block.basePercentage * Mathf.Pow(blockData.block.percentageMultiplier, blockData.block.spawnPercentagesAtLevels.Length - spawnLevel);
+                block.spawnPercentagesAtLevels[spawnLevel] = block.basePercentage * Mathf.Pow(block.percentageMultiplier, block.spawnPercentagesAtLevels.Length - spawnLevel);
             }
         }
 
@@ -52,19 +51,19 @@ public class LevelGenerator : NetworkBehaviour
             {
                 if (y == mapHeight - 1)
                 {
-                    BlockData grassBlockData = blockDatas.First(data => data.block.blockName == "Grass");
-                    SpawnBlock(grassBlockData, x, y);
+                    Block grassBlock = blockList.blocks.First(block => block.blockName == "Grass");
+                    SpawnBlock(grassBlock, x, y);
                     continue;
                 }
 
                 bool resourceSpawned = false;
-                for (int i = resourceBlockDatas.Count - 1; i >= 0; i--)
+                for (int i = resourceBlocks.Count - 1; i >= 0; i--)
                 {
-                    BlockData resourceBlockData = resourceBlockDatas[i];
+                    Block resourceBlock = resourceBlocks[i];
                     float roll = Random.Range(0.0f, 100.0f);
-                    if (roll <= resourceBlockData.block.spawnPercentagesAtLevels[y])
+                    if (roll <= resourceBlock.spawnPercentagesAtLevels[y])
                     {
-                        SpawnBlock(resourceBlockData, x, y);
+                        SpawnBlock(resourceBlock, x, y);
                         resourceSpawned = true;
                         break;
                     }
@@ -72,8 +71,8 @@ public class LevelGenerator : NetworkBehaviour
 
                 if (!resourceSpawned)
                 {
-                    BlockData groundBlockData = blockDatas.First(data => data.block.blockName == "Ground");
-                    SpawnBlock(groundBlockData, x, y);
+                    Block groundBlock = blockList.blocks.First(block => block.blockName == "Ground");
+                    SpawnBlock(groundBlock, x, y);
                 }
             }
         }
@@ -90,12 +89,12 @@ public class LevelGenerator : NetworkBehaviour
         }
     }
 
-    private void SpawnBlock(BlockData blockData, int mapX, int mapY)
+    private void SpawnBlock(Block block, int mapX, int mapY)
     {
-        GameObject blockInstance = SpawnOnNetwork(blockData.prefab);
-        blockInstance.name = $"{blockData.block.blockName} => {mapX}, {mapY}";
+        GameObject blockInstance = SpawnOnNetwork(block.prefab);
+        blockInstance.name = $"{block.blockName} => {mapX}, {mapY}";
 
-        SetRandomBlockTexture(blockInstance, blockData.block);
+        SetRandomBlockTexture(blockInstance, block);
         SetBlockPosition(blockInstance, mapX, mapY);
     }
 
@@ -141,17 +140,5 @@ public class LevelGenerator : NetworkBehaviour
     {
         blockInstance.transform.position = new Vector3(mapX * BlockSize, mapY * BlockSize, 0);
         blockInstance.transform.SetParent(transform, worldPositionStays: false);
-    }
-
-    private sealed class BlockData
-    {
-        public GameObject prefab;
-        public Block block;
-
-        public BlockData(GameObject prefab)
-        {
-            this.prefab = prefab;
-            this.block = prefab.GetComponent<Block>();
-        }
     }
 }

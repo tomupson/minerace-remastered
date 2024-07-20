@@ -1,8 +1,8 @@
-using System;
 using System.Collections;
 using System.Linq;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 public class UIManager : MonoBehaviour
@@ -74,56 +74,17 @@ public class UIManager : MonoBehaviour
         {
             NetworkManager.Singleton.Shutdown();
         });
+
+        PlayerInputActions inputActions = new PlayerInputActions();
+        inputActions.Player.Enable();
+        inputActions.Player.PauseUnpause.performed += OnPauseUnpausePerformed;
+        inputActions.Player.Spectate.performed += OnSpectatePerformed;
     }
 
     private void Start()
     {
         waitingForPlayersPanel.SetActive(true);
         StartCoroutine(WaitForPlayers());
-    }
-
-    private void OnAnyPlayedSpawned(object sender, EventArgs e)
-    {
-        if (Player.LocalPlayer != null)
-        {
-            Player.LocalPlayer.Points.OnValueChanged -= HandlePlayerPointsChanged;
-            Player.LocalPlayer.Points.OnValueChanged += HandlePlayerPointsChanged;
-
-            Player.LocalPlayer.State.OnValueChanged -= HandlePlayerStateChanged;
-            Player.LocalPlayer.State.OnValueChanged += HandlePlayerStateChanged;
-        }
-    }
-
-    private void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.Escape))
-        {
-            if (Player.LocalPlayer.isPaused)
-            {
-                UnpauseGame();
-            }
-            else
-            {
-                PauseGame();
-            }
-        }
-
-        if (listenForSpaceKey && Input.GetKeyDown(KeyCode.Space))
-        {
-            Player[] players = FindObjectsOfType<Player>();
-            Player otherPlayer = players.FirstOrDefault(p => !p.IsLocalPlayer);
-
-            Player.LocalPlayer.Spectate(otherPlayer);
-
-            spectateText.gameObject.SetActive(false);
-            youAreSpectatingText.gameObject.SetActive(true);
-            youAreSpectatingText.text = $"YOU ARE SPECTATING: {otherPlayer.Username.Value}";
-
-            otherPlayer.Points.OnValueChanged += HandlePlayerPointsChanged;
-            HandlePlayerPointsChanged(0, otherPlayer.Points.Value);
-
-            listenForSpaceKey = false;
-        }
     }
 
     private void HandleGameStateChanged(GameState previousState, GameState newState)
@@ -176,6 +137,18 @@ public class UIManager : MonoBehaviour
         preGameTimeText.text = seconds;
     }
 
+    private void OnAnyPlayedSpawned(Player player)
+    {
+        if (Player.LocalPlayer != null)
+        {
+            Player.LocalPlayer.Points.OnValueChanged -= HandlePlayerPointsChanged;
+            Player.LocalPlayer.Points.OnValueChanged += HandlePlayerPointsChanged;
+
+            Player.LocalPlayer.State.OnValueChanged -= HandlePlayerStateChanged;
+            Player.LocalPlayer.State.OnValueChanged += HandlePlayerStateChanged;
+        }
+    }
+
     private void HandlePlayerPointsChanged(int previousPoints, int newPoints)
     {
         pointsText.text = $"POINTS: {newPoints}";
@@ -196,6 +169,18 @@ public class UIManager : MonoBehaviour
                 listenForSpaceKey = false;
                 // TODO: Update high score
                 break;
+        }
+    }
+
+    private void OnPauseUnpausePerformed(InputAction.CallbackContext context)
+    {
+        if (Player.LocalPlayer.isPaused)
+        {
+            UnpauseGame();
+        }
+        else
+        {
+            PauseGame();
         }
     }
 
@@ -233,6 +218,28 @@ public class UIManager : MonoBehaviour
                 readyPanel.SetActive(true);
             }
         }
+    }
+
+    private void OnSpectatePerformed(InputAction.CallbackContext context)
+    {
+        if (!listenForSpaceKey)
+        {
+            return;
+        }
+
+        Player[] players = FindObjectsOfType<Player>();
+        Player otherPlayer = players.FirstOrDefault(p => !p.IsLocalPlayer);
+
+        Player.LocalPlayer.Spectate(otherPlayer);
+
+        spectateText.gameObject.SetActive(false);
+        youAreSpectatingText.gameObject.SetActive(true);
+        youAreSpectatingText.text = $"YOU ARE SPECTATING: {otherPlayer.Username.Value}";
+
+        otherPlayer.Points.OnValueChanged += HandlePlayerPointsChanged;
+        HandlePlayerPointsChanged(0, otherPlayer.Points.Value);
+
+        listenForSpaceKey = false;
     }
 
     private IEnumerator WaitForPlayers()

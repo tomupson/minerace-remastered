@@ -8,7 +8,6 @@ public class ConnectionManager : MonoBehaviour
     private void Awake()
     {
         DontDestroyOnLoad(this);
-
         Instance = this;
     }
 
