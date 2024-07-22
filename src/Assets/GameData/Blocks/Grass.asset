@@ -16,13 +16,13 @@ MonoBehaviour:
   blockType: 0
   prefab: {fileID: 1445621647692544, guid: 9506488f259383f4d86c070945af3591, type: 3}
   rarity: 0
-  pointsValue: 0
+  blockPointsValue: 0
   basePercentage: 100
   percentageMultiplier: 1
   spawnPercentagesAtLevels: []
   textureIndex: 0
-  textures:
+  blockTextures:
   - {fileID: 21300000, guid: 42ecea4eae0636644b283861569293e9, type: 3}
-  outlineTextures:
+  blockOutlineTextures:
   - {fileID: 21300000, guid: 5eb5b66b43e369a4abfad7733e6315d9, type: 3}
-  breakSoundName: grass_break
+  blockBreakSoundName: grass_break

@@ -16,13 +16,13 @@ MonoBehaviour:
   blockType: 1
   prefab: {fileID: 1064966194276244, guid: d0e1cdf2896ddcf47aa1b2ba930aae68, type: 3}
   rarity: 10
-  pointsValue: 50
+  blockPointsValue: 50
   basePercentage: 1.75
   percentageMultiplier: 1.0125
   spawnPercentagesAtLevels: []
   textureIndex: 0
-  textures:
+  blockTextures:
   - {fileID: 21300000, guid: cea2d48ceeef50940b80d2f6a64e8d79, type: 3}
-  outlineTextures:
+  blockOutlineTextures:
   - {fileID: 21300000, guid: b46c2b018ea8c5f43b0665163f4e297c, type: 3}
-  breakSoundName: gold_break
+  blockBreakSoundName: gold_break

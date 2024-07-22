@@ -7,6 +7,7 @@ using UnityEngine.UI;
 
 public class UIManager : MonoBehaviour
 {
+    private PlayerInputActions inputActions;
     private bool listenForSpaceKey = false;
 
     [Header("Screenspace")]
@@ -15,11 +16,9 @@ public class UIManager : MonoBehaviour
     [SerializeField] private Text timeText;
 
     [Header("Waiting For Players")]
-    [SerializeField] private GameObject waitingForPlayersPanel;
     [SerializeField] private Text waitingForPlayersText;
 
     [Header("Waiting For Ready")]
-    [SerializeField] private GameObject waitingForPlayerReadyPanel;
     [SerializeField] private Text waitingForPlayerReadyText;
 
     [Header("Ready")]
@@ -27,7 +26,6 @@ public class UIManager : MonoBehaviour
     [SerializeField] private Button readyButton;
 
     [Header("Pregame")]
-    [SerializeField] private GameObject preGameTimePanel;
     [SerializeField] private Text preGameTimeText;
 
     [Header("Spectating")]
@@ -35,7 +33,6 @@ public class UIManager : MonoBehaviour
     [SerializeField] private Text spectateText;
 
     [Header("Times Up")]
-    [SerializeField] private GameObject timesUpPanel;
     [SerializeField] private Text timesUpText;
 
     [Header("Final Scores")]
@@ -45,7 +42,6 @@ public class UIManager : MonoBehaviour
     [SerializeField] private Text[] finalMoneyText;
 
     [Header("Game Finished")]
-    [SerializeField] private GameObject gameFinishedPanel;
     [SerializeField] private Text gameFinishedText;
 
     [Header("Pause Menu")]
@@ -62,7 +58,7 @@ public class UIManager : MonoBehaviour
         readyButton.onClick.AddListener(() =>
         {
             readyPanel.SetActive(false);
-            waitingForPlayerReadyPanel.SetActive(true);
+            waitingForPlayerReadyText.gameObject.SetActive(true);
 
             Player otherPlayer = FindObjectsOfType<Player>().FirstOrDefault(p => !p.IsLocalPlayer);
             waitingForPlayerReadyText.text = $"WAITING FOR '{otherPlayer.Username.Value}' TO READY UP.";
@@ -70,12 +66,9 @@ public class UIManager : MonoBehaviour
             Player.LocalPlayer.Ready();
         });
 
-        leaveButton.onClick.AddListener(() =>
-        {
-            NetworkManager.Singleton.Shutdown();
-        });
+        leaveButton.onClick.AddListener(() => NetworkManager.Singleton.Shutdown());
 
-        PlayerInputActions inputActions = new PlayerInputActions();
+        inputActions = new PlayerInputActions();
         inputActions.Player.Enable();
         inputActions.Player.PauseUnpause.performed += OnPauseUnpausePerformed;
         inputActions.Player.Spectate.performed += OnSpectatePerformed;
@@ -83,40 +76,49 @@ public class UIManager : MonoBehaviour
 
     private void Start()
     {
-        waitingForPlayersPanel.SetActive(true);
+        waitingForPlayersText.gameObject.SetActive(true);
         StartCoroutine(WaitForPlayers());
+    }
+
+    private void OnDestroy()
+    {
+        Player.OnAnyPlayerSpawned -= OnAnyPlayedSpawned;
+
+        inputActions.Player.PauseUnpause.performed -= OnPauseUnpausePerformed;
+        inputActions.Player.Spectate.performed -= OnSpectatePerformed;
+        inputActions.Dispose();
     }
 
     private void HandleGameStateChanged(GameState previousState, GameState newState)
     {
         if (newState == GameState.WaitingForPlayersReady)
         {
-            waitingForPlayersPanel.SetActive(false);
+            waitingForPlayersText.gameObject.SetActive(false);
             readyPanel.SetActive(true);
         }
 
         if (newState == GameState.PregameCountdown)
         {
-            waitingForPlayerReadyPanel.SetActive(false);
-            preGameTimePanel.SetActive(true);
+            waitingForPlayerReadyText.gameObject.SetActive(false);
+            preGameTimeText.gameObject.SetActive(true);
         }
 
         if (newState == GameState.InGame)
         {
             screenspacePanel.SetActive(true);
-            preGameTimePanel.SetActive(false);
+            preGameTimeText.gameObject.SetActive(false);
         }
 
         if (newState == GameState.Completed && previousState != GameState.Completed)
         {
             if (GameManager.Instance.TimeRemaining.Value == 0)
             {
-                timesUpPanel.SetActive(true);
+                timesUpText.gameObject.SetActive(true);
                 timesUpText.GetComponent<Animation>().Play("timesUp");
             }
             else
             {
-                gameFinishedPanel.SetActive(true);
+                gameFinishedText.gameObject.SetActive(true);
                 gameFinishedText.GetComponent<Animation>().Play("timesUp");
             }
 
@@ -167,7 +169,6 @@ public class UIManager : MonoBehaviour
                 spectateText.gameObject.SetActive(false);
                 youAreSpectatingText.gameObject.SetActive(false);
                 listenForSpaceKey = false;
-                // TODO: Update high score
                 break;
         }
     }
@@ -190,7 +191,7 @@ public class UIManager : MonoBehaviour
         {
             if (Player.LocalPlayer.State.Value == PlayerState.Ready)
             {
-                waitingForPlayerReadyPanel.SetActive(false);
+                waitingForPlayerReadyText.gameObject.SetActive(false);
             }
             else
             {
@@ -211,7 +212,7 @@ public class UIManager : MonoBehaviour
         {
             if (Player.LocalPlayer.State.Value == PlayerState.Ready)
             {
-                waitingForPlayerReadyPanel.SetActive(true);
+                waitingForPlayerReadyText.gameObject.SetActive(true);
             }
             else
             {
@@ -266,8 +267,8 @@ public class UIManager : MonoBehaviour
             finalMoneyText[i].enabled = false;
         }
 
-        timesUpText.enabled = false;
-        gameFinishedPanel.SetActive(false);
+        timesUpText.gameObject.SetActive(false);
+        gameFinishedText.gameObject.SetActive(false);
         finalScoresPanel.SetActive(true);
 
         finalScoresPanel.GetComponent<Animation>().Play("openFinalScoresPanel");

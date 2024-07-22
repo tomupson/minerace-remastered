@@ -11,7 +11,6 @@ public class LobbyUI : MonoBehaviour
     [SerializeField] private Text statusText;
     [SerializeField] private GameObject gameListItemPrefab;
     [SerializeField] private Transform gameListTransform;
-    [SerializeField] private InputField filterMatchField;
     [SerializeField] private Button createMatchButton;
     [SerializeField] private Button refreshButton;
     [SerializeField] private CreateMatchUI createMatchPopup;
@@ -27,7 +26,6 @@ public class LobbyUI : MonoBehaviour
 
         refreshButton.onClick.AddListener(() =>
         {
-            refreshButton.enabled = false;
             AudioManager.Instance.PlaySound("button_press");
             RefreshGameList();
         });
@@ -44,23 +42,22 @@ public class LobbyUI : MonoBehaviour
     {
         ClearGameList();
 
+        refreshButton.enabled = false;
         statusText.text = "Searching for open games...";
-
-        QueryLobbiesOptions options = new QueryLobbiesOptions();
-        options.Count = 20;
-        options.Filters = new List<QueryFilter>
-        {
-            new QueryFilter(QueryFilter.FieldOptions.Name, filterMatchField.text, QueryFilter.OpOptions.CONTAINS)
-        };
 
         List<Lobby> lobbies;
         try
         {
-            QueryResponse response = await Lobbies.Instance.QueryLobbiesAsync(options);
+            QueryLobbiesOptions queryOptions = new QueryLobbiesOptions { Count = 20 };
+            queryOptions.Filters = new List<QueryFilter>();
+            queryOptions.Filters.Add(new QueryFilter(QueryFilter.FieldOptions.AvailableSlots, "0", QueryFilter.OpOptions.GT));
+
+            QueryResponse response = await Lobbies.Instance.QueryLobbiesAsync(queryOptions);
             lobbies = response.Results;
         }
-        catch (LobbyServiceException)
+        catch (LobbyServiceException ex)
         {
+            Debug.LogException(ex);
             statusText.text = "Failed to fetch lobbies.";
             refreshButton.enabled = true;
             return;
@@ -82,6 +79,8 @@ public class LobbyUI : MonoBehaviour
             gameListItemObject.GetComponent<GameListItem>().Setup(lobby, JoinLobby);
             gameListItemObjects.Add(gameListItemObject);
         }
+
+        refreshButton.enabled = true;
     }
 
     private void ClearGameList()
@@ -105,8 +104,6 @@ public class LobbyUI : MonoBehaviour
         bool joined = await LobbyManager.Instance.TryJoinLobby(lobby);
         if (!joined)
         {
-            // TODO: Make this a full screen overlay
-            statusText.text = "Failed to join lobby.";
             AudioManager.Instance.PlaySound("connection_error");
             ClearGameList();
         }

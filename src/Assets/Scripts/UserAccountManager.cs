@@ -7,6 +7,8 @@ using UnityEngine.InputSystem;
 
 public class UserAccountManager : MonoBehaviour
 {
+    private PlayerInputActions inputActions;
+
     public static UserAccountManager Instance { get; private set; }
     public UserInfo UserInfo { get; private set; }
 
@@ -15,47 +17,65 @@ public class UserAccountManager : MonoBehaviour
         DontDestroyOnLoad(this);
         Instance = this;
 
-        PlayerInputActions inputActions = new PlayerInputActions();
+        inputActions = new PlayerInputActions();
         inputActions.Player.Enable();
         inputActions.Player.Screenshot.performed += OnScreenshotPerformed;
+    }
+
+    private void OnDestroy()
+    {
+        inputActions.Player.Screenshot.performed -= OnScreenshotPerformed;
+        inputActions.Dispose();
     }
 
     public async Task<bool> Login(string username)
     {
         try
         {
+            if (UnityServices.State != ServicesInitializationState.Initialized)
+            {
 #if DEBUG
-            InitializationOptions hostOptions = new InitializationOptions().SetProfile("host");
-            InitializationOptions clientOptions = new InitializationOptions().SetProfile("client");
+                InitializationOptions hostOptions = new InitializationOptions().SetProfile("host");
+                InitializationOptions clientOptions = new InitializationOptions().SetProfile("client");
 
-            await UnityServices.InitializeAsync(hostOptions);
+                await UnityServices.InitializeAsync(hostOptions);
 
-            AuthenticationService.Instance.SignedIn += () =>
-            {
-                Debug.Log($"Signed in: {AuthenticationService.Instance.PlayerId}");
-            };
-
-            if (AuthenticationService.Instance.IsAuthorized)
-            {
-                Debug.Log("Authorized");
-                AuthenticationService.Instance.SignOut();
-                await UnityServices.InitializeAsync(clientOptions);
+                if (AuthenticationService.Instance.IsAuthorized)
+                {
+                    Debug.Log("Authorized"); 
+                    AuthenticationService.Instance.SignOut();
+                    await UnityServices.InitializeAsync(clientOptions);
+                }
+#else
+                await UnityServices.InitializeAsync();
+#endif
             }
 
+            AuthenticationService.Instance.SignedIn += () => Debug.Log($"Signed in: {AuthenticationService.Instance.PlayerId}");
+            AuthenticationService.Instance.SignedOut += () => Debug.Log("Signed out");
+
             await AuthenticationService.Instance.SignInAnonymouslyAsync();
-#else
-            //await UnityServices.InitializeAsync();
-            //await AuthenticationService.Instance.SignInAnonymouslyAsync();
-#endif
 
             int id = UnityEngine.Random.Range(1000, 10000);
-            UserInfo user = new UserInfo();
-            user.UserId = id;
-            user.Username = username ?? $"User#{id}";
+            UserInfo = new UserInfo { UserId = id, Username = username };
+
+            if (string.IsNullOrWhiteSpace(username))
+            {
+                UserInfo.Username = $"User#{id}";
+            }
+
             return true;
         }
-        catch (AuthenticationException) { }
+        catch (AuthenticationException ex)
+        {
+            Debug.LogException(ex);
+        }
         return false;
+    }
+
+    public void Logout()
+    {
+        AuthenticationService.Instance.SignOut();
     }
 
     private void OnScreenshotPerformed(InputAction.CallbackContext context)

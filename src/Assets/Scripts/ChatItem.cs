@@ -8,7 +8,6 @@ public class ChatItem : NetworkBehaviour
     private readonly NetworkVariable<FixedString64Bytes> sender = new NetworkVariable<FixedString64Bytes>();
     private readonly NetworkVariable<FixedString512Bytes> message = new NetworkVariable<FixedString512Bytes>();
 
-    [Header("Message Settings")]
     [SerializeField] private Text senderText;
     [SerializeField] private Text messageText;
 

@@ -3,8 +3,12 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-public class CreateMatchUI : MonoBehaviour
+public class CreateMatchUI : MonoBehaviour, IAnimationStateHandler
 {
+    private static readonly int collapseStateHash = Animator.StringToHash("Collapse");
+    private static readonly int growTriggerHash = Animator.StringToHash("Grow");
+    private static readonly int collapseTriggerHash = Animator.StringToHash("Collapse");
+
     private Animator animator;
 
     [SerializeField] private InputField nameField;
@@ -17,20 +21,21 @@ public class CreateMatchUI : MonoBehaviour
     {
         animator = GetComponent<Animator>();
 
-        AnimationEventHandler animationEventHandler = GetComponent<AnimationEventHandler>();
-        animationEventHandler.OnAnimationComplete += () => Hide();
-
         nameField.onValueChanged.AddListener(OnGameNameChanged);
 
         createButton.onClick.AddListener(CreateGame);
         closeButton.onClick.AddListener(Close);
+    }
 
+    private void Start()
+    {
         Hide();
     }
 
     public void Open()
     {
         gameObject.SetActive(true);
+        animator.SetTrigger(growTriggerHash);
     }
 
     private async void CreateGame()
@@ -58,7 +63,7 @@ public class CreateMatchUI : MonoBehaviour
 
     private void Close()
     {
-        animator.SetTrigger("Collapse");
+        animator.SetTrigger(collapseTriggerHash);
     }
 
     private void Hide()
@@ -73,5 +78,18 @@ public class CreateMatchUI : MonoBehaviour
     private void OnGameNameChanged(string gameName)
     {
         statusText.text = "";
+    }
+
+    public void OnStateEnter(Animator animator, AnimatorStateInfo stateInfo, int layerIndex) { }
+
+    public void OnStateUpdate(Animator animator, AnimatorStateInfo stateInfo, int layerIndex) { }
+
+    public void OnStateExit(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
+    {
+        Debug.Assert(this.animator == animator);
+        if (stateInfo.shortNameHash == collapseStateHash)
+        {
+            Hide();
+        }
     }
 }

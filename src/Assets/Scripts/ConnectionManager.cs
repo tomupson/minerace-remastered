@@ -1,9 +1,13 @@
+using System;
 using Unity.Netcode;
 using UnityEngine;
 
 public class ConnectionManager : MonoBehaviour
 {
     public static ConnectionManager Instance { get; private set; }
+
+    public event Action OnConnecting;
+    public event Action OnConnectionFailed;
 
     private void Awake()
     {
@@ -19,6 +23,9 @@ public class ConnectionManager : MonoBehaviour
 
     public void StartClient()
     {
+        OnConnecting?.Invoke();
+
+        NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnect;
         NetworkManager.Singleton.StartClient();
     }
 
@@ -37,5 +44,10 @@ public class ConnectionManager : MonoBehaviour
         }
 
         response.Approved = true;
+    }
+
+    private void OnClientDisconnect(ulong obj)
+    {
+        OnConnectionFailed?.Invoke();
     }
 }

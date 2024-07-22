@@ -15,7 +15,14 @@ public class LoginUI : MonoBehaviour
     private void Awake()
     {
         loginButton.onClick.AddListener(Login);
-        exitButton.onClick.AddListener(() => Application.Quit());
+        exitButton.onClick.AddListener(() =>
+        {
+#if UNITY_EDITOR
+            UnityEditor.EditorApplication.isPlaying = false;
+#else
+            Application.Quit();
+#endif
+        });
         registerButton.onClick.AddListener(() => Application.OpenURL("https://tomupson.com/minerace/register"));
 
         usernameInputField.onValueChanged.AddListener(OnInputChanged);
@@ -25,7 +32,7 @@ public class LoginUI : MonoBehaviour
     private void Start()
     {
         loginStatusText.text = "";
-#if DEBUG
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
         Login();
 #endif
     }
@@ -33,9 +40,23 @@ public class LoginUI : MonoBehaviour
     private async void Login()
     {
         loginStatusText.text = "";
+
+        string username = usernameInputField.text;
+#if !UNITY_EDITOR && !DEVELOPMENT_BUILD
+        if (string.IsNullOrWhiteSpace(username))
+        {
+            loginStatusText.text = "The field 'Username' is required.";
+            return;
+        }
+#endif
+
+        loginButton.enabled = false;
+        loginStatusText.text = "Logging you in. Please wait...";
+
         bool loggedIn = await UserAccountManager.Instance.Login(usernameInputField.text);
         if (!loggedIn)
         {
+            loginButton.enabled = true;
             loginStatusText.text = "Failed to log in.";
             return;
         }

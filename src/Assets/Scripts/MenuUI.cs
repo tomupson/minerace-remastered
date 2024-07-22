@@ -18,7 +18,11 @@ public class MenuUI : MonoBehaviour
         exitButton.onClick.AddListener(() =>
         {
             AudioManager.Instance.PlaySound("button_press");
+#if UNITY_EDITOR
+            UnityEditor.EditorApplication.isPlaying = false;
+#else
             Application.Quit();
+#endif
         });
     }
 }

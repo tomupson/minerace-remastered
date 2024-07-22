@@ -11,6 +11,11 @@ public class FollowPlayer : MonoBehaviour
         Player.OnAnyPlayerSpawned += OnAnyPlayedSpawned;
     }
 
+    private void OnDestroy()
+    {
+        Player.OnAnyPlayerSpawned -= OnAnyPlayedSpawned;
+    }
+
     private void Update()
     {
         if (playerToFollow == null)

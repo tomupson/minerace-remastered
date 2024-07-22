@@ -1,22 +1,31 @@
+using System;
 using System.Collections.Generic;
-using Unity.Netcode.Transports.UTP;
+using System.Threading.Tasks;
 using Unity.Netcode;
+using Unity.Netcode.Transports.UTP;
 using Unity.Networking.Transport.Relay;
 using Unity.Services.Lobbies;
 using Unity.Services.Lobbies.Models;
-using Unity.Services.Relay.Models;
 using Unity.Services.Relay;
+using Unity.Services.Relay.Models;
 using UnityEngine;
-using System.Threading.Tasks;
 
 public class LobbyManager : MonoBehaviour
 {
+    private const float LobbyHeartbeatIntervalSeconds = 15f;
+    private const string JoinCodeKey = "JOIN_CODE";
+
     public static LobbyManager Instance { get; private set; }
+
+    public event Action OnLobbyCreating;
+    public event Action OnLobbyCreationFailed;
+    public event Action OnJoiningLobby;
+    public event Action OnLobbyJoinFailed;
 
     [SerializeField] private int lobbySize = 2;
 
     private Lobby activeLobby;
-    private float lobbyHeartbeatTimer;
+    private float lobbyHeartbeatTimer = LobbyHeartbeatIntervalSeconds;
 
     private void Awake()
     {
@@ -31,6 +40,7 @@ public class LobbyManager : MonoBehaviour
             lobbyHeartbeatTimer -= Time.deltaTime;
             if (lobbyHeartbeatTimer <= 0f)
             {
+                lobbyHeartbeatTimer = LobbyHeartbeatIntervalSeconds;
                 await Lobbies.Instance.SendHeartbeatPingAsync(activeLobby.Id);
             }
         }
@@ -38,9 +48,10 @@ public class LobbyManager : MonoBehaviour
 
     public async Task<bool> TryCreateLobby(string gameName, string gamePassword)
     {
+        OnLobbyCreating?.Invoke();
         try
         {
-            Allocation allocation = await RelayService.Instance.CreateAllocationAsync(lobbySize);
+            Allocation allocation = await RelayService.Instance.CreateAllocationAsync(lobbySize - 1);
             RelayServerData relayData = new RelayServerData(allocation, "dtls");
 
             NetworkManager.Singleton.GetComponent<UnityTransport>().SetRelayServerData(relayData);
@@ -54,22 +65,30 @@ public class LobbyManager : MonoBehaviour
 
             string joinCode = await RelayService.Instance.GetJoinCodeAsync(allocation.AllocationId);
             options.Data = new Dictionary<string, DataObject>();
-            options.Data.Add("JOIN_CODE", new DataObject(DataObject.VisibilityOptions.Member, joinCode));
+            options.Data.Add(JoinCodeKey, new DataObject(DataObject.VisibilityOptions.Member, joinCode));
 
             activeLobby = await Lobbies.Instance.CreateLobbyAsync(gameName, lobbySize, options);
             return true;
         }
-        catch (LobbyServiceException) { }
-        catch (RelayServiceException) { }
+        catch (LobbyServiceException ex)
+        {
+            Debug.LogException(ex);
+        }
+        catch (RelayServiceException ex)
+        {
+            Debug.LogException(ex);
+        }
+        OnLobbyCreationFailed?.Invoke();
         return false;
     }
 
     public async Task<bool> TryJoinLobby(Lobby lobby, JoinLobbyByIdOptions options = null)
     {
+        OnJoiningLobby?.Invoke();
         try
         {
             lobby = await Lobbies.Instance.JoinLobbyByIdAsync(lobby.Id, options);
-            if (!lobby.Data.TryGetValue("JOIN_CODE", out DataObject lobbyData))
+            if (!lobby.Data.TryGetValue(JoinCodeKey, out DataObject lobbyData))
             {
                 return false;
             }
@@ -82,8 +101,33 @@ public class LobbyManager : MonoBehaviour
             ConnectionManager.Instance.StartClient();
             return true;
         }
-        catch (LobbyServiceException) { }
-        catch (RelayServiceException) { }
+        catch (LobbyServiceException ex)
+        {
+            Debug.LogException(ex);
+        }
+        catch (RelayServiceException ex)
+        {
+            Debug.LogException(ex);
+        }
+        OnLobbyJoinFailed?.Invoke();
         return false;
+    }
+
+    public async Task DeleteLobby()
+    {
+        if (activeLobby == null)
+        {
+            return;
+        }
+
+        try
+        {
+            await LobbyService.Instance.DeleteLobbyAsync(activeLobby.Id);
+            activeLobby = null;
+        }
+        catch (LobbyServiceException ex)
+        {
+            Debug.LogException(ex);
+        }
     }
 }

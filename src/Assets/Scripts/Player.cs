@@ -87,7 +87,11 @@ public class Player : NetworkBehaviour
         if (!canMine)
         {
             pickaxeCooldownTimer -= Time.deltaTime;
-            canMine = pickaxeCooldownTimer <= 0;
+            if (pickaxeCooldownTimer <= 0f)
+            {
+                canMine = true;
+                pickaxeCooldownTimer = pickaxeCooldownTime;
+            }
         }
 
         if (isPaused)
@@ -112,6 +116,13 @@ public class Player : NetworkBehaviour
             SpriteRenderer hitBlockSpriteRenderer = hit.transform.GetComponent<SpriteRenderer>();
             hitBlockSpriteRenderer.sprite = hitBlock.blockOutlineTextures[hitBlock.textureIndex];
         }
+    }
+
+    public override void OnDestroy()
+    {
+        inputActions.Player.Mine.performed -= OnMinePerformed;
+        inputActions.Player.SendChat.performed -= OnSendChatPerformed;
+        inputActions.Dispose();
     }
 
     public override void OnNetworkSpawn()
@@ -194,7 +205,6 @@ public class Player : NetworkBehaviour
         hit.transform.gameObject.SetActive(false);
 
         canMine = false;
-        pickaxeCooldownTimer = pickaxeCooldownTime;
 
         BreakBlockServerRpc(hit.transform.gameObject);
     }
@@ -204,7 +214,7 @@ public class Player : NetworkBehaviour
         ChatManager.Instance.SendMessage(Username.Value.ToString(), "This is a chat message");
     }
 
-    // TODO: Think about whether the player should update it's own state based on the movement of the game,
+    // TODO: Think about whether the player should update it's own state based on the movement of the game (current behaviour),
     // or if the game manager has authority to change the players' states (would require "RequireOwnership = false" on the ServerRpc)
     private void OnGameStateChanged(GameState previousState, GameState newState)
     {

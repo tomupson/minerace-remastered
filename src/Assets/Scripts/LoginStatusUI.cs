@@ -17,7 +17,7 @@ public class LoginStatusUI : MonoBehaviour
 
         logoutButton.onClick.AddListener(() =>
         {
-            // TODO: Handle logout
+            UserAccountManager.Instance.Logout();
             SceneManager.LoadScene("Login");
         });
     }
