@@ -6,19 +6,19 @@ public class AnimationStateDispatchBehaviour : StateMachineBehaviour
 
     public override void OnStateEnter(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
     {
-        animationStateHandler ??= animator.GetComponent<IAnimationStateHandler>();
+        animationStateHandler ??= animator.GetComponentInParent<IAnimationStateHandler>();
         animationStateHandler?.OnStateEnter(animator, stateInfo, layerIndex);
     }
 
     public override void OnStateUpdate(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
     {
-        animationStateHandler ??= animator.GetComponent<IAnimationStateHandler>();
+        animationStateHandler ??= animator.GetComponentInParent<IAnimationStateHandler>();
         animationStateHandler?.OnStateUpdate(animator, stateInfo, layerIndex);
     }
 
     public override void OnStateExit(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
     {
-        animationStateHandler ??= animator.GetComponent<IAnimationStateHandler>();
+        animationStateHandler ??= animator.GetComponentInParent<IAnimationStateHandler>();
         animationStateHandler?.OnStateExit(animator, stateInfo, layerIndex);
     }
 }

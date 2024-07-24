@@ -4,9 +4,6 @@ using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-/// <summary>
-/// Handles functionalities that all players should experience e.g. the game countdown timer
-/// </summary>
 public class GameManager : NetworkBehaviour
 {
     public static GameManager Instance { get; private set; }

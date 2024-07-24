@@ -131,8 +131,8 @@ public class LevelGenerator : NetworkBehaviour
     {
         SpriteRenderer blockRenderer = blockInstance.GetComponent<SpriteRenderer>();
 
-        int blockTextureIndex = Random.Range(0, block.blockTextures.Count);
-        blockRenderer.sprite = block.blockTextures[blockTextureIndex];
+        int blockTextureIndex = Random.Range(0, block.textures.Count);
+        blockRenderer.sprite = block.textures[blockTextureIndex];
         block.textureIndex = blockTextureIndex;
     }
 

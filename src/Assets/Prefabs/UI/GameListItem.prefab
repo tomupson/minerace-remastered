@@ -121,7 +121,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 114663880765499182}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: 
         m_MethodName: JoinGame
         m_Mode: 1
@@ -382,7 +382,7 @@ GameObject:
   - component: {fileID: 222118642832621190}
   - component: {fileID: 114949553565434308}
   - component: {fileID: 114974116483129102}
-  - component: {fileID: 114663880765499182}
+  - component: {fileID: 3687872051770568668}
   m_Layer: 5
   m_Name: GameListItem
   m_TagString: Untagged
@@ -494,7 +494,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
---- !u!114 &114663880765499182
+--- !u!114 &3687872051770568668
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -503,7 +503,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1963866667493230}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 754c267d1dbeee34db8d15059c04cd27, type: 3}
+  m_Script: {fileID: 11500000, guid: 170c0a258d40a29418bec2ec66a51ff7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   matchInfoText: {fileID: 114875383531959334}
