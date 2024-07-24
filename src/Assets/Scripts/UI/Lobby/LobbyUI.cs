@@ -20,11 +20,12 @@ public class LobbyUI : MonoBehaviour
     {
         createMatchButton.onClick.AddListener(() => createMatchPopup.Open());
         refreshButton.onClick.AddListener(RefreshGameList);
-        passwordedGamePopup.OnClosed += () => RefreshGameList();
     }
 
     private void Start()
     {
+        passwordedGamePopup.OnClosed += () => RefreshGameList();
+
         RefreshGameList();
     }
 

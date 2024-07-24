@@ -78,8 +78,6 @@ public class PasswordedGameUI : MonoBehaviour, IAnimationStateHandler
         statusText.text = "";
         joinButton.enabled = true;
         gameObject.SetActive(false);
-
-        OnClosed?.Invoke();
     }
 
     public void OnStateEnter(Animator animator, AnimatorStateInfo stateInfo, int layerIndex) { }
@@ -92,6 +90,7 @@ public class PasswordedGameUI : MonoBehaviour, IAnimationStateHandler
         if (stateInfo.shortNameHash == collapseStateHash)
         {
             Hide();
+            OnClosed?.Invoke();
         }
     }
 }
