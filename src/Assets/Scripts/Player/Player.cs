@@ -192,7 +192,7 @@ public class Player : NetworkBehaviour
 
     private void OnMinePerformed(InputAction.CallbackContext context)
     {
-        if (!canMine)
+        if (State.Value != PlayerState.Playing || PauseManager.Instance.IsPaused || !canMine)
         {
             return;
         }
@@ -217,6 +217,11 @@ public class Player : NetworkBehaviour
 
     private void OnSendChatPerformed(InputAction.CallbackContext context)
     {
+        if (PauseManager.Instance.IsPaused)
+        {
+            return;
+        }
+
         ChatManager.Instance.SendMessage(Username.Value.ToString(), "This is a chat message");
     }
 
