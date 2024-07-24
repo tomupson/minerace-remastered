@@ -1,6 +1,5 @@
 ﻿using Unity.Collections;
 using Unity.Netcode;
-using UnityEngine;
 using UnityEngine.UI;
 
 public class PlayerNameplate : NetworkBehaviour
@@ -28,17 +27,8 @@ public class PlayerNameplate : NetworkBehaviour
 
     private void HandlePlayerStateChanged(PlayerState previousState, PlayerState newState)
     {
-        switch (newState)
-        {
-            case PlayerState.Playing:
-                gameObject.SetActive(true);
-                // TODO: Required?
-                gameObject.GetComponent<RectTransform>().position = new Vector3(player.transform.position.x, player.transform.position.y + 0.5f, 0);
-                break;
-            case PlayerState.Completed:
-                gameObject.SetActive(false);
-                break;
-        }
+        bool isPlaying = newState == PlayerState.Playing;
+        gameObject.SetActive(isPlaying);
     }
 
     private void HandleUsernameChanged(FixedString64Bytes previousUsername, FixedString64Bytes newUsername)
