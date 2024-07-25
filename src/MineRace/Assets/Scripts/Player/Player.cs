@@ -38,20 +38,10 @@ public class Player : NetworkBehaviour
         playerRigidbody = GetComponent<Rigidbody2D>();
         spriteRenderer = GetComponent<SpriteRenderer>();
         circleCollider = GetComponent<CircleCollider2D>();
-
-        inputActions = new PlayerInputActions();
-        inputActions.Player.Enable();
-        inputActions.Player.Mine.performed += OnMinePerformed;
-        inputActions.Player.SendChat.performed += OnSendChatPerformed;
     }
 
     private void FixedUpdate()
     {
-        if (!IsOwner)
-        {
-            return;
-        }
-
         if (State.Value != PlayerState.Playing || PauseManager.Instance.IsPaused)
         {
             return;
@@ -74,11 +64,6 @@ public class Player : NetworkBehaviour
 
     private void Update()
     {
-        if (!IsOwner)
-        {
-            return;
-        }
-
         if (State.Value != PlayerState.Playing)
         {
             return;
@@ -118,15 +103,9 @@ public class Player : NetworkBehaviour
         }
     }
 
-    public override void OnDestroy()
-    {
-        inputActions.Player.Mine.performed -= OnMinePerformed;
-        inputActions.Player.SendChat.performed -= OnSendChatPerformed;
-        inputActions.Dispose();
-    }
-
     public override void OnNetworkSpawn()
     {
+        enabled = IsOwner;
         if (IsOwner)
         {
             LocalPlayer = this;
@@ -134,11 +113,28 @@ public class Player : NetworkBehaviour
             GameManager.Instance.State.OnValueChanged += OnGameStateChanged;
 
             transform.position = new Vector3(LevelGenerator.Instance.mapWidth / 2 + 12 * ((int)OwnerClientId * 2 - 1), 100, 0);
+
+            inputActions = new PlayerInputActions();
+            inputActions.Player.Enable();
+            inputActions.Player.Mine.performed += OnMinePerformed;
+            inputActions.Player.SendChat.performed += OnSendChatPerformed;
         }
 
         OnAnyPlayerSpawned?.Invoke(this);
         State.OnValueChanged += OnPlayerStateChanged;
         FacingRight.OnValueChanged += OnFacingRightChanged;
+    }
+
+    public override void OnNetworkDespawn()
+    {
+        if (!IsOwner)
+        {
+            return;
+        }
+
+        inputActions.Player.Mine.performed -= OnMinePerformed;
+        inputActions.Player.SendChat.performed -= OnSendChatPerformed;
+        inputActions.Dispose();
     }
 
     public void ReachedEnd()
@@ -174,6 +170,7 @@ public class Player : NetworkBehaviour
     [ServerRpc]
     private void BreakBlockServerRpc(NetworkObjectReference reference)
     {
+        // TODO: Validate the block break
         if (reference.TryGet(out NetworkObject networkObject))
         {
             networkObject.Despawn();
@@ -246,6 +243,7 @@ public class Player : NetworkBehaviour
         {
             spriteRenderer.enabled = false;
             circleCollider.enabled = false;
+            playerRigidbody.bodyType = RigidbodyType2D.Static;
         }
     }
 

@@ -15,17 +15,13 @@ public class PlayerPickaxe : NetworkBehaviour
 
     public override void OnNetworkSpawn()
     {
+        enabled = IsOwner;
         player.State.OnValueChanged += OnPlayerStateChanged;
         player.FacingRight.OnValueChanged += OnPlayerFacingRightChanged;
     }
 
     private void Update()
     {
-        if (!IsOwner)
-        {
-            return;
-        }
-
         if (player.State.Value != PlayerState.Playing)
         {
             return;
