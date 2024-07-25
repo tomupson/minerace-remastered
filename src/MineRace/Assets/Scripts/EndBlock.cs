@@ -24,7 +24,7 @@ public class EndBlock : MonoBehaviour
         }
 
         Player otherPlayer = players.FirstOrDefault(p => !p.IsLocalPlayer);
-        if (otherPlayer.State.Value == PlayerState.Completed)
+        if (otherPlayer.State.Value >= PlayerState.Completed)
         {
             // TODO: This logic should be run on the server, it should not be allowed that clients' end blocks drive the game state
             // A reason we should be doing this is because the server might not have informed this client yet about the updated state of the other player,
