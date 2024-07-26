@@ -1,4 +1,4 @@
-using Unity.Netcode;
+using MineRace.ConnectionManagement;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -10,7 +10,7 @@ public class PauseUI : MonoBehaviour
     private void Awake()
     {
         resumeButton.onClick.AddListener(() => PauseManager.Instance.Unpause());
-        leaveButton.onClick.AddListener(() => NetworkManager.Singleton.Shutdown());
+        leaveButton.onClick.AddListener(() => ConnectionManager.Instance.RequestShutdown());
     }
 
     private void Start()

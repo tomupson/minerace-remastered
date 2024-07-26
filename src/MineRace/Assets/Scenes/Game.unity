@@ -693,7 +693,7 @@ Animator:
   m_GameObject: {fileID: 497219595}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 458c27d0ea743744088197d565f85c87, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -832,7 +832,7 @@ MonoBehaviour:
   playerPrefab: {fileID: 355904156403638674, guid: 4fa2f0f1cbec159409cd3f10b83cf462,
     type: 3}
   gameTime: 18000
-  preGameCountdownTime: 10
+  preGameCountdownTime: 5
 --- !u!4 &662086340
 Transform:
   m_ObjectHideFlags: 0

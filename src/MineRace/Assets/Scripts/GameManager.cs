@@ -122,7 +122,7 @@ public class GameManager : NetworkBehaviour
         playerObject.GetComponent<NetworkObject>().SpawnAsPlayerObject(clientId, destroyWithScene: true);
     }
 
-    [ServerRpc]
+    [ServerRpc(RequireOwnership = false)]
     private void GameOverServerRpc()
     {
         State.Value = GameState.Completed;

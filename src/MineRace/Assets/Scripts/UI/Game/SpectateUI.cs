@@ -18,6 +18,7 @@ public class SpectateUI : MonoBehaviour
 
     private void Start()
     {
+        GameManager.Instance.State.OnValueChanged += HandleGameStateChanged;
         Player.OnAnyPlayerSpawned += OnAnyPlayerSpawned;
 
         Hide();
@@ -26,6 +27,14 @@ public class SpectateUI : MonoBehaviour
     private void OnDestroy()
     {
         Player.OnAnyPlayerSpawned -= OnAnyPlayerSpawned;
+    }
+
+    private void HandleGameStateChanged(GameState previousState, GameState newState)
+    {
+        if (newState == GameState.Completed)
+        {
+            Hide();
+        }
     }
 
     private void OnAnyPlayerSpawned(Player player)
