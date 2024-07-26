@@ -61,7 +61,8 @@ public class AudioManager : MonoBehaviour
 
         audioSource.Play();
 
-        Destroy(gameObject, sound.clip.length * ((Time.timeScale < 0.01f) ? 0.01f : Time.timeScale));
+        float pitchCorrectedLength = sound.clip.length / sound.pitch;
+        Destroy(gameObject, pitchCorrectedLength * ((Time.timeScale < 0.01f) ? 0.01f : Time.timeScale));
     }
 
     public void PlaySound(string name)
