@@ -153,7 +153,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   moveSpeed: 10
   pickaxeCooldownTime: 0.2
-  isPaused: 0
 --- !u!58 &5655344893897587341
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -451,7 +450,7 @@ Canvas:
   m_VertexColorAlwaysGammaSpace: 0
   m_AdditionalShaderChannelsFlag: 0
   m_UpdateRectTransformForStandalone: 0
-  m_SortingLayerID: 0
+  m_SortingLayerID: -75238909
   m_SortingOrder: 0
   m_TargetDisplay: 0
 --- !u!114 &2676648131600628465
