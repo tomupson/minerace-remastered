@@ -2737,9 +2737,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 1093274035}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 77cf82f0981e1da4bb5cefe74f734248, type: 3}
+  m_Script: {fileID: 11500000, guid: bf51ea31bbc84cc3aa883cc5f1caae06, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  numReconnectAttempts: 2
+  MaxConnectedPlayers: 2
 --- !u!1 &1197849571
 GameObject:
   m_ObjectHideFlags: 0

@@ -1,6 +1,6 @@
-using Unity.Netcode;
+using MineRace.ConnectionManagement;
+using MineRace.UGS;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class CreateMatchUI : MonoBehaviour, IAnimationStateHandler
@@ -57,7 +57,7 @@ public class CreateMatchUI : MonoBehaviour, IAnimationStateHandler
         bool created = await LobbyManager.Instance.TryCreateLobby(gameName, gamePassword);
         if (created)
         {
-            NetworkManager.Singleton.SceneManager.LoadScene("Game", LoadSceneMode.Single);
+            ConnectionManager.Instance.StartHost();
         }
     }
 

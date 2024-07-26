@@ -1,4 +1,6 @@
-using Unity.Netcode;
+using MineRace.ConnectionManagement;
+using MineRace.Infrastructure;
+using MineRace.UGS;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -14,8 +16,7 @@ public class LobbyMessageUI : MonoBehaviour
 
     private void Start()
     {
-        ConnectionManager.Instance.OnConnecting += OnConnecting;
-        ConnectionManager.Instance.OnConnectionFailed += OnConnectionFailed;
+        BufferedMessageChannel<ConnectStatus>.Instance.Subscribe(OnConnectStatusMessage);
         LobbyManager.Instance.OnLobbyCreating += OnLobbyCreating;
         LobbyManager.Instance.OnLobbyCreationFailed += OnLobbyCreationFailed;
         LobbyManager.Instance.OnJoiningLobby += OnJoiningLobby;
@@ -26,25 +27,34 @@ public class LobbyMessageUI : MonoBehaviour
 
     private void OnDestroy()
     {
-        ConnectionManager.Instance.OnConnecting -= OnConnecting;
-        ConnectionManager.Instance.OnConnectionFailed -= OnConnectionFailed;
+        BufferedMessageChannel<ConnectStatus>.Instance.Unsubscribe(OnConnectStatusMessage);
         LobbyManager.Instance.OnLobbyCreating -= OnLobbyCreating;
         LobbyManager.Instance.OnLobbyCreationFailed -= OnLobbyCreationFailed;
         LobbyManager.Instance.OnJoiningLobby -= OnJoiningLobby;
         LobbyManager.Instance.OnLobbyJoinFailed -= OnLobbyJoinFailed;
     }
 
-    private void OnConnecting() => Show("Connecting...");
-
-    private void OnConnectionFailed()
+    private void OnConnectStatusMessage(ConnectStatus status)
     {
-        string message = NetworkManager.Singleton.DisconnectReason;
-        if (string.IsNullOrWhiteSpace(message))
+        Debug.Log("STATUS: " + status);
+        switch (status)
         {
-            message = "Failed to connect.";
+            case ConnectStatus.ServerFull:
+                Show("Game is full.", closable: true);
+                break;
+            case ConnectStatus.GenericDisconnect:
+                Show("The connection to the host was lost.", closable: true);
+                break;
+            case ConnectStatus.HostEndedSession:
+                Show("The host has ended the game session.", closable: true);
+                break;
+            case ConnectStatus.StartHostFailed:
+                Show("Starting host failed.", closable: true);
+                break;
+            case ConnectStatus.StartClientFailed:
+                Show("Starting client failed.", closable: true);
+                break;
         }
-
-        Show(message, closable: true);
     }
 
     private void OnLobbyCreating() => Show("Creating match...");

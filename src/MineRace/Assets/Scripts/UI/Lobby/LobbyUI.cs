@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using MineRace.ConnectionManagement;
+using MineRace.UGS;
 using Unity.Services.Lobbies;
 using Unity.Services.Lobbies.Models;
 using UnityEngine;
@@ -97,6 +99,9 @@ public class LobbyUI : MonoBehaviour
         {
             AudioManager.Instance.PlaySound("connection_error");
             ClearGameList();
+            return;
         }
+
+        ConnectionManager.Instance.StartClient();
     }
 }

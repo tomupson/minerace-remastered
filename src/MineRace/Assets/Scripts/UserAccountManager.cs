@@ -14,7 +14,7 @@ public class UserAccountManager : MonoBehaviour
 
     private void Awake()
     {
-        DontDestroyOnLoad(this);
+        DontDestroyOnLoad(gameObject);
         Instance = this;
 
         inputActions = new PlayerInputActions();

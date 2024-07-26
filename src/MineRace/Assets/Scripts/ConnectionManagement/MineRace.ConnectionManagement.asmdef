@@ -1,19 +1,15 @@
 {
-    "name": "MineRace.Game",
+    "name": "MineRace.ConnectionManagement",
     "rootNamespace": "",
     "references": [
-        "GUID:e0cd26848372d4e5c891c569017e11f1",
         "GUID:1491147abca9d7d4bb7105af628b223e",
-        "GUID:3b8ed52f1b5c64994af4c4e0aa4b6c4b",
+        "GUID:f2d49d9fa7e7eb3418e39723a7d3b92f",
         "GUID:fe25561d224ed4743af4c60938a59d0b",
+        "GUID:03058786646e84a4587858e9302c3f41",
         "GUID:4c3f49d89436d478ea78315c03159dcc",
         "GUID:5540e30183c82e84b954c033c388e06c",
-        "GUID:75469ad4d38634e559750d17036d5f7c",
-        "GUID:290d9a18dcaf35841af858d79cfb27db",
-        "GUID:5ceda52e6dc7b724886bbbf20ddd229b",
         "GUID:9c966b7f15e8ea44481ef092262065b5",
-        "GUID:81cf2d5a2f21df4409603cc9e492b7f1",
-        "GUID:80b1663fb1f4e3443b052a37da1bc5c0"
+        "GUID:81cf2d5a2f21df4409603cc9e492b7f1"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
