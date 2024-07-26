@@ -8,7 +8,7 @@ namespace MineRace.ConnectionManagement.States
 {
     internal sealed class OfflineState : ConnectionState
     {
-        private const string MainMenuSceneName = "MainMenu";
+        private const string MenuSceneName = "Menu";
         private readonly LobbyManager lobbyManager;
 
         public OfflineState(ConnectionManager connectionManager, IPublisher<ConnectStatus> connectStatusPublisher, LobbyManager lobbyManager)
@@ -32,9 +32,9 @@ namespace MineRace.ConnectionManagement.States
             }
 
             NetworkManager.Singleton.Shutdown();
-            if (SceneManager.GetActiveScene().name != MainMenuSceneName)
+            if (SceneManager.GetActiveScene().name != MenuSceneName)
             {
-                SceneManager.LoadScene(MainMenuSceneName);
+                SceneManager.LoadScene(MenuSceneName);
             }
         }
 
