@@ -1,5 +1,7 @@
+using MineRace.Audio;
 using MineRace.ConnectionManagement;
 using MineRace.UGS;
+using MineRace.Utils.Animation;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -16,6 +18,9 @@ public class CreateMatchUI : MonoBehaviour, IAnimationStateHandler
     [SerializeField] private Text statusText;
     [SerializeField] private Button createButton;
     [SerializeField] private Button closeButton;
+
+    [SerializeField] private Sound errorMessageSound;
+    [SerializeField] private Sound buttonPressSound;
 
     private void Awake()
     {
@@ -45,14 +50,14 @@ public class CreateMatchUI : MonoBehaviour, IAnimationStateHandler
 
         if (string.IsNullOrWhiteSpace(gameName))
         {
-            AudioManager.Instance.PlaySound("error_message");
+            AudioManager.PlayOneShot(errorMessageSound);
             statusText.text = "The field 'Game Name' is required.";
             return;
         }
 
         createButton.enabled = false;
 
-        AudioManager.Instance.PlaySound("button_press");
+        AudioManager.PlayOneShot(buttonPressSound);
 
         bool created = await LobbyManager.Instance.TryCreateLobby(gameName, gamePassword);
         if (created)

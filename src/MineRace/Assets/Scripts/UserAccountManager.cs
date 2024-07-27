@@ -42,7 +42,7 @@ public class UserAccountManager : MonoBehaviour
 
                 if (AuthenticationService.Instance.IsAuthorized)
                 {
-                    Debug.Log("Authorized"); 
+                    Debug.Log("Authorized");
                     AuthenticationService.Instance.SignOut();
                     await UnityServices.InitializeAsync(clientOptions);
                 }

@@ -1,9 +1,12 @@
 using Unity.Netcode.Components;
 
-public class ClientNetworkTransform : NetworkTransform
+namespace MineRace.Utils.Netcode
 {
-    protected override bool OnIsServerAuthoritative()
+    public class ClientNetworkTransform : NetworkTransform
     {
-        return false;
+        protected override bool OnIsServerAuthoritative()
+        {
+            return false;
+        }
     }
 }

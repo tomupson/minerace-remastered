@@ -1,4 +1,5 @@
 using System;
+using MineRace.Audio;
 using Unity.Collections;
 using Unity.Netcode;
 using UnityEngine;
@@ -202,7 +203,7 @@ public class Player : NetworkBehaviour
 
         Block hitBlock = hit.transform.GetComponent<BlockRenderer>().block;
 
-        AudioManager.Instance.PlayOneShot(hitBlock.breakSound, hit.transform.position);
+        AudioManager.PlayOneShot(hitBlock.breakSound, hit.transform.position);
 
         // Temporarily set it to hidden so that even if it takes the server some time to destroy it, you can't mine it twice
         hit.transform.gameObject.SetActive(false);

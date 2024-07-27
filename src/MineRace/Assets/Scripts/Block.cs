@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using MineRace.Audio;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "Block", menuName = "MineRace/Block")]

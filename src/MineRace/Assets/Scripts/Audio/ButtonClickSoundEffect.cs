@@ -1,16 +1,19 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-[RequireComponent(typeof(Button))]
-public class ButtonClickSoundEffect : MonoBehaviour
+namespace MineRace.Audio
 {
-    [SerializeField] private Sound sound;
-
-    private void Awake()
+    [RequireComponent(typeof(Button))]
+    public class ButtonClickSoundEffect : MonoBehaviour
     {
-        Button button = GetComponent<Button>();
-        button.onClick.AddListener(PlayClickEffect);
-    }
+        [SerializeField] private Sound sound;
 
-    private void PlayClickEffect() => AudioManager.Instance.PlayOneShot(sound);
+        private void Awake()
+        {
+            Button button = GetComponent<Button>();
+            button.onClick.AddListener(PlayClickEffect);
+        }
+
+        private void PlayClickEffect() => AudioManager.PlayOneShot(sound);
+    }
 }

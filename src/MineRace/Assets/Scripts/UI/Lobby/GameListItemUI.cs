@@ -14,7 +14,7 @@ public class GameListItemUI : MonoBehaviour
         matchInfoText.text = $"{lobby.Name} ({lobby.AvailableSlots}/{lobby.MaxPlayers})";
         if (lobby.HasPassword)
         {
-            matchTypeText.color = new Color32(255, 69, 69, 255); 
+            matchTypeText.color = new Color32(255, 69, 69, 255);
             matchTypeText.text = "PASSWORDED";
         }
         else

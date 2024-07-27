@@ -61,7 +61,7 @@ public class LoginUI : MonoBehaviour
             return;
         }
 
-        SceneManager.LoadScene("Menu"); 
+        SceneManager.LoadScene("Menu");
     }
 
     private void OnInputChanged(string value)

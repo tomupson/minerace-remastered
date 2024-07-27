@@ -2,27 +2,30 @@
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-[RequireComponent(typeof(Button))]
-public class ButtonHoverHighlight : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+namespace MineRace.Utils.UI
 {
-    private Text text;
-    private Color originalColour;
-
-    [SerializeField] private Color highlightColour = Color.grey;
-
-    private void Awake()
+    [RequireComponent(typeof(Button))]
+    public class ButtonHoverHighlight : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     {
-        text = GetComponentInChildren<Text>();
-        originalColour = text.color;
-    }
+        private Text text;
+        private Color originalColour;
 
-    public void OnPointerEnter(PointerEventData eventData)
-    {
-        text.color = highlightColour;
-    }
+        [SerializeField] private Color highlightColour = Color.grey;
 
-    public void OnPointerExit(PointerEventData eventData)
-    {
-        text.color = originalColour;
+        private void Awake()
+        {
+            text = GetComponentInChildren<Text>();
+            originalColour = text.color;
+        }
+
+        public void OnPointerEnter(PointerEventData eventData)
+        {
+            text.color = highlightColour;
+        }
+
+        public void OnPointerExit(PointerEventData eventData)
+        {
+            text.color = originalColour;
+        }
     }
 }

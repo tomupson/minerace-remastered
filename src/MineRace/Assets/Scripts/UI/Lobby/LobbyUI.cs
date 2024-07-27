@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using MineRace.Audio;
 using MineRace.ConnectionManagement;
 using MineRace.UGS;
 using Unity.Services.Lobbies;
@@ -17,6 +18,8 @@ public class LobbyUI : MonoBehaviour
     [SerializeField] private Button refreshButton;
     [SerializeField] private CreateMatchUI createMatchPopup;
     [SerializeField] private PasswordedGameUI passwordedGamePopup;
+
+    [SerializeField] private Sound connectionErrorSound;
 
     private void Awake()
     {
@@ -41,7 +44,7 @@ public class LobbyUI : MonoBehaviour
         List<Lobby> lobbies;
         try
         {
-            QueryLobbiesOptions queryOptions = new QueryLobbiesOptions { Count = 20 };
+            QueryLobbiesOptions queryOptions = new QueryLobbiesOptions { Count = 16 };
             queryOptions.Filters = new List<QueryFilter>();
             queryOptions.Filters.Add(new QueryFilter(QueryFilter.FieldOptions.AvailableSlots, "0", QueryFilter.OpOptions.GT));
 
@@ -67,8 +70,7 @@ public class LobbyUI : MonoBehaviour
 
         foreach (Lobby lobby in lobbies)
         {
-            GameObject gameListItemObject = Instantiate(gameListItemPrefab);
-            gameListItemObject.transform.SetParent(gameListTransform);
+            GameObject gameListItemObject = Instantiate(gameListItemPrefab, gameListTransform);
             gameListItemObject.GetComponent<GameListItemUI>().Setup(lobby, JoinLobby);
             gameListItemObjects.Add(gameListItemObject);
         }
@@ -97,7 +99,7 @@ public class LobbyUI : MonoBehaviour
         bool joined = await LobbyManager.Instance.TryJoinLobby(lobby);
         if (!joined)
         {
-            AudioManager.Instance.PlaySound("connection_error");
+            AudioManager.PlayOneShot(connectionErrorSound);
             ClearGameList();
             return;
         }

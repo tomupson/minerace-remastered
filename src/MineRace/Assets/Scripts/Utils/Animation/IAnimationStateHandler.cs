@@ -1,8 +1,11 @@
 using UnityEngine;
 
-public interface IAnimationStateHandler
+namespace MineRace.Utils.Animation
 {
-    void OnStateEnter(Animator animator, AnimatorStateInfo stateInfo, int layerIndex);
-    void OnStateUpdate(Animator animator, AnimatorStateInfo stateInfo, int layerIndex);
-    void OnStateExit(Animator animator, AnimatorStateInfo stateInfo, int layerIndex);
+    public interface IAnimationStateHandler
+    {
+        void OnStateEnter(Animator animator, AnimatorStateInfo stateInfo, int layerIndex);
+        void OnStateUpdate(Animator animator, AnimatorStateInfo stateInfo, int layerIndex);
+        void OnStateExit(Animator animator, AnimatorStateInfo stateInfo, int layerIndex);
+    }
 }

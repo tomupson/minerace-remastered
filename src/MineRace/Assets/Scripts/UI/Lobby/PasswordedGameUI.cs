@@ -1,6 +1,8 @@
 using System;
+using MineRace.Audio;
 using MineRace.ConnectionManagement;
 using MineRace.UGS;
+using MineRace.Utils.Animation;
 using Unity.Services.Lobbies;
 using Unity.Services.Lobbies.Models;
 using UnityEngine;
@@ -21,6 +23,10 @@ public class PasswordedGameUI : MonoBehaviour, IAnimationStateHandler
     [SerializeField] private Text statusText;
     [SerializeField] private Button joinButton;
     [SerializeField] private Button closeButton;
+
+    [SerializeField] private Sound errorMessageSound;
+    [SerializeField] private Sound buttonPressSound;
+    [SerializeField] private Sound connectionErrorSound;
 
     private void Awake()
     {
@@ -47,14 +53,14 @@ public class PasswordedGameUI : MonoBehaviour, IAnimationStateHandler
         string password = passwordField.text;
         if (string.IsNullOrWhiteSpace(password))
         {
-            AudioManager.Instance.PlaySound("error_message");
+            AudioManager.PlayOneShot(errorMessageSound);
             statusText.text = "The field 'Password' is required.";
             return;
         }
 
         joinButton.enabled = false;
 
-        AudioManager.Instance.PlaySound("button_press");
+        AudioManager.PlayOneShot(buttonPressSound);
 
         if (lobby == null)
         {
@@ -65,7 +71,7 @@ public class PasswordedGameUI : MonoBehaviour, IAnimationStateHandler
         bool joined = await LobbyManager.Instance.TryJoinLobby(lobby, new JoinLobbyByIdOptions { Password = passwordField.text });
         if (!joined)
         {
-            AudioManager.Instance.PlaySound("connection_error");
+            AudioManager.PlayOneShot(connectionErrorSound);
             Close();
             return;
         }
