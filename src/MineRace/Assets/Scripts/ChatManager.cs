@@ -20,7 +20,7 @@ public class ChatManager : NetworkBehaviour
         SendChatMessageServerRpc(sender, message);
     }
 
-    [ServerRpc]
+    [ServerRpc(RequireOwnership = false)]
     private void SendChatMessageServerRpc(string sender, string message)
     {
         GameObject chatItemObject = Instantiate(chatItemPrefab);
@@ -28,20 +28,11 @@ public class ChatManager : NetworkBehaviour
         NetworkObject chatItemNetworkObject = chatItemObject.GetComponent<NetworkObject>();
         chatItemNetworkObject.Spawn(destroyWithScene: true);
 
-        SetChatMessageParentClientRpc(chatItemObject);
+        chatItemNetworkObject.TrySetParent(chat, worldPositionStays: false);
 
-        ChatItem chatItem = chatItemObject.GetComponent<ChatItem>();
+        ChatItemUI chatItem = chatItemObject.GetComponent<ChatItemUI>();
         chatItem.Setup(sender, message);
         StartCoroutine(WaitForExpire(chatItemNetworkObject));
-    }
-
-    [ClientRpc]
-    private void SetChatMessageParentClientRpc(NetworkObjectReference reference)
-    {
-        if (reference.TryGet(out NetworkObject networkObject))
-        {
-            networkObject.transform.SetParent(chat.transform);
-        }
     }
 
     private IEnumerator WaitForExpire(NetworkObject chatItemNetworkObject)

@@ -3,7 +3,7 @@ using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class ChatItem : NetworkBehaviour
+public class ChatItemUI : NetworkBehaviour
 {
     private readonly NetworkVariable<FixedString64Bytes> sender = new NetworkVariable<FixedString64Bytes>();
     private readonly NetworkVariable<FixedString512Bytes> message = new NetworkVariable<FixedString512Bytes>();

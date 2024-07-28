@@ -1004,10 +1004,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1056431855}
-  - component: {fileID: 1056431859}
   - component: {fileID: 1056431858}
   - component: {fileID: 1056431857}
-  - component: {fileID: 1056431856}
+  - component: {fileID: 1056431859}
   m_Layer: 5
   m_Name: MessageScrollView
   m_TagString: Untagged
@@ -1035,26 +1034,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &1056431856
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1056431854}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 306cc8c2b49d7114eaa3623786fc2126, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_IgnoreLayout: 0
-  m_MinWidth: -1
-  m_MinHeight: -1
-  m_PreferredWidth: -1
-  m_PreferredHeight: -1
-  m_FlexibleWidth: -1
-  m_FlexibleHeight: 1
-  m_LayoutPriority: 1
 --- !u!114 &1056431857
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1106,9 +1085,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Content: {fileID: 1068869449}
-  m_Horizontal: 1
+  m_Horizontal: 0
   m_Vertical: 1
-  m_MovementType: 1
+  m_MovementType: 2
   m_Elasticity: 0.1
   m_Inertia: 1
   m_DecelerationRate: 0.135
@@ -1159,7 +1138,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 19.799988, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &1068869450
 MonoBehaviour:
@@ -1174,7 +1153,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_HorizontalFit: 0
-  m_VerticalFit: 2
+  m_VerticalFit: 1
 --- !u!114 &1068869451
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1195,7 +1174,7 @@ MonoBehaviour:
   m_ChildAlignment: 0
   m_Spacing: 0
   m_ChildForceExpandWidth: 1
-  m_ChildForceExpandHeight: 0
+  m_ChildForceExpandHeight: 1
   m_ChildControlWidth: 1
   m_ChildControlHeight: 0
   m_ChildScaleWidth: 0
@@ -1357,9 +1336,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1401995891}
-  - component: {fileID: 1401995894}
   - component: {fileID: 1401995893}
   - component: {fileID: 1401995892}
+  - component: {fileID: 1401995894}
   m_Layer: 5
   m_Name: Viewport
   m_TagString: Untagged
@@ -1384,9 +1363,9 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: -0.000015259, y: -17}
-  m_Pivot: {x: 0, y: 1}
+  m_AnchoredPosition: {x: -0.000045776367, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1401995892
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1873,7 +1852,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1732451492}
   - component: {fileID: 1732451495}
-  - component: {fileID: 1732451494}
   m_Layer: 5
   m_Name: ChatUI
   m_TagString: Untagged
@@ -1896,41 +1874,11 @@ RectTransform:
   - {fileID: 1056431855}
   m_Father: {fileID: 1473463673}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.016, y: 0.77430975}
-  m_AnchorMax: {x: 0.21100001, y: 0.984}
-  m_AnchoredPosition: {x: -1.1000977, y: -0.9000244}
-  m_SizeDelta: {x: -2.0999985, y: 0.9000001}
-  m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &1732451494
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1732451491}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 0}
-  m_RaycastTarget: 1
-  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
-  m_Maskable: 1
-  m_OnCullStateChanged:
-    m_PersistentCalls:
-      m_Calls: []
-  m_Sprite: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
-  m_Type: 1
-  m_PreserveAspect: 0
-  m_FillCenter: 1
-  m_FillMethod: 4
-  m_FillAmount: 1
-  m_FillClockwise: 1
-  m_FillOrigin: 0
-  m_UseSpriteMesh: 0
-  m_PixelsPerUnitMultiplier: 1
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 30, y: -30}
+  m_SizeDelta: {x: 410.9, y: 227.9}
+  m_Pivot: {x: 0, y: 1}
 --- !u!222 &1732451495
 CanvasRenderer:
   m_ObjectHideFlags: 0
