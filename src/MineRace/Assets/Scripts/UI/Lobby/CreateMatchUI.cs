@@ -4,12 +4,16 @@ using MineRace.UGS;
 using MineRace.Utils.Animation;
 using UnityEngine;
 using UnityEngine.UI;
+using VContainer;
 
 public class CreateMatchUI : MonoBehaviour, IAnimationStateHandler
 {
     private static readonly int collapseStateHash = Animator.StringToHash("Collapse");
     private static readonly int growTriggerHash = Animator.StringToHash("Grow");
     private static readonly int collapseTriggerHash = Animator.StringToHash("Collapse");
+
+    [Inject] private readonly ConnectionManager connectionManager;
+    [Inject] private readonly LobbyManager lobbyManager;
 
     private Animator animator;
 
@@ -59,10 +63,10 @@ public class CreateMatchUI : MonoBehaviour, IAnimationStateHandler
 
         AudioManager.PlayOneShot(buttonPressSound);
 
-        bool created = await LobbyManager.Instance.TryCreateLobby(gameName, gamePassword);
+        bool created = await lobbyManager.TryCreateLobby(gameName, gamePassword, connectionManager.MaxConnectedPlayers);
         if (created)
         {
-            ConnectionManager.Instance.StartHost();
+            connectionManager.StartHost();
         }
     }
 

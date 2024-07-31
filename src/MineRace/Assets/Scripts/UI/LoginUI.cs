@@ -1,9 +1,13 @@
-﻿using UnityEngine;
+﻿using MineRace.Authentication;
+using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using VContainer;
 
 public class LoginUI : MonoBehaviour
 {
+    [Inject] private readonly UserAccountManager userAccountManager;
+
     [SerializeField] private InputField usernameInputField;
     [SerializeField] private InputField passwordInputField;
     [SerializeField] private Toggle rememberMeToggle;
@@ -53,7 +57,7 @@ public class LoginUI : MonoBehaviour
         loginButton.enabled = false;
         loginStatusText.text = "Logging you in. Please wait...";
 
-        bool loggedIn = await UserAccountManager.Instance.Login(usernameInputField.text);
+        bool loggedIn = await userAccountManager.Login(usernameInputField.text);
         if (!loggedIn)
         {
             loginButton.enabled = true;

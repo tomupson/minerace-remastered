@@ -6,16 +6,12 @@ namespace MineRace.Infrastructure
 {
     public class MessageChannel<T> : IMessageChannel<T>
     {
-        private static MessageChannel<T> instance;
-
         private readonly List<Action<T>> messageHandlers = new List<Action<T>>();
 
         /// This dictionary of handlers to be either added or removed is used to prevent problems from immediate
         /// modification of the list of subscribers. It could happen if one decides to unsubscribe in a message handler
         /// etc.A true value means this handler should be added, and a false one means it should be removed
         private readonly Dictionary<Action<T>, bool> pendingHandlers = new Dictionary<Action<T>, bool>();
-
-        public static MessageChannel<T> Instance => instance ??= new MessageChannel<T>();
 
         public bool IsDisposed { get; private set; }
 

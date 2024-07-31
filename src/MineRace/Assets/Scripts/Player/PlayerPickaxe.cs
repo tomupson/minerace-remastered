@@ -1,9 +1,13 @@
 ﻿using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using VContainer;
 
+[RequireComponent(typeof(SpriteRenderer))]
 public class PlayerPickaxe : NetworkBehaviour
 {
+    [Inject] private readonly PauseManager pauseManager;
+
     private Player player;
     private SpriteRenderer spriteRenderer;
 
@@ -22,12 +26,7 @@ public class PlayerPickaxe : NetworkBehaviour
 
     private void Update()
     {
-        if (player.State.Value != PlayerState.Playing)
-        {
-            return;
-        }
-
-        if (PauseManager.Instance.IsPaused)
+        if (player.State.Value != PlayerState.Playing || pauseManager.IsPaused)
         {
             return;
         }

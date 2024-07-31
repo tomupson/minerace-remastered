@@ -1,26 +1,19 @@
 using System;
 using System.Threading.Tasks;
-using MineRace.Infrastructure;
 using MineRace.UGS;
-using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
 using Unity.Networking.Transport.Relay;
 using Unity.Services.Lobbies.Models;
 using Unity.Services.Relay;
 using Unity.Services.Relay.Models;
 using UnityEngine;
+using VContainer;
 
 namespace MineRace.ConnectionManagement.States
 {
     internal class ClientConnectingState : OnlineState
     {
-        protected LobbyManager lobbyManager;
-
-        public ClientConnectingState(ConnectionManager connectionManager, IPublisher<ConnectStatus> connectStatusPublisher, LobbyManager lobbyManager)
-            : base(connectionManager, connectStatusPublisher)
-        {
-            this.lobbyManager = lobbyManager;
-        }
+        [Inject] protected LobbyManager lobbyManager;
 
         public override async void Enter()
         {
@@ -42,7 +35,7 @@ namespace MineRace.ConnectionManagement.States
 
         private void StartingClientFailed()
         {
-            string disconnectReason = NetworkManager.Singleton.DisconnectReason;
+            string disconnectReason = networkManager.DisconnectReason;
             if (string.IsNullOrEmpty(disconnectReason))
             {
                 connectStatusPublisher.Publish(ConnectStatus.StartClientFailed);
@@ -70,10 +63,10 @@ namespace MineRace.ConnectionManagement.States
                 JoinAllocation joinedAllocation = await RelayService.Instance.JoinAllocationAsync(relayJoinCode);
                 await lobbyManager.UpdatePlayerRelayInfo(joinedAllocation.AllocationId.ToString(), relayJoinCode);
 
-                UnityTransport utp = (UnityTransport)NetworkManager.Singleton.NetworkConfig.NetworkTransport;
+                UnityTransport utp = (UnityTransport)networkManager.NetworkConfig.NetworkTransport;
                 utp.SetRelayServerData(new RelayServerData(joinedAllocation, "dtls"));
 
-                if (!NetworkManager.Singleton.StartClient())
+                if (!networkManager.StartClient())
                 {
                     throw new Exception("NetworkManager StartClient failed");
                 }

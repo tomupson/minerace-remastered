@@ -1,9 +1,9 @@
 ﻿namespace MineRace.ConnectionManagement
 {
-    public struct ReconnectMessage
+    public readonly struct ReconnectMessage
     {
-        public int CurrentAttempt;
-        public int MaxAttempt;
+        public int CurrentAttempt { get; }
+        public int MaxAttempt { get; }
 
         public ReconnectMessage(int currentAttempt, int maxAttempt)
         {

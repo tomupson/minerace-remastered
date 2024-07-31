@@ -1,0 +1,22 @@
+{
+    "name": "MineRace.ApplicationLifecycle",
+    "rootNamespace": "",
+    "references": [
+        "GUID:1491147abca9d7d4bb7105af628b223e",
+        "GUID:b0214a6008ed146ff8f122a6a9c2f6cc",
+        "GUID:dabd9308b5923ab48a2d63744baec063",
+        "GUID:02ae44e5906439440b00b651ad8dfbe3",
+        "GUID:5ceda52e6dc7b724886bbbf20ddd229b",
+        "GUID:9c966b7f15e8ea44481ef092262065b5",
+        "GUID:81cf2d5a2f21df4409603cc9e492b7f1"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

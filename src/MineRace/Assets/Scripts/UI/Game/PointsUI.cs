@@ -11,8 +11,8 @@ public class PointsUI : MonoBehaviour
 
     private void Start()
     {
-        GameManager.Instance.State.OnValueChanged += HandleGameStateChanged;
-        GameManager.Instance.TimeRemaining.OnValueChanged += HandleTimeRemainingChanged;
+        ServerGameState.Instance.State.OnValueChanged += HandleGameStateChanged;
+        ServerGameState.Instance.TimeRemaining.OnValueChanged += HandleTimeRemainingChanged;
         Player.OnAnyPlayerSpawned += OnAnyPlayerSpawned;
 
         Hide();
@@ -58,7 +58,7 @@ public class PointsUI : MonoBehaviour
 
     private void HandlePlayerStateChanged(PlayerState previousState, PlayerState newState)
     {
-        if (newState == PlayerState.Completed && GameManager.Instance.State.Value != GameState.InGame)
+        if (newState == PlayerState.Completed && ServerGameState.Instance.State.Value != GameState.InGame)
         {
             Hide();
         }

@@ -42,15 +42,6 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "Screenshot",
-                    "type": "Button",
-                    "id": "78723720-7ab3-4332-851d-e87ae0ea10ed",
-                    "expectedControlType": "Button",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
                     "name": "Mine",
                     "type": "Button",
                     "id": "cb748e2e-3a02-4804-aca8-a224564eb17e",
@@ -124,17 +115,6 @@
                     "processors": "",
                     "groups": "",
                     "action": "Spectate",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "6a7dc2ff-9535-408b-bb5a-5d4e946ae8d3",
-                    "path": "<Keyboard>/f12",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "Screenshot",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },

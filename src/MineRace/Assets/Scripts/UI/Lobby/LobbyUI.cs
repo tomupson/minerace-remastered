@@ -2,14 +2,17 @@ using System.Collections.Generic;
 using MineRace.Audio;
 using MineRace.ConnectionManagement;
 using MineRace.UGS;
-using Unity.Services.Lobbies;
 using Unity.Services.Lobbies.Models;
 using UnityEngine;
 using UnityEngine.UI;
+using VContainer;
 
 public class LobbyUI : MonoBehaviour
 {
     private readonly List<GameObject> gameListItemObjects = new List<GameObject>();
+
+    [Inject] private readonly ConnectionManager connectionManager;
+    [Inject] private readonly LobbyManager lobbyManager;
 
     [SerializeField] private Text statusText;
     [SerializeField] private GameObject gameListItemPrefab;
@@ -41,19 +44,9 @@ public class LobbyUI : MonoBehaviour
         refreshButton.enabled = false;
         statusText.text = "Searching for open games...";
 
-        List<Lobby> lobbies;
-        try
+        List<Lobby> lobbies = await lobbyManager.QueryLobbies();
+        if (lobbies == null)
         {
-            QueryLobbiesOptions queryOptions = new QueryLobbiesOptions { Count = 16 };
-            queryOptions.Filters = new List<QueryFilter>();
-            queryOptions.Filters.Add(new QueryFilter(QueryFilter.FieldOptions.AvailableSlots, "0", QueryFilter.OpOptions.GT));
-
-            QueryResponse response = await Lobbies.Instance.QueryLobbiesAsync(queryOptions);
-            lobbies = response.Results;
-        }
-        catch (LobbyServiceException ex)
-        {
-            Debug.LogException(ex);
             statusText.text = "Failed to fetch lobbies.";
             refreshButton.enabled = true;
             return;
@@ -96,7 +89,7 @@ public class LobbyUI : MonoBehaviour
             return;
         }
 
-        bool joined = await LobbyManager.Instance.TryJoinLobby(lobby);
+        bool joined = await lobbyManager.TryJoinLobby(lobby);
         if (!joined)
         {
             AudioManager.PlayOneShot(connectionErrorSound);
@@ -104,6 +97,6 @@ public class LobbyUI : MonoBehaviour
             return;
         }
 
-        ConnectionManager.Instance.StartClient();
+        connectionManager.StartClient();
     }
 }

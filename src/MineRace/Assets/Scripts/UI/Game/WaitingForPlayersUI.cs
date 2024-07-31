@@ -9,7 +9,7 @@ public class WaitingForPlayersUI : MonoBehaviour
 
     private void Start()
     {
-        GameManager.Instance.State.OnValueChanged += HandleGameStateChanged;
+        ServerGameState.Instance.State.OnValueChanged += HandleGameStateChanged;
 
         gameObject.SetActive(true);
 

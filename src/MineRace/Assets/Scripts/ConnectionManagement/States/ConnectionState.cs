@@ -1,18 +1,14 @@
 using MineRace.Infrastructure;
 using Unity.Netcode;
+using VContainer;
 
 namespace MineRace.ConnectionManagement.States
 {
     internal abstract class ConnectionState
     {
-        protected ConnectionManager connectionManager;
-        protected IPublisher<ConnectStatus> connectStatusPublisher;
-
-        protected ConnectionState(ConnectionManager connectionManager, IPublisher<ConnectStatus> connectStatusPublisher)
-        {
-            this.connectionManager = connectionManager;
-            this.connectStatusPublisher = connectStatusPublisher;
-        }
+        [Inject] protected ConnectionManager connectionManager;
+        [Inject] protected NetworkManager networkManager;
+        [Inject] protected IPublisher<ConnectStatus> connectStatusPublisher;
 
         public abstract void Enter();
 

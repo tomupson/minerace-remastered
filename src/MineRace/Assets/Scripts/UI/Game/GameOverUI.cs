@@ -15,7 +15,7 @@ public class GameOverUI : MonoBehaviour
 
     private void Start()
     {
-        GameManager.Instance.State.OnValueChanged += HandleGameStateChanged;
+        ServerGameState.Instance.State.OnValueChanged += HandleGameStateChanged;
 
         gameObject.SetActive(false);
     }
@@ -25,7 +25,7 @@ public class GameOverUI : MonoBehaviour
         if (newState == GameState.Completed && previousState != GameState.Completed)
         {
             gameObject.SetActive(true);
-            gameOverText.text = GameManager.Instance.TimeRemaining.Value == 0 ? "TIMES UP!" : "MATCH COMPLETE!";
+            gameOverText.text = ServerGameState.Instance.TimeRemaining.Value == 0 ? "TIMES UP!" : "MATCH COMPLETE!";
             gameOverTextAnimator.SetTrigger(gameOverTriggerHash);
         }
     }

@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using MineRace.Infrastructure;
 using MineRace.UGS;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
@@ -7,18 +6,13 @@ using Unity.Networking.Transport.Relay;
 using Unity.Services.Lobbies.Models;
 using Unity.Services.Relay;
 using Unity.Services.Relay.Models;
+using VContainer;
 
 namespace MineRace.ConnectionManagement.States
 {
     internal sealed class StartingHostState : OnlineState
     {
-        private readonly LobbyManager lobbyManager;
-
-        public StartingHostState(ConnectionManager connectionManager, IPublisher<ConnectStatus> connectStatusPublisher, LobbyManager lobbyManager)
-            : base(connectionManager, connectStatusPublisher)
-        {
-            this.lobbyManager = lobbyManager;
-        }
+        [Inject] private readonly LobbyManager lobbyManager;
 
         public override void Enter()
         {
@@ -36,7 +30,7 @@ namespace MineRace.ConnectionManagement.States
         public override void ApprovalCheck(NetworkManager.ConnectionApprovalRequest request, NetworkManager.ConnectionApprovalResponse response)
         {
             ulong clientId = request.ClientNetworkId;
-            if (clientId == NetworkManager.Singleton.LocalClientId)
+            if (clientId == networkManager.LocalClientId)
             {
                 response.Approved = true;
             }
@@ -60,10 +54,10 @@ namespace MineRace.ConnectionManagement.States
                 await lobbyManager.UpdateLobbyData(lobbyData);
                 await lobbyManager.UpdatePlayerRelayInfo(hostAllocation.AllocationIdBytes.ToString(), joinCode);
 
-                UnityTransport utp = (UnityTransport)NetworkManager.Singleton.NetworkConfig.NetworkTransport;
+                UnityTransport utp = (UnityTransport)networkManager.NetworkConfig.NetworkTransport;
                 utp.SetRelayServerData(new RelayServerData(hostAllocation, "dtls"));
 
-                if (!NetworkManager.Singleton.StartHost())
+                if (!networkManager.StartHost())
                 {
                     StartHostFailed();
                 }

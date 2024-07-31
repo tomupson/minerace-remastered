@@ -1,13 +1,28 @@
+using JetBrains.Annotations;
 using MineRace.ConnectionManagement;
 using MineRace.Infrastructure;
-using MineRace.UGS;
 using UnityEngine;
 using UnityEngine.UI;
+using VContainer;
 
 public class LobbyMessageUI : MonoBehaviour
 {
+    private DisposableGroup subscriptions;
+
     [SerializeField] private Text messageText;
     [SerializeField] private Button closeButton;
+
+    [Inject, UsedImplicitly]
+    private void InjectDependencies(
+        ISubscriber<ConnectStatus> connectStatusSubscriber,
+        ISubscriber<ReconnectMessage> reconnectSubscriber,
+        ISubscriber<LobbyStatus> lobbyStatusSubscriber)
+    {
+        subscriptions = new DisposableGroup();
+        subscriptions.Add(connectStatusSubscriber.Subscribe(OnConnectStatus));
+        subscriptions.Add(reconnectSubscriber.Subscribe(OnReconnectMessage));
+        subscriptions.Add(lobbyStatusSubscriber.Subscribe(OnLobbyStatus));
+    }
 
     private void Awake()
     {
@@ -16,37 +31,20 @@ public class LobbyMessageUI : MonoBehaviour
 
     private void Start()
     {
-        BufferedMessageChannel<ConnectStatus>.Instance.Subscribe(OnConnectStatusMessage);
-        LobbyManager.Instance.OnLobbyCreating += OnLobbyCreating;
-        LobbyManager.Instance.OnLobbyCreationFailed += OnLobbyCreationFailed;
-        LobbyManager.Instance.OnJoiningLobby += OnJoiningLobby;
-        LobbyManager.Instance.OnLobbyJoinFailed += OnLobbyJoinFailed;
-
         Hide();
     }
 
     private void OnDestroy()
     {
-        BufferedMessageChannel<ConnectStatus>.Instance.Unsubscribe(OnConnectStatusMessage);
-        LobbyManager.Instance.OnLobbyCreating -= OnLobbyCreating;
-        LobbyManager.Instance.OnLobbyCreationFailed -= OnLobbyCreationFailed;
-        LobbyManager.Instance.OnJoiningLobby -= OnJoiningLobby;
-        LobbyManager.Instance.OnLobbyJoinFailed -= OnLobbyJoinFailed;
+        subscriptions?.Dispose();
     }
 
-    private void OnConnectStatusMessage(ConnectStatus status)
+    private void OnConnectStatus(ConnectStatus status)
     {
-        Debug.Log("STATUS: " + status);
         switch (status)
         {
             case ConnectStatus.ServerFull:
                 Show("Game is full.", closable: true);
-                break;
-            case ConnectStatus.GenericDisconnect:
-                Show("The connection to the host was lost.", closable: true);
-                break;
-            case ConnectStatus.HostEndedSession:
-                Show("The host has ended the game session.", closable: true);
                 break;
             case ConnectStatus.StartHostFailed:
                 Show("Starting host failed.", closable: true);
@@ -57,13 +55,35 @@ public class LobbyMessageUI : MonoBehaviour
         }
     }
 
-    private void OnLobbyCreating() => Show("Creating match...");
+    private void OnReconnectMessage(ReconnectMessage message)
+    {
+        if (message.CurrentAttempt == message.MaxAttempt)
+        {
+            Hide();
+            return;
+        }
 
-    private void OnLobbyCreationFailed() => Show("Failed to create match.", closable: true);
+        Show($"Attempting to reconnect...\nAttempt {message.CurrentAttempt + 1}/{message.MaxAttempt}");
+    }
 
-    private void OnJoiningLobby() => Show("Joining match...");
-
-    private void OnLobbyJoinFailed() => Show("Failed to join match.", closable: true);
+    private void OnLobbyStatus(LobbyStatus status)
+    {
+        switch (status)
+        {
+            case LobbyStatus.Creating:
+                Show("Creating match...");
+                break;
+            case LobbyStatus.CreationFailed:
+                Show("Failed to create match.", closable: true);
+                break;
+            case LobbyStatus.Joining:
+                Show("Joining match...");
+                break;
+            case LobbyStatus.JoinFailed:
+                Show("Failed to join match.", closable: true);
+                break;
+        }
+    }
 
     private void Show(string message, bool closable = false)
     {

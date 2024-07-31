@@ -1,9 +1,13 @@
+using MineRace.Authentication;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using VContainer;
 
 public class LoginStatusUI : MonoBehaviour
 {
+    [Inject] private readonly UserAccountManager userAccountManager;
+
     [SerializeField] private Text loginNameText;
     [SerializeField] private Button profileButton;
     [SerializeField] private Button logoutButton;
@@ -17,13 +21,13 @@ public class LoginStatusUI : MonoBehaviour
 
         logoutButton.onClick.AddListener(() =>
         {
-            UserAccountManager.Instance.Logout();
+            userAccountManager.Logout();
             SceneManager.LoadScene("Login");
         });
     }
 
     private void Start()
     {
-        loginNameText.text = $"LOGGED IN AS: {UserAccountManager.Instance.UserInfo.Username}";
+        loginNameText.text = $"LOGGED IN AS: {userAccountManager.UserInfo.Username}";
     }
 }

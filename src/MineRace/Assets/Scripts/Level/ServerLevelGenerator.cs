@@ -3,30 +3,24 @@ using System.Linq;
 using Unity.Netcode;
 using UnityEngine;
 
-public class LevelGenerator : NetworkBehaviour
+public class ServerLevelGenerator : NetworkBehaviour
 {
     private const int BlockSize = 1;
 
-    public static LevelGenerator Instance { get; private set; }
-
+    [SerializeField] private LevelData levelData;
     [SerializeField] private BlockList blockList;
     [SerializeField] private GameObject borderBlockPrefab;
     [SerializeField] private GameObject endBlockPrefab;
 
-    public int mapWidth;
-    public int mapHeight;
-
-    private void Awake()
+    public override void OnNetworkSpawn()
     {
-        Instance = this;
-    }
-
-    private void Start()
-    {
-        if (IsServer)
+        if (!IsServer)
         {
-            SpawnMap();
+            enabled = false;
+            return;
         }
+
+        SpawnMap();
     }
 
     private void SpawnMap()
@@ -38,18 +32,18 @@ public class LevelGenerator : NetworkBehaviour
 
         foreach (Block block in resourceBlocks)
         {
-            block.spawnPercentagesAtLevels = new float[mapHeight];
+            block.spawnPercentagesAtLevels = new float[levelData.mapHeight];
             for (int spawnLevel = 1; spawnLevel < block.spawnPercentagesAtLevels.Length; spawnLevel++)
             {
                 block.spawnPercentagesAtLevels[spawnLevel] = block.basePercentage * Mathf.Pow(block.percentageMultiplier, block.spawnPercentagesAtLevels.Length - spawnLevel);
             }
         }
 
-        for (int x = 0; x < mapWidth; x++)
+        for (int x = 0; x < levelData.mapWidth; x++)
         {
-            for (int y = 0; y < mapHeight; y++)
+            for (int y = 0; y < levelData.mapHeight; y++)
             {
-                if (y == mapHeight - 1)
+                if (y == levelData.mapHeight - 1)
                 {
                     Block grassBlock = blockList.blocks.First(block => block.blockName == "Grass");
                     SpawnBlock(grassBlock, x, y);
@@ -77,13 +71,13 @@ public class LevelGenerator : NetworkBehaviour
             }
         }
 
-        for (int y = 0; y < mapHeight + 1; y++)
+        for (int y = 0; y < levelData.mapHeight + 1; y++)
         {
             SpawnBorder(mapX: -1, mapY: y);
-            SpawnBorder(mapX: mapWidth, mapY: y, isLeft: false);
+            SpawnBorder(mapX: levelData.mapWidth, mapY: y, isLeft: false);
         }
 
-        for (int x = 0; x < mapWidth; x++)
+        for (int x = 0; x < levelData.mapWidth; x++)
         {
             SpawnEndBlock(mapX: x, mapY: -1);
         }

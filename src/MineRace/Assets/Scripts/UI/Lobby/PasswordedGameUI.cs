@@ -7,12 +7,16 @@ using Unity.Services.Lobbies;
 using Unity.Services.Lobbies.Models;
 using UnityEngine;
 using UnityEngine.UI;
+using VContainer;
 
 public class PasswordedGameUI : MonoBehaviour, IAnimationStateHandler
 {
     private static readonly int collapseStateHash = Animator.StringToHash("Collapse");
     private static readonly int growTriggerHash = Animator.StringToHash("Grow");
     private static readonly int collapseTriggerHash = Animator.StringToHash("Collapse");
+
+    [Inject] private readonly ConnectionManager connectionManager;
+    [Inject] private readonly LobbyManager lobbyManager;
 
     private Animator animator;
     private Lobby lobby;
@@ -68,7 +72,7 @@ public class PasswordedGameUI : MonoBehaviour, IAnimationStateHandler
             return;
         }
 
-        bool joined = await LobbyManager.Instance.TryJoinLobby(lobby, new JoinLobbyByIdOptions { Password = passwordField.text });
+        bool joined = await lobbyManager.TryJoinLobby(lobby, new JoinLobbyByIdOptions { Password = passwordField.text });
         if (!joined)
         {
             AudioManager.PlayOneShot(connectionErrorSound);
@@ -76,7 +80,7 @@ public class PasswordedGameUI : MonoBehaviour, IAnimationStateHandler
             return;
         }
 
-        ConnectionManager.Instance.StartHost();
+        connectionManager.StartHost();
     }
 
     private void Close()

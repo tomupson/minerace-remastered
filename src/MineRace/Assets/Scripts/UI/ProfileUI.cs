@@ -1,8 +1,12 @@
-﻿using UnityEngine;
+﻿using MineRace.Authentication;
+using UnityEngine;
 using UnityEngine.UI;
+using VContainer;
 
 public class ProfileUI : MonoBehaviour
 {
+    [Inject] private readonly UserAccountManager userAccountManager;
+
     [SerializeField] private Text titleText;
     [SerializeField] private Text nameText;
     [SerializeField] private Text highScoreText;
@@ -16,7 +20,7 @@ public class ProfileUI : MonoBehaviour
 
     private void SetProfileText()
     {
-        UserInfo userInfo = UserAccountManager.Instance.UserInfo;
+        UserInfo userInfo = userAccountManager.UserInfo;
         titleText.text = userInfo.Username.ToUpper();
         nameText.text = userInfo.Username;
         highScoreText.text = userInfo.HighScore.ToString();

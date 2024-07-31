@@ -7,8 +7,8 @@ public class PregameCountdownUI : MonoBehaviour
 
     private void Start()
     {
-        GameManager.Instance.State.OnValueChanged += HandleGameStateChanged;
-        GameManager.Instance.PregameTimeRemaining.OnValueChanged += HandlePregameTimeRemainingChanged;
+        ServerGameState.Instance.State.OnValueChanged += HandleGameStateChanged;
+        ServerGameState.Instance.PregameTimeRemaining.OnValueChanged += HandlePregameTimeRemainingChanged;
 
         gameObject.SetActive(false);
     }

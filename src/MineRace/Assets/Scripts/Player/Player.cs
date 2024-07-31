@@ -1,13 +1,19 @@
 using System;
 using MineRace.Audio;
+using MineRace.Authentication;
 using Unity.Collections;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using VContainer;
 
-[RequireComponent(typeof(Rigidbody2D))]
+[RequireComponent(typeof(Rigidbody2D), typeof(SpriteRenderer), typeof(CircleCollider2D))]
 public class Player : NetworkBehaviour
 {
+    [Inject] private readonly UserAccountManager userAccountManager;
+    [Inject] private readonly PauseManager pauseManager;
+    [Inject] private readonly ChatManager chatManager;
+
     private Rigidbody2D playerRigidbody;
     private SpriteRenderer spriteRenderer;
     private CircleCollider2D circleCollider;
@@ -43,7 +49,7 @@ public class Player : NetworkBehaviour
 
     private void FixedUpdate()
     {
-        if (State.Value != PlayerState.Playing || PauseManager.Instance.IsPaused)
+        if (State.Value != PlayerState.Playing || pauseManager.IsPaused)
         {
             return;
         }
@@ -80,7 +86,7 @@ public class Player : NetworkBehaviour
             }
         }
 
-        if (PauseManager.Instance.IsPaused)
+        if (pauseManager.IsPaused)
         {
             return;
         }
@@ -110,10 +116,8 @@ public class Player : NetworkBehaviour
         if (IsOwner)
         {
             LocalPlayer = this;
-            Username.Value = UserAccountManager.Instance.UserInfo.Username;
-            GameManager.Instance.State.OnValueChanged += OnGameStateChanged;
-
-            transform.position = new Vector3(LevelGenerator.Instance.mapWidth / 2 + 12 * ((int)OwnerClientId * 2 - 1), 100, 0);
+            Username.Value = userAccountManager.UserInfo.Username;
+            ServerGameState.Instance.State.OnValueChanged += OnGameStateChanged;
 
             inputActions = new PlayerInputActions();
             inputActions.Player.Enable();
@@ -184,13 +188,13 @@ public class Player : NetworkBehaviour
     [ServerRpc]
     private void ReachedEndServerRpc()
     {
-        int timeRemainingSeconds = GameManager.Instance.TimeRemaining.Value;
+        int timeRemainingSeconds = ServerGameState.Instance.TimeRemaining.Value;
         Points.Value += Mathf.FloorToInt(timeRemainingSeconds / 4f);
     }
 
     private void OnMinePerformed(InputAction.CallbackContext context)
     {
-        if (State.Value != PlayerState.Playing || PauseManager.Instance.IsPaused || !canMine)
+        if (State.Value != PlayerState.Playing || pauseManager.IsPaused || !canMine)
         {
             return;
         }
@@ -215,12 +219,12 @@ public class Player : NetworkBehaviour
 
     private void OnSendChatPerformed(InputAction.CallbackContext context)
     {
-        if (PauseManager.Instance.IsPaused)
+        if (pauseManager.IsPaused)
         {
             return;
         }
 
-        ChatManager.Instance.SendMessage(Username.Value.ToString(), "This is a chat message");
+        chatManager.SendMessage(Username.Value.ToString(), "This is a chat message");
     }
 
     // TODO: Think about whether the player should update it's own state based on the movement of the game (current behaviour),

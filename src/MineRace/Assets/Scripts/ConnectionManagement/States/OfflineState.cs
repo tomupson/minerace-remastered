@@ -1,21 +1,15 @@
-using MineRace.Infrastructure;
 using MineRace.UGS;
-using Unity.Netcode;
 using Unity.Services.Authentication;
 using UnityEngine.SceneManagement;
+using VContainer;
 
 namespace MineRace.ConnectionManagement.States
 {
     internal sealed class OfflineState : ConnectionState
     {
-        private const string MenuSceneName = "Menu";
-        private readonly LobbyManager lobbyManager;
+        private const string LobbySceneName = "Lobby";
 
-        public OfflineState(ConnectionManager connectionManager, IPublisher<ConnectStatus> connectStatusPublisher, LobbyManager lobbyManager)
-            : base(connectionManager, connectStatusPublisher)
-        {
-            this.lobbyManager = lobbyManager;
-        }
+        [Inject] private readonly LobbyManager lobbyManager;
 
         public override async void Enter()
         {
@@ -31,10 +25,10 @@ namespace MineRace.ConnectionManagement.States
                 }
             }
 
-            NetworkManager.Singleton.Shutdown();
-            if (SceneManager.GetActiveScene().name != MenuSceneName)
+            networkManager.Shutdown();
+            if (SceneManager.GetActiveScene().name != LobbySceneName)
             {
-                SceneManager.LoadScene(MenuSceneName);
+                SceneManager.LoadScene(LobbySceneName);
             }
         }
 

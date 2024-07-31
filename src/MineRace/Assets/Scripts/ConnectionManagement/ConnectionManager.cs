@@ -1,63 +1,63 @@
 using MineRace.ConnectionManagement.States;
-using MineRace.Infrastructure;
-using MineRace.UGS;
 using Unity.Netcode;
 using UnityEngine;
+using VContainer;
 
 namespace MineRace.ConnectionManagement
 {
     public class ConnectionManager : MonoBehaviour
     {
+        [Inject] private readonly NetworkManager networkManager;
+        [Inject] private readonly IObjectResolver container;
+
         private ConnectionState currentState;
 
-        public static ConnectionManager Instance { get; private set; }
-
         [SerializeField] private int numReconnectAttempts = 2;
+        [SerializeField] private int maxConnectedPlayers = 2;
 
         public int NumReconnectAttempts => numReconnectAttempts;
 
-        public int MaxConnectedPlayers = 2;
+        public int MaxConnectedPlayers => maxConnectedPlayers;
 
-        internal OfflineState OfflineState { get; private set; }
-        internal ClientConnectingState ClientConnectingState { get; private set; }
-        internal ClientConnectedState ClientConnectedState { get; private set; }
-        internal ClientReconnectingState ClientReconnectingState { get; private set; }
-        internal StartingHostState StartingHostState { get; private set; }
-        internal HostingState HostingState { get; private set; }
+        internal OfflineState OfflineState { get; } = new OfflineState();
+        internal ClientConnectingState ClientConnectingState { get; } = new ClientConnectingState();
+        internal ClientConnectedState ClientConnectedState { get; } = new ClientConnectedState();
+        internal ClientReconnectingState ClientReconnectingState { get; } = new ClientReconnectingState();
+        internal StartingHostState StartingHostState { get; } = new StartingHostState();
+        internal HostingState HostingState { get; } = new HostingState();
 
         private void Awake()
         {
             DontDestroyOnLoad(gameObject);
-            Instance = this;
         }
 
         private void Start()
         {
-            OfflineState = new OfflineState(this, BufferedMessageChannel<ConnectStatus>.Instance, LobbyManager.Instance);
-            ClientConnectingState = new ClientConnectingState(this, BufferedMessageChannel<ConnectStatus>.Instance, LobbyManager.Instance);
-            ClientConnectedState = new ClientConnectedState(this, BufferedMessageChannel<ConnectStatus>.Instance);
-            ClientReconnectingState = new ClientReconnectingState(this, BufferedMessageChannel<ConnectStatus>.Instance, LobbyManager.Instance, MessageChannel<ReconnectMessage>.Instance);
-            StartingHostState = new StartingHostState(this, BufferedMessageChannel<ConnectStatus>.Instance, LobbyManager.Instance);
-            HostingState = new HostingState(this, BufferedMessageChannel<ConnectStatus>.Instance);
+            container.Inject(OfflineState);
+            container.Inject(ClientConnectingState);
+            container.Inject(ClientConnectedState);
+            container.Inject(ClientReconnectingState);
+            container.Inject(StartingHostState);
+            container.Inject(HostingState);
 
             currentState = OfflineState;
 
-            NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnectedCallback;
-            NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnectCallback;
-            NetworkManager.Singleton.OnServerStarted += OnServerStarted;
-            NetworkManager.Singleton.ConnectionApprovalCallback += ApprovalCheck;
-            NetworkManager.Singleton.OnTransportFailure += OnTransportFailure;
-            NetworkManager.Singleton.OnServerStopped += OnServerStopped;
+            networkManager.OnClientConnectedCallback += OnClientConnectedCallback;
+            networkManager.OnClientDisconnectCallback += OnClientDisconnectCallback;
+            networkManager.OnServerStarted += OnServerStarted;
+            networkManager.ConnectionApprovalCallback += ApprovalCheck;
+            networkManager.OnTransportFailure += OnTransportFailure;
+            networkManager.OnServerStopped += OnServerStopped;
         }
 
         private void OnDestroy()
         {
-            NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnectedCallback;
-            NetworkManager.Singleton.OnClientDisconnectCallback -= OnClientDisconnectCallback;
-            NetworkManager.Singleton.OnServerStarted -= OnServerStarted;
-            NetworkManager.Singleton.ConnectionApprovalCallback -= ApprovalCheck;
-            NetworkManager.Singleton.OnTransportFailure -= OnTransportFailure;
-            NetworkManager.Singleton.OnServerStopped -= OnServerStopped;
+            networkManager.OnClientConnectedCallback -= OnClientConnectedCallback;
+            networkManager.OnClientDisconnectCallback -= OnClientDisconnectCallback;
+            networkManager.OnServerStarted -= OnServerStarted;
+            networkManager.ConnectionApprovalCallback -= ApprovalCheck;
+            networkManager.OnTransportFailure -= OnTransportFailure;
+            networkManager.OnServerStopped -= OnServerStopped;
         }
 
         internal void ChangeState(ConnectionState nextState)

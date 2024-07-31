@@ -4,16 +4,9 @@ using UnityEngine;
 
 public class ChatManager : NetworkBehaviour
 {
-    public static ChatManager Instance { get; private set; }
-
     [SerializeField] private GameObject chat;
     [SerializeField] private GameObject chatItemPrefab;
     [SerializeField] private float messageExpireTime = 5;
-
-    private void Awake()
-    {
-        Instance = this;
-    }
 
     public void SendMessage(string sender, string message)
     {

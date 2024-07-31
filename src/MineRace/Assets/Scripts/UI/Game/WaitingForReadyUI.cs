@@ -8,7 +8,7 @@ public class WaitingForReadyUI : MonoBehaviour
 
     private void Start()
     {
-        GameManager.Instance.State.OnValueChanged += HandleGameStateChanged;
+        ServerGameState.Instance.State.OnValueChanged += HandleGameStateChanged;
         Player.OnAnyPlayerSpawned += OnAnyPlayerSpawned;
 
         Hide();

@@ -18,7 +18,7 @@ public class SpectateUI : MonoBehaviour
 
     private void Start()
     {
-        GameManager.Instance.State.OnValueChanged += HandleGameStateChanged;
+        ServerGameState.Instance.State.OnValueChanged += HandleGameStateChanged;
         Player.OnAnyPlayerSpawned += OnAnyPlayerSpawned;
 
         Hide();
@@ -53,14 +53,14 @@ public class SpectateUI : MonoBehaviour
             return;
         }
 
-        bool isGameRunning = GameManager.Instance.State.Value == GameState.InGame;
+        bool isGameRunning = ServerGameState.Instance.State.Value == GameState.InGame;
         gameObject.SetActive(isGameRunning);
     }
 
     private void OnSpectatePerformed(InputAction.CallbackContext context)
     {
         bool localPlayerNotCompleted = Player.LocalPlayer.State.Value != PlayerState.Completed;
-        bool gameNotRunning = GameManager.Instance.State.Value != GameState.InGame;
+        bool gameNotRunning = ServerGameState.Instance.State.Value != GameState.InGame;
         if (localPlayerNotCompleted || gameNotRunning)
         {
             return;

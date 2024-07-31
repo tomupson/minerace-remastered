@@ -1,17 +1,28 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using MineRace.ConnectionManagement;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using VContainer;
+using VContainer.Unity;
 
-public class GameManager : NetworkBehaviour
+[RequireComponent(typeof(NetworkHooks))]
+public class ServerGameState : LifetimeScope
 {
-    public static GameManager Instance { get; private set; }
+    [Inject] private readonly ConnectionManager connectionManager;
+    [Inject] private readonly NetworkManager networkManager;
+
+    public static ServerGameState Instance { get; private set; }
 
     private Player[] players;
     private float ticker = 1f;
 
+    [SerializeField] private ChatManager chatManager;
+    [SerializeField] private PauseManager pauseManager;
+
     [SerializeField] private GameObject playerPrefab;
+    [SerializeField] private LevelData levelData;
 
     [Header("Game Settings")]
     [SerializeField] private int gameTime = 300;
@@ -23,26 +34,24 @@ public class GameManager : NetworkBehaviour
 
     public NetworkVariable<int> TimeRemaining { get; } = new NetworkVariable<int>();
 
-    private void Awake()
+    protected override void Configure(IContainerBuilder builder)
+    {
+        base.Configure(builder);
+        builder.RegisterComponent(chatManager);
+        builder.RegisterComponent(pauseManager);
+    }
+
+    protected override void Awake()
     {
         Instance = this;
+
+        NetworkHooks networkHooks = GetComponent<NetworkHooks>();
+        networkHooks.OnNetworkSpawnHook += OnNetworkSpawn;
+        networkHooks.OnNetworkDespawnHook += OnNetworkDespawn;
     }
 
     private void Update()
     {
-        if (!IsServer)
-        {
-            return;
-        }
-
-        if (State.Value == GameState.WaitingForPlayersReady)
-        {
-            if (!players.Any(p => p.State.Value != PlayerState.Ready))
-            {
-                State.Value = GameState.PregameCountdown;
-            }
-        }
-
         if (State.Value == GameState.PregameCountdown)
         {
             ticker -= Time.deltaTime;
@@ -74,20 +83,24 @@ public class GameManager : NetworkBehaviour
         }
     }
 
-    public override void OnNetworkSpawn()
+    private void OnNetworkSpawn()
     {
+        if (!networkManager.IsServer)
+        {
+            enabled = false;
+            return;
+        }
+
         TimeRemaining.Value = gameTime;
         PregameTimeRemaining.Value = preGameCountdownTime;
-        if (IsServer)
-        {
-            NetworkManager.OnClientConnectedCallback += OnClientConnected;
-            NetworkManager.SceneManager.OnLoadEventCompleted += OnSceneLoadEventCompleted;
-        }
+        networkManager.OnClientConnectedCallback += OnClientConnected;
+        networkManager.SceneManager.OnLoadEventCompleted += OnSceneLoadEventCompleted;
     }
 
-    public void CompleteGame()
+    private void OnNetworkDespawn()
     {
-        GameOverServerRpc();
+        networkManager.OnClientConnectedCallback -= OnClientConnected;
+        networkManager.SceneManager.OnLoadEventCompleted -= OnSceneLoadEventCompleted;
     }
 
     private void OnClientConnected(ulong connectedClientId)
@@ -95,7 +108,7 @@ public class GameManager : NetworkBehaviour
         SpawnPlayer(connectedClientId);
         players = FindObjectsOfType<Player>();
 
-        if (NetworkManager.ConnectedClientsIds.Count == 2)
+        if (networkManager.ConnectedClientsIds.Count == connectionManager.MaxConnectedPlayers)
         {
             State.Value = GameState.WaitingForPlayersReady;
         }
@@ -103,7 +116,6 @@ public class GameManager : NetworkBehaviour
 
     private void OnSceneLoadEventCompleted(string sceneName, LoadSceneMode loadSceneMode, List<ulong> clientsCompleted, List<ulong> clientsTimedOut)
     {
-        // TODO: Check if Game scene
         foreach (ulong clientId in clientsCompleted)
         {
             SpawnPlayer(clientId);
@@ -120,11 +132,39 @@ public class GameManager : NetworkBehaviour
     {
         GameObject playerObject = Instantiate(playerPrefab);
         playerObject.GetComponent<NetworkObject>().SpawnAsPlayerObject(clientId, destroyWithScene: true);
+        playerObject.transform.position = new Vector3(levelData.mapWidth / 2 + 12 * ((int)clientId * 2 - 1), 100, 0);
+
+        playerObject.GetComponent<Player>().State.OnValueChanged += OnPlayerStateChanged;
+
+        Container.InjectGameObject(playerObject);
     }
 
-    [ServerRpc(RequireOwnership = false)]
-    private void GameOverServerRpc()
+    private void OnPlayerStateChanged(PlayerState previousState, PlayerState newState)
     {
-        State.Value = GameState.Completed;
+        switch (State.Value)
+        {
+            case GameState.WaitingForPlayersReady:
+                CheckForReady(newState);
+                break;
+            case GameState.InGame:
+                CheckForGameOver(newState);
+                break;
+        }
+    }
+
+    private void CheckForReady(PlayerState playerState)
+    {
+        if (playerState == PlayerState.Ready && !players.Any(p => p.State.Value != PlayerState.Ready))
+        {
+            State.Value = GameState.PregameCountdown;
+        }
+    }
+
+    private void CheckForGameOver(PlayerState playerState)
+    {
+        if (playerState == PlayerState.Completed && !players.Any(p => p.State.Value < PlayerState.Completed))
+        {
+            State.Value = GameState.Completed;
+        }
     }
 }

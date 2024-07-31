@@ -299,7 +299,7 @@ GameObject:
   - component: {fileID: 283748324}
   - component: {fileID: 283748323}
   m_Layer: 0
-  m_Name: Level
+  m_Name: ServerLevelGenerator
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -332,13 +332,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1d1bbdff89c8b41479efcd883564ec60, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  levelData: {fileID: 11400000, guid: 3ada6dcb91694ba4bb6cb636d76d61c7, type: 2}
   blockList: {fileID: 11400000, guid: 8acd0471c8a06924d8dd5aa64feea8d2, type: 2}
   borderBlockPrefab: {fileID: 1131333265007454, guid: c977aea55e2b34a47910a1adce707ffe,
     type: 3}
   endBlockPrefab: {fileID: 1110685264603986, guid: 40b059383eba24547b6400516b9730c8,
     type: 3}
-  mapWidth: 48
-  mapHeight: 100
 --- !u!114 &283748324
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -354,7 +353,7 @@ MonoBehaviour:
   GlobalObjectIdHash: 76348682
   InScenePlacedSourceGlobalObjectIdHash: 0
   AlwaysReplicateAsRoot: 0
-  SynchronizeTransform: 1
+  SynchronizeTransform: 0
   ActiveSceneSynchronization: 0
   SceneMigrationSynchronization: 1
   SpawnWithObservers: 1
@@ -810,8 +809,9 @@ GameObject:
   - component: {fileID: 662086340}
   - component: {fileID: 662086341}
   - component: {fileID: 662086338}
+  - component: {fileID: 662086342}
   m_Layer: 0
-  m_Name: GameManager
+  m_Name: ServerGameState
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -826,11 +826,20 @@ MonoBehaviour:
   m_GameObject: {fileID: 662086337}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3aa7921a5ad45bc4cab652685faf38aa, type: 3}
+  m_Script: {fileID: 11500000, guid: dbeec44867baba34185e75241c30f42c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  parentReference:
+    TypeName: MineRace.ApplicationLifecycle.ApplicationController
+  autoRun: 1
+  autoInjectGameObjects:
+  - {fileID: 207951601}
+  - {fileID: 1473463668}
+  chatManager: {fileID: 31181171}
+  pauseManager: {fileID: 207951603}
   playerPrefab: {fileID: 355904156403638674, guid: 4fa2f0f1cbec159409cd3f10b83cf462,
     type: 3}
+  levelData: {fileID: 11400000, guid: 3ada6dcb91694ba4bb6cb636d76d61c7, type: 2}
   gameTime: 18000
   preGameCountdownTime: 5
 --- !u!4 &662086340
@@ -869,6 +878,18 @@ MonoBehaviour:
   SpawnWithObservers: 1
   DontDestroyWithOwner: 0
   AutoObjectParentSync: 1
+--- !u!114 &662086342
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 662086337}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c10de77d862f93744a60f60de2ae8b21, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &741129400
 GameObject:
   m_ObjectHideFlags: 0
@@ -3524,9 +3545,9 @@ SceneRoots:
   m_Roots:
   - {fileID: 1489464071}
   - {fileID: 1473463673}
-  - {fileID: 283748322}
   - {fileID: 1865891768}
-  - {fileID: 31181173}
   - {fileID: 662086340}
+  - {fileID: 283748322}
+  - {fileID: 31181173}
   - {fileID: 207951602}
   - {fileID: 1472799894}

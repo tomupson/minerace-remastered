@@ -1,9 +1,8 @@
 using System.Collections;
 using System.Threading.Tasks;
 using MineRace.Infrastructure;
-using MineRace.UGS;
-using Unity.Netcode;
 using UnityEngine;
+using VContainer;
 
 namespace MineRace.ConnectionManagement.States
 {
@@ -12,16 +11,10 @@ namespace MineRace.ConnectionManagement.States
         private const float SecondsBeforeFirstAttempt = 1;
         private const float SecondsBetweenAttempts = 5;
 
-        private readonly IPublisher<ReconnectMessage> reconnectMessagePublisher;
+        [Inject] private readonly IPublisher<ReconnectMessage> reconnectMessagePublisher;
 
         private Coroutine reconnectCoroutine;
         private int numAttempts;
-
-        public ClientReconnectingState(ConnectionManager connectionManager, IPublisher<ConnectStatus> connectStatusPublisher, LobbyManager lobbyManager, IPublisher<ReconnectMessage> reconnectMessagePublisher)
-            : base(connectionManager, connectStatusPublisher, lobbyManager)
-        {
-            this.reconnectMessagePublisher = reconnectMessagePublisher;
-        }
 
         public override void Enter()
         {
@@ -46,7 +39,7 @@ namespace MineRace.ConnectionManagement.States
 
         public override void OnClientDisconnect(ulong clientId)
         {
-            string disconnectReason = NetworkManager.Singleton.DisconnectReason;
+            string disconnectReason = networkManager.DisconnectReason;
             if (numAttempts < connectionManager.NumReconnectAttempts)
             {
                 if (string.IsNullOrEmpty(disconnectReason))
@@ -95,9 +88,9 @@ namespace MineRace.ConnectionManagement.States
 
             Debug.Log("Lost connection to host, trying to reconnect...");
 
-            NetworkManager.Singleton.Shutdown();
+            networkManager.Shutdown();
 
-            yield return new WaitWhile(() => NetworkManager.Singleton.ShutdownInProgress);
+            yield return new WaitWhile(() => networkManager.ShutdownInProgress);
 
             Debug.Log($"Reconnecting, attempt {numAttempts + 1}/{connectionManager.NumReconnectAttempts}...");
             reconnectMessagePublisher.Publish(new ReconnectMessage(numAttempts, connectionManager.NumReconnectAttempts));

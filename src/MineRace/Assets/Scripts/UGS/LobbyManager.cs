@@ -1,37 +1,27 @@
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using MineRace.Infrastructure;
 using Unity.Services.Authentication;
 using Unity.Services.Lobbies;
 using Unity.Services.Lobbies.Models;
 using UnityEngine;
+using VContainer;
+using VContainer.Unity;
 
 namespace MineRace.UGS
 {
-    public class LobbyManager : MonoBehaviour
+    public sealed class LobbyManager : ITickable
     {
         private const float LobbyHeartbeatIntervalSeconds = 15f;
 
-        public static LobbyManager Instance { get; private set; }
-
-        public event Action OnLobbyCreating;
-        public event Action OnLobbyCreationFailed;
-        public event Action OnJoiningLobby;
-        public event Action OnLobbyJoinFailed;
-
-        [SerializeField] private int lobbySize = 2;
+        [Inject] private readonly IPublisher<LobbyStatus> lobbyStatusPublisher;
+        private readonly RateLimitCooldown queryRateLimit = new RateLimitCooldown(1f);
 
         private float lobbyHeartbeatTimer = LobbyHeartbeatIntervalSeconds;
 
         public Lobby ActiveLobby { get; private set; }
 
-        private void Awake()
-        {
-            DontDestroyOnLoad(gameObject);
-            Instance = this;
-        }
-
-        private async void Update()
+        public async void Tick()
         {
             if (ActiveLobby != null && ActiveLobby.HostId == AuthenticationService.Instance.PlayerId)
             {
@@ -44,31 +34,55 @@ namespace MineRace.UGS
             }
         }
 
-        public async Task<bool> TryCreateLobby(string gameName, string gamePassword)
+        public async Task<List<Lobby>> QueryLobbies()
         {
-            OnLobbyCreating?.Invoke();
+            if (!queryRateLimit.CanCall)
+            {
+                return new List<Lobby>();
+            }
+
+            try
+            {
+                QueryLobbiesOptions queryOptions = new QueryLobbiesOptions { Count = 16 };
+                queryOptions.Filters = new List<QueryFilter>();
+                queryOptions.Filters.Add(new QueryFilter(QueryFilter.FieldOptions.AvailableSlots, "0", QueryFilter.OpOptions.GT));
+
+                QueryResponse response = await Lobbies.Instance.QueryLobbiesAsync(queryOptions);
+                return response.Results;
+            }
+            catch (LobbyServiceException ex)
+            {
+                Debug.LogException(ex);
+            }
+
+            return null;
+        }
+
+        public async Task<bool> TryCreateLobby(string lobbyName, string lobbyPassword, int lobbySize)
+        {
+            lobbyStatusPublisher.Publish(LobbyStatus.Creating);
             try
             {
                 CreateLobbyOptions options = new CreateLobbyOptions();
-                if (!string.IsNullOrWhiteSpace(gamePassword))
+                if (!string.IsNullOrWhiteSpace(lobbyPassword))
                 {
-                    options.Password = gamePassword;
+                    options.Password = lobbyPassword;
                 }
 
-                ActiveLobby = await LobbyService.Instance.CreateLobbyAsync(gameName, lobbySize, options);
+                ActiveLobby = await LobbyService.Instance.CreateLobbyAsync(lobbyName, lobbySize, options);
                 return true;
             }
             catch (LobbyServiceException ex)
             {
                 Debug.LogException(ex);
             }
-            OnLobbyCreationFailed?.Invoke();
+            lobbyStatusPublisher.Publish(LobbyStatus.CreationFailed);
             return false;
         }
 
         public async Task<bool> TryJoinLobby(Lobby lobby, JoinLobbyByIdOptions options = null)
         {
-            OnJoiningLobby?.Invoke();
+            lobbyStatusPublisher.Publish(LobbyStatus.Joining);
             try
             {
                 ActiveLobby = await LobbyService.Instance.JoinLobbyByIdAsync(lobby.Id, options);
@@ -78,7 +92,7 @@ namespace MineRace.UGS
             {
                 Debug.LogException(ex);
             }
-            OnLobbyJoinFailed?.Invoke();
+            lobbyStatusPublisher.Publish(LobbyStatus.JoinFailed);
             return false;
         }
 
