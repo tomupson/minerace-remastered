@@ -49,7 +49,7 @@ public class PointsUI : MonoBehaviour
         this.player = player;
         this.player.NetworkPlayerState.Points.OnValueChanged += HandlePlayerPointsChanged;
         this.player.NetworkPlayerState.State.OnValueChanged += HandlePlayerStateChanged;
-        this.player.GetComponent<Player>().OnSpectating += OnPlayerSpectating;
+        this.player.OnSpectating += OnPlayerSpectating;
 
         spectatingPlayer = player;
     }
