@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Unity.Services.Authentication;
 using Unity.Services.Core;
 using UnityEngine;
@@ -7,6 +8,8 @@ namespace MineRace.Authentication
 {
     public class UserAccountManager : MonoBehaviour
     {
+        public event Action<string> OnUsernameChanged;
+
         public UserInfo UserInfo { get; private set; }
 
         private void Awake()
@@ -20,7 +23,7 @@ namespace MineRace.Authentication
             {
                 if (UnityServices.State != ServicesInitializationState.Initialized)
                 {
-#if DEBUG
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
                     InitializationOptions hostOptions = new InitializationOptions().SetProfile("host");
                     InitializationOptions clientOptions = new InitializationOptions().SetProfile("client");
 
@@ -33,7 +36,7 @@ namespace MineRace.Authentication
                         await UnityServices.InitializeAsync(clientOptions);
                     }
 #else
-                await UnityServices.InitializeAsync();
+                    await UnityServices.InitializeAsync();
 #endif
                 }
 
@@ -42,7 +45,7 @@ namespace MineRace.Authentication
 
                 await AuthenticationService.Instance.SignInAnonymouslyAsync();
 
-                int id = Random.Range(1000, 10000);
+                int id = UnityEngine.Random.Range(1000, 10000);
                 UserInfo = new UserInfo { UserId = id, Username = username };
 
                 if (string.IsNullOrWhiteSpace(username))
@@ -62,6 +65,12 @@ namespace MineRace.Authentication
         public void Logout()
         {
             AuthenticationService.Instance.SignOut();
+        }
+
+        public void SetUsername(string username)
+        {
+            UserInfo.Username = username;
+            OnUsernameChanged?.Invoke(username);
         }
     }
 }

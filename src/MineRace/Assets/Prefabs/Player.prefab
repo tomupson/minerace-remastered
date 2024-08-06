@@ -12,9 +12,11 @@ GameObject:
   - component: {fileID: 3372143996983274979}
   - component: {fileID: 8725194382970157320}
   - component: {fileID: 9021590485571961487}
-  - component: {fileID: 4656980606799395093}
   - component: {fileID: 5655344893897587341}
   - component: {fileID: 1104440863385506216}
+  - component: {fileID: 1944687328517435485}
+  - component: {fileID: 2217335124971035325}
+  - component: {fileID: 2800408303651406074}
   m_Layer: 2
   m_Name: Player
   m_TagString: PLAYER
@@ -130,7 +132,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 1492532102
+  GlobalObjectIdHash: 1384705816
   InScenePlacedSourceGlobalObjectIdHash: 1450865784
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
@@ -139,20 +141,6 @@ MonoBehaviour:
   SpawnWithObservers: 1
   DontDestroyWithOwner: 0
   AutoObjectParentSync: 1
---- !u!114 &4656980606799395093
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 355904156403638674}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0d3b9f6148745864bbee010349c076f1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  moveSpeed: 10
-  pickaxeCooldownTime: 0.2
 --- !u!58 &5655344893897587341
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -219,6 +207,46 @@ MonoBehaviour:
   InLocalSpace: 0
   Interpolate: 1
   SlerpPosition: 0
+--- !u!114 &1944687328517435485
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 355904156403638674}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d619659b15f58a741a498edc5620d405, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &2217335124971035325
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 355904156403638674}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6525d92cf947a134b8e4468d3f3cdb86, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  networkPlayerState: {fileID: 1944687328517435485}
+--- !u!114 &2800408303651406074
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 355904156403638674}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c981b07727f528c4daed09cf06b44c87, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  networkPlayerState: {fileID: 1944687328517435485}
+  moveSpeed: 10
+  pickaxeCooldownTime: 0.2
 --- !u!1 &5448652126337894667
 GameObject:
   m_ObjectHideFlags: 0
@@ -515,8 +543,8 @@ GameObject:
   m_Component:
   - component: {fileID: 4849254304086362697}
   - component: {fileID: 125088278257766737}
-  - component: {fileID: 8424278227248060671}
   - component: {fileID: 4760788116587561739}
+  - component: {fileID: 8424278227248060671}
   m_Layer: 2
   m_Name: Pickaxe
   m_TagString: Untagged
@@ -591,18 +619,6 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!114 &8424278227248060671
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8706784055429051092}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ce23bfc8f557f664a845ac6be4fef695, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &4760788116587561739
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -634,3 +650,15 @@ MonoBehaviour:
   InLocalSpace: 0
   Interpolate: 1
   SlerpPosition: 0
+--- !u!114 &8424278227248060671
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8706784055429051092}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ce23bfc8f557f664a845ac6be4fef695, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

@@ -1,4 +1,5 @@
 using MineRace.Authentication;
+using MineRace.Utils;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -21,6 +22,7 @@ public class LoginStatusUI : MonoBehaviour
 
         logoutButton.onClick.AddListener(() =>
         {
+            ClientPrefs.ClearPlayerName();
             userAccountManager.Logout();
             SceneManager.LoadScene("Login");
         });
@@ -28,6 +30,12 @@ public class LoginStatusUI : MonoBehaviour
 
     private void Start()
     {
-        loginNameText.text = $"LOGGED IN AS: {userAccountManager.UserInfo.Username}";
+        userAccountManager.OnUsernameChanged += OnUsernameChanged;
+        OnUsernameChanged(userAccountManager.UserInfo.Username);
+    }
+
+    private void OnUsernameChanged(string username)
+    {
+        loginNameText.text = $"LOGGED IN AS: {username}";
     }
 }

@@ -1,32 +1,33 @@
 using System.Linq;
 using UnityEngine;
-using UnityEngine.InputSystem;
 using UnityEngine.UI;
+using VContainer;
 
 public class SpectateUI : MonoBehaviour
 {
-    private PlayerInputActions inputActions;
+    [Inject] private readonly PlayerInputReader inputReader;
+    [Inject] private readonly NetworkGameState networkGameState;
+
+    private Player localPlayer;
 
     [SerializeField] private Text spectateText;
 
     private void Awake()
     {
-        inputActions = new PlayerInputActions();
-        inputActions.Player.Enable();
-        inputActions.Player.Spectate.performed += OnSpectatePerformed;
+        Player.OnLocalPlayerSpawned += OnLocalPlayerSpawned;
     }
 
     private void Start()
     {
-        ServerGameState.Instance.State.OnValueChanged += HandleGameStateChanged;
-        Player.OnAnyPlayerSpawned += OnAnyPlayerSpawned;
+        inputReader.OnSpectateHook += OnSpectate;
+        networkGameState.State.OnValueChanged += HandleGameStateChanged;
 
         Hide();
     }
 
     private void OnDestroy()
     {
-        Player.OnAnyPlayerSpawned -= OnAnyPlayerSpawned;
+        Player.OnLocalPlayerSpawned -= OnLocalPlayerSpawned;
     }
 
     private void HandleGameStateChanged(GameState previousState, GameState newState)
@@ -37,13 +38,11 @@ public class SpectateUI : MonoBehaviour
         }
     }
 
-    private void OnAnyPlayerSpawned(Player player)
+    private void OnLocalPlayerSpawned(Player player)
     {
-        if (Player.LocalPlayer != null)
-        {
-            Player.LocalPlayer.State.OnValueChanged -= HandlePlayerStateChanged;
-            Player.LocalPlayer.State.OnValueChanged += HandlePlayerStateChanged;
-        }
+        localPlayer = player;
+        localPlayer.NetworkPlayerState.State.OnValueChanged -= HandlePlayerStateChanged;
+        localPlayer.NetworkPlayerState.State.OnValueChanged += HandlePlayerStateChanged;
     }
 
     private void HandlePlayerStateChanged(PlayerState previousState, PlayerState newState)
@@ -53,14 +52,14 @@ public class SpectateUI : MonoBehaviour
             return;
         }
 
-        bool isGameRunning = ServerGameState.Instance.State.Value == GameState.InGame;
+        bool isGameRunning = networkGameState.State.Value == GameState.InGame;
         gameObject.SetActive(isGameRunning);
     }
 
-    private void OnSpectatePerformed(InputAction.CallbackContext context)
+    private void OnSpectate()
     {
-        bool localPlayerNotCompleted = Player.LocalPlayer.State.Value != PlayerState.Completed;
-        bool gameNotRunning = ServerGameState.Instance.State.Value != GameState.InGame;
+        bool localPlayerNotCompleted = localPlayer.NetworkPlayerState.State.Value != PlayerState.Completed;
+        bool gameNotRunning = networkGameState.State.Value != GameState.InGame;
         if (localPlayerNotCompleted || gameNotRunning)
         {
             return;
@@ -69,7 +68,7 @@ public class SpectateUI : MonoBehaviour
         Player[] players = FindObjectsOfType<Player>();
         Player otherPlayer = players.FirstOrDefault(p => !p.IsLocalPlayer);
 
-        Player.LocalPlayer.Spectate(otherPlayer);
+        localPlayer.Spectate(otherPlayer);
 
         Hide();
     }

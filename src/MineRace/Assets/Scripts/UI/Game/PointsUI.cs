@@ -1,26 +1,34 @@
 using UnityEngine;
 using UnityEngine.UI;
+using VContainer;
 
 public class PointsUI : MonoBehaviour
 {
+    [Inject] private readonly NetworkGameState networkGameState;
+
+    private Player player;
     private Player spectatingPlayer;
 
     [SerializeField] private Text pointsText;
     [SerializeField] private Text timeText;
     [SerializeField] private Text spectatingText;
 
+    private void Awake()
+    {
+        Player.OnLocalPlayerSpawned += OnLocalPlayerSpawned;
+    }
+
     private void Start()
     {
-        ServerGameState.Instance.State.OnValueChanged += HandleGameStateChanged;
-        ServerGameState.Instance.TimeRemaining.OnValueChanged += HandleTimeRemainingChanged;
-        Player.OnAnyPlayerSpawned += OnAnyPlayerSpawned;
+        networkGameState.State.OnValueChanged += HandleGameStateChanged;
+        networkGameState.TimeRemaining.OnValueChanged += HandleTimeRemainingChanged;
 
         Hide();
     }
 
     private void OnDestroy()
     {
-        Player.OnAnyPlayerSpawned -= OnAnyPlayerSpawned;
+        Player.OnLocalPlayerSpawned -= OnLocalPlayerSpawned;
     }
 
     private void HandleGameStateChanged(GameState previousState, GameState newState)
@@ -36,19 +44,14 @@ public class PointsUI : MonoBehaviour
         timeText.text = $"{minutes}:{seconds} remaining";
     }
 
-    private void OnAnyPlayerSpawned(Player player)
+    private void OnLocalPlayerSpawned(Player player)
     {
-        if (Player.LocalPlayer != null)
-        {
-            Player.LocalPlayer.Points.OnValueChanged -= HandlePlayerPointsChanged;
-            Player.LocalPlayer.Points.OnValueChanged += HandlePlayerPointsChanged;
+        this.player = player;
+        this.player.NetworkPlayerState.Points.OnValueChanged += HandlePlayerPointsChanged;
+        this.player.NetworkPlayerState.State.OnValueChanged += HandlePlayerStateChanged;
+        this.player.GetComponent<Player>().OnSpectating += OnPlayerSpectating;
 
-            Player.LocalPlayer.State.OnValueChanged -= HandlePlayerStateChanged;
-            Player.LocalPlayer.State.OnValueChanged += HandlePlayerStateChanged;
-
-            Player.LocalPlayer.OnSpectating -= OnPlayerSpectating;
-            Player.LocalPlayer.OnSpectating += OnPlayerSpectating;
-        }
+        spectatingPlayer = player;
     }
 
     private void HandlePlayerPointsChanged(int previousPoints, int newPoints)
@@ -58,7 +61,7 @@ public class PointsUI : MonoBehaviour
 
     private void HandlePlayerStateChanged(PlayerState previousState, PlayerState newState)
     {
-        if (newState == PlayerState.Completed && ServerGameState.Instance.State.Value != GameState.InGame)
+        if (newState == PlayerState.Completed && networkGameState.State.Value != GameState.InGame)
         {
             Hide();
         }
@@ -66,19 +69,17 @@ public class PointsUI : MonoBehaviour
 
     private void OnPlayerSpectating(Player spectatingPlayer)
     {
-        Player.LocalPlayer.Points.OnValueChanged -= HandlePlayerPointsChanged;
-
         if (this.spectatingPlayer != null)
         {
-            this.spectatingPlayer.Points.OnValueChanged -= HandlePlayerPointsChanged;
+            this.spectatingPlayer.NetworkPlayerState.Points.OnValueChanged -= HandlePlayerPointsChanged;
         }
 
         this.spectatingPlayer = spectatingPlayer;
-        this.spectatingPlayer.Points.OnValueChanged += HandlePlayerPointsChanged;
-        HandlePlayerPointsChanged(0, this.spectatingPlayer.Points.Value);
+        this.spectatingPlayer.NetworkPlayerState.Points.OnValueChanged += HandlePlayerPointsChanged;
+        HandlePlayerPointsChanged(0, this.spectatingPlayer.NetworkPlayerState.Points.Value);
 
         spectatingText.gameObject.SetActive(true);
-        spectatingText.text = $"YOU ARE SPECTATING: {this.spectatingPlayer.Username.Value}";
+        spectatingText.text = $"YOU ARE SPECTATING: {this.spectatingPlayer.NetworkPlayerState.Username.Value}";
     }
 
     private void Hide()

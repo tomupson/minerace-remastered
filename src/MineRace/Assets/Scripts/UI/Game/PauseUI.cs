@@ -30,7 +30,7 @@ public class PauseUI : MonoBehaviour
 
     private void Start()
     {
-        gameObject.SetActive(pauseManager.IsPaused);
+        gameObject.SetActive(false);
     }
 
     private void OnDestroy()

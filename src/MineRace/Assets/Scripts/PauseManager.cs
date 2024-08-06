@@ -1,27 +1,24 @@
 using MineRace.Infrastructure;
 using UnityEngine;
-using UnityEngine.InputSystem;
 using VContainer;
 
 public class PauseManager : MonoBehaviour
 {
+    [Inject] private readonly PlayerInputReader inputReader;
     [Inject] private readonly IPublisher<PauseStateChangedMessage> pauseStatePublisher;
 
-    private PlayerInputActions inputActions;
+    private bool isPaused;
 
-    public bool IsPaused { get; private set; }
-
-    private void Awake()
+    private void Start()
     {
-        inputActions = new PlayerInputActions();
-        inputActions.Player.Enable();
-        inputActions.Player.PauseUnpause.performed += OnPauseUnpausePerformed;
+        inputReader.OnPauseHook += OnPause;
+        inputReader.OnUnpauseHook += OnUnpause;
     }
 
     private void OnDestroy()
     {
-        inputActions.Player.PauseUnpause.performed -= OnPauseUnpausePerformed;
-        inputActions.Dispose();
+        inputReader.OnPauseHook -= OnPause;
+        inputReader.OnUnpauseHook -= OnUnpause;
     }
 
     public void Unpause()
@@ -29,19 +26,24 @@ public class PauseManager : MonoBehaviour
         SetPauseState(paused: false);
     }
 
-    private void OnPauseUnpausePerformed(InputAction.CallbackContext context)
+    private void OnPause()
     {
-        SetPauseState(!IsPaused);
+        SetPauseState(paused: true);
+    }
+
+    private void OnUnpause()
+    {
+        SetPauseState(paused: false);
     }
 
     private void SetPauseState(bool paused)
     {
-        if (IsPaused == paused)
+        if (isPaused == paused)
         {
             return;
         }
 
-        IsPaused = paused;
+        isPaused = paused;
         pauseStatePublisher.Publish(new PauseStateChangedMessage(paused));
     }
 }

@@ -1,13 +1,10 @@
 ﻿using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using VContainer;
 
 [RequireComponent(typeof(SpriteRenderer))]
-public class PlayerPickaxe : NetworkBehaviour
+public class ClientPlayerPickaxe : NetworkBehaviour
 {
-    [Inject] private readonly PauseManager pauseManager;
-
     private Player player;
     private SpriteRenderer spriteRenderer;
 
@@ -19,14 +16,14 @@ public class PlayerPickaxe : NetworkBehaviour
 
     public override void OnNetworkSpawn()
     {
-        enabled = IsOwner;
-        player.State.OnValueChanged += OnPlayerStateChanged;
-        player.FacingRight.OnValueChanged += OnPlayerFacingRightChanged;
+        enabled = IsClient && IsOwner;
+        player.NetworkPlayerState.State.OnValueChanged += OnPlayerStateChanged;
+        player.NetworkPlayerState.FacingRight.OnValueChanged += OnPlayerFacingRightChanged;
     }
 
     private void Update()
     {
-        if (player.State.Value != PlayerState.Playing || pauseManager.IsPaused)
+        if (player.NetworkPlayerState.State.Value != PlayerState.Playing)
         {
             return;
         }

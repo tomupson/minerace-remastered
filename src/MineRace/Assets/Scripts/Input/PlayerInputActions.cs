@@ -24,7 +24,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
     ""name"": ""PlayerInputActions"",
     ""maps"": [
         {
-            ""name"": ""Player"",
+            ""name"": ""Game"",
             ""id"": ""a40606ac-deb9-443b-8d02-42228d94df40"",
             ""actions"": [
                 {
@@ -37,18 +37,18 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""initialStateCheck"": true
                 },
                 {
-                    ""name"": ""SendChat"",
+                    ""name"": ""Pause"",
                     ""type"": ""Button"",
-                    ""id"": ""f7dbc9fc-5b35-4cf1-b06e-e75599643307"",
+                    ""id"": ""84f306fe-c434-4c73-854d-59013061cb24"",
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
                 },
                 {
-                    ""name"": ""PauseUnpause"",
+                    ""name"": ""Mine"",
                     ""type"": ""Button"",
-                    ""id"": ""938d17c0-5fe0-4c6a-95ba-1753d17224f9"",
+                    ""id"": ""cb748e2e-3a02-4804-aca8-a224564eb17e"",
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
                     ""interactions"": """",
@@ -64,9 +64,9 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""initialStateCheck"": false
                 },
                 {
-                    ""name"": ""Mine"",
+                    ""name"": ""SendChat"",
                     ""type"": ""Button"",
-                    ""id"": ""cb748e2e-3a02-4804-aca8-a224564eb17e"",
+                    ""id"": ""f7dbc9fc-5b35-4cf1-b06e-e75599643307"",
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
                     ""interactions"": """",
@@ -120,12 +120,12 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                 },
                 {
                     ""name"": """",
-                    ""id"": ""15ef98a0-1752-47bd-84ac-c49e1ec78087"",
-                    ""path"": ""<Keyboard>/escape"",
+                    ""id"": ""721149cc-faa4-47ee-97c4-c8edbf16f567"",
+                    ""path"": ""<Mouse>/leftButton"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
-                    ""action"": ""PauseUnpause"",
+                    ""action"": ""Mine"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 },
@@ -142,12 +142,40 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                 },
                 {
                     ""name"": """",
-                    ""id"": ""721149cc-faa4-47ee-97c4-c8edbf16f567"",
-                    ""path"": ""<Mouse>/leftButton"",
+                    ""id"": ""93f2e35e-9af1-457d-a277-7675854df4cc"",
+                    ""path"": ""<Keyboard>/escape"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
-                    ""action"": ""Mine"",
+                    ""action"": ""Pause"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                }
+            ]
+        },
+        {
+            ""name"": ""Pause"",
+            ""id"": ""87de5e16-3f15-4afd-92f2-d294579cf65d"",
+            ""actions"": [
+                {
+                    ""name"": ""Unpause"",
+                    ""type"": ""Button"",
+                    ""id"": ""ce657145-f362-4110-a15c-ef02a7610f5f"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                }
+            ],
+            ""bindings"": [
+                {
+                    ""name"": """",
+                    ""id"": ""65cfb57e-85bd-4dd6-8e7a-50885260d73e"",
+                    ""path"": ""<Keyboard>/escape"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Unpause"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -156,13 +184,16 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
     ],
     ""controlSchemes"": []
 }");
-        // Player
-        m_Player = asset.FindActionMap("Player", throwIfNotFound: true);
-        m_Player_Move = m_Player.FindAction("Move", throwIfNotFound: true);
-        m_Player_SendChat = m_Player.FindAction("SendChat", throwIfNotFound: true);
-        m_Player_PauseUnpause = m_Player.FindAction("PauseUnpause", throwIfNotFound: true);
-        m_Player_Spectate = m_Player.FindAction("Spectate", throwIfNotFound: true);
-        m_Player_Mine = m_Player.FindAction("Mine", throwIfNotFound: true);
+        // Game
+        m_Game = asset.FindActionMap("Game", throwIfNotFound: true);
+        m_Game_Move = m_Game.FindAction("Move", throwIfNotFound: true);
+        m_Game_Pause = m_Game.FindAction("Pause", throwIfNotFound: true);
+        m_Game_Mine = m_Game.FindAction("Mine", throwIfNotFound: true);
+        m_Game_Spectate = m_Game.FindAction("Spectate", throwIfNotFound: true);
+        m_Game_SendChat = m_Game.FindAction("SendChat", throwIfNotFound: true);
+        // Pause
+        m_Pause = asset.FindActionMap("Pause", throwIfNotFound: true);
+        m_Pause_Unpause = m_Pause.FindAction("Unpause", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -221,89 +252,139 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         return asset.FindBinding(bindingMask, out action);
     }
 
-    // Player
-    private readonly InputActionMap m_Player;
-    private List<IPlayerActions> m_PlayerActionsCallbackInterfaces = new List<IPlayerActions>();
-    private readonly InputAction m_Player_Move;
-    private readonly InputAction m_Player_SendChat;
-    private readonly InputAction m_Player_PauseUnpause;
-    private readonly InputAction m_Player_Spectate;
-    private readonly InputAction m_Player_Mine;
-    public struct PlayerActions
+    // Game
+    private readonly InputActionMap m_Game;
+    private List<IGameActions> m_GameActionsCallbackInterfaces = new List<IGameActions>();
+    private readonly InputAction m_Game_Move;
+    private readonly InputAction m_Game_Pause;
+    private readonly InputAction m_Game_Mine;
+    private readonly InputAction m_Game_Spectate;
+    private readonly InputAction m_Game_SendChat;
+    public struct GameActions
     {
         private @PlayerInputActions m_Wrapper;
-        public PlayerActions(@PlayerInputActions wrapper) { m_Wrapper = wrapper; }
-        public InputAction @Move => m_Wrapper.m_Player_Move;
-        public InputAction @SendChat => m_Wrapper.m_Player_SendChat;
-        public InputAction @PauseUnpause => m_Wrapper.m_Player_PauseUnpause;
-        public InputAction @Spectate => m_Wrapper.m_Player_Spectate;
-        public InputAction @Mine => m_Wrapper.m_Player_Mine;
-        public InputActionMap Get() { return m_Wrapper.m_Player; }
+        public GameActions(@PlayerInputActions wrapper) { m_Wrapper = wrapper; }
+        public InputAction @Move => m_Wrapper.m_Game_Move;
+        public InputAction @Pause => m_Wrapper.m_Game_Pause;
+        public InputAction @Mine => m_Wrapper.m_Game_Mine;
+        public InputAction @Spectate => m_Wrapper.m_Game_Spectate;
+        public InputAction @SendChat => m_Wrapper.m_Game_SendChat;
+        public InputActionMap Get() { return m_Wrapper.m_Game; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
         public bool enabled => Get().enabled;
-        public static implicit operator InputActionMap(PlayerActions set) { return set.Get(); }
-        public void AddCallbacks(IPlayerActions instance)
+        public static implicit operator InputActionMap(GameActions set) { return set.Get(); }
+        public void AddCallbacks(IGameActions instance)
         {
-            if (instance == null || m_Wrapper.m_PlayerActionsCallbackInterfaces.Contains(instance)) return;
-            m_Wrapper.m_PlayerActionsCallbackInterfaces.Add(instance);
+            if (instance == null || m_Wrapper.m_GameActionsCallbackInterfaces.Contains(instance)) return;
+            m_Wrapper.m_GameActionsCallbackInterfaces.Add(instance);
             @Move.started += instance.OnMove;
             @Move.performed += instance.OnMove;
             @Move.canceled += instance.OnMove;
-            @SendChat.started += instance.OnSendChat;
-            @SendChat.performed += instance.OnSendChat;
-            @SendChat.canceled += instance.OnSendChat;
-            @PauseUnpause.started += instance.OnPauseUnpause;
-            @PauseUnpause.performed += instance.OnPauseUnpause;
-            @PauseUnpause.canceled += instance.OnPauseUnpause;
-            @Spectate.started += instance.OnSpectate;
-            @Spectate.performed += instance.OnSpectate;
-            @Spectate.canceled += instance.OnSpectate;
+            @Pause.started += instance.OnPause;
+            @Pause.performed += instance.OnPause;
+            @Pause.canceled += instance.OnPause;
             @Mine.started += instance.OnMine;
             @Mine.performed += instance.OnMine;
             @Mine.canceled += instance.OnMine;
+            @Spectate.started += instance.OnSpectate;
+            @Spectate.performed += instance.OnSpectate;
+            @Spectate.canceled += instance.OnSpectate;
+            @SendChat.started += instance.OnSendChat;
+            @SendChat.performed += instance.OnSendChat;
+            @SendChat.canceled += instance.OnSendChat;
         }
 
-        private void UnregisterCallbacks(IPlayerActions instance)
+        private void UnregisterCallbacks(IGameActions instance)
         {
             @Move.started -= instance.OnMove;
             @Move.performed -= instance.OnMove;
             @Move.canceled -= instance.OnMove;
-            @SendChat.started -= instance.OnSendChat;
-            @SendChat.performed -= instance.OnSendChat;
-            @SendChat.canceled -= instance.OnSendChat;
-            @PauseUnpause.started -= instance.OnPauseUnpause;
-            @PauseUnpause.performed -= instance.OnPauseUnpause;
-            @PauseUnpause.canceled -= instance.OnPauseUnpause;
-            @Spectate.started -= instance.OnSpectate;
-            @Spectate.performed -= instance.OnSpectate;
-            @Spectate.canceled -= instance.OnSpectate;
+            @Pause.started -= instance.OnPause;
+            @Pause.performed -= instance.OnPause;
+            @Pause.canceled -= instance.OnPause;
             @Mine.started -= instance.OnMine;
             @Mine.performed -= instance.OnMine;
             @Mine.canceled -= instance.OnMine;
+            @Spectate.started -= instance.OnSpectate;
+            @Spectate.performed -= instance.OnSpectate;
+            @Spectate.canceled -= instance.OnSpectate;
+            @SendChat.started -= instance.OnSendChat;
+            @SendChat.performed -= instance.OnSendChat;
+            @SendChat.canceled -= instance.OnSendChat;
         }
 
-        public void RemoveCallbacks(IPlayerActions instance)
+        public void RemoveCallbacks(IGameActions instance)
         {
-            if (m_Wrapper.m_PlayerActionsCallbackInterfaces.Remove(instance))
+            if (m_Wrapper.m_GameActionsCallbackInterfaces.Remove(instance))
                 UnregisterCallbacks(instance);
         }
 
-        public void SetCallbacks(IPlayerActions instance)
+        public void SetCallbacks(IGameActions instance)
         {
-            foreach (var item in m_Wrapper.m_PlayerActionsCallbackInterfaces)
+            foreach (var item in m_Wrapper.m_GameActionsCallbackInterfaces)
                 UnregisterCallbacks(item);
-            m_Wrapper.m_PlayerActionsCallbackInterfaces.Clear();
+            m_Wrapper.m_GameActionsCallbackInterfaces.Clear();
             AddCallbacks(instance);
         }
     }
-    public PlayerActions @Player => new PlayerActions(this);
-    public interface IPlayerActions
+    public GameActions @Game => new GameActions(this);
+
+    // Pause
+    private readonly InputActionMap m_Pause;
+    private List<IPauseActions> m_PauseActionsCallbackInterfaces = new List<IPauseActions>();
+    private readonly InputAction m_Pause_Unpause;
+    public struct PauseActions
+    {
+        private @PlayerInputActions m_Wrapper;
+        public PauseActions(@PlayerInputActions wrapper) { m_Wrapper = wrapper; }
+        public InputAction @Unpause => m_Wrapper.m_Pause_Unpause;
+        public InputActionMap Get() { return m_Wrapper.m_Pause; }
+        public void Enable() { Get().Enable(); }
+        public void Disable() { Get().Disable(); }
+        public bool enabled => Get().enabled;
+        public static implicit operator InputActionMap(PauseActions set) { return set.Get(); }
+        public void AddCallbacks(IPauseActions instance)
+        {
+            if (instance == null || m_Wrapper.m_PauseActionsCallbackInterfaces.Contains(instance)) return;
+            m_Wrapper.m_PauseActionsCallbackInterfaces.Add(instance);
+            @Unpause.started += instance.OnUnpause;
+            @Unpause.performed += instance.OnUnpause;
+            @Unpause.canceled += instance.OnUnpause;
+        }
+
+        private void UnregisterCallbacks(IPauseActions instance)
+        {
+            @Unpause.started -= instance.OnUnpause;
+            @Unpause.performed -= instance.OnUnpause;
+            @Unpause.canceled -= instance.OnUnpause;
+        }
+
+        public void RemoveCallbacks(IPauseActions instance)
+        {
+            if (m_Wrapper.m_PauseActionsCallbackInterfaces.Remove(instance))
+                UnregisterCallbacks(instance);
+        }
+
+        public void SetCallbacks(IPauseActions instance)
+        {
+            foreach (var item in m_Wrapper.m_PauseActionsCallbackInterfaces)
+                UnregisterCallbacks(item);
+            m_Wrapper.m_PauseActionsCallbackInterfaces.Clear();
+            AddCallbacks(instance);
+        }
+    }
+    public PauseActions @Pause => new PauseActions(this);
+    public interface IGameActions
     {
         void OnMove(InputAction.CallbackContext context);
-        void OnSendChat(InputAction.CallbackContext context);
-        void OnPauseUnpause(InputAction.CallbackContext context);
-        void OnSpectate(InputAction.CallbackContext context);
+        void OnPause(InputAction.CallbackContext context);
         void OnMine(InputAction.CallbackContext context);
+        void OnSpectate(InputAction.CallbackContext context);
+        void OnSendChat(InputAction.CallbackContext context);
+    }
+    public interface IPauseActions
+    {
+        void OnUnpause(InputAction.CallbackContext context);
     }
 }

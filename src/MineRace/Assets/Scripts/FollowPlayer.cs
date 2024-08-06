@@ -5,26 +5,25 @@ public class FollowPlayer : MonoBehaviour
     private Player playerToFollow;
 
     [SerializeField] private float lerpSmoothness = 2f;
-    [SerializeField] private float distanceZ = 10f;
 
     private void Awake()
     {
-        Player.OnAnyPlayerSpawned += OnAnyPlayedSpawned;
+        Player.OnLocalPlayerSpawned += OnLocalPlayerSpawned;
     }
 
     private void OnDestroy()
     {
-        Player.OnAnyPlayerSpawned -= OnAnyPlayedSpawned;
+        Player.OnLocalPlayerSpawned -= OnLocalPlayerSpawned;
     }
 
-    private void Update()
+    private void LateUpdate()
     {
         if (playerToFollow == null)
         {
             return;
         }
 
-        transform.position = Vector3.Lerp(transform.position, new Vector3(playerToFollow.transform.position.x, playerToFollow.transform.position.y, -distanceZ), lerpSmoothness);
+        transform.position = Vector3.Lerp(transform.position, new Vector3(playerToFollow.transform.position.x, playerToFollow.transform.position.y, transform.position.z), lerpSmoothness);
     }
 
     public void SwitchTo(Player player)
@@ -32,11 +31,11 @@ public class FollowPlayer : MonoBehaviour
         playerToFollow = player;
     }
 
-    private void OnAnyPlayedSpawned(Player player)
+    private void OnLocalPlayerSpawned(Player player)
     {
         if (playerToFollow == null)
         {
-            playerToFollow = Player.LocalPlayer;
+            playerToFollow = player;
         }
     }
 }

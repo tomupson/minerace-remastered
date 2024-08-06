@@ -1,44 +1,25 @@
 using System;
-using MineRace.Audio;
-using MineRace.Authentication;
-using Unity.Collections;
+using MineRace.ConnectionManagement;
 using Unity.Netcode;
 using UnityEngine;
-using UnityEngine.InputSystem;
 using VContainer;
 
 [RequireComponent(typeof(Rigidbody2D), typeof(SpriteRenderer), typeof(CircleCollider2D))]
 public class Player : NetworkBehaviour
 {
-    [Inject] private readonly UserAccountManager userAccountManager;
-    [Inject] private readonly PauseManager pauseManager;
-    [Inject] private readonly ChatManager chatManager;
+    public static event Action<Player> OnLocalPlayerSpawned;
+
+    [Inject] private readonly NetworkGameState networkGameState;
 
     private Rigidbody2D playerRigidbody;
     private SpriteRenderer spriteRenderer;
     private CircleCollider2D circleCollider;
-    private PlayerInputActions inputActions;
-    private bool canMine = true;
-    private float pickaxeCooldownTimer;
-    private RaycastHit2D lastRaycastHit;
-
-    public static Player LocalPlayer { get; private set; }
-
-    public static event Action<Player> OnAnyPlayerSpawned;
 
     public event Action<Player> OnSpectating;
 
-    [Header("Player Settings")]
-    [SerializeField] private float moveSpeed;
-    [SerializeField] private float pickaxeCooldownTime;
+    [SerializeField] private NetworkPlayerState networkPlayerState;
 
-    public NetworkVariable<PlayerState> State { get; } = new NetworkVariable<PlayerState>(PlayerState.WaitingForPlayers);
-
-    public NetworkVariable<int> Points { get; } = new NetworkVariable<int>();
-
-    public NetworkVariable<FixedString64Bytes> Username { get; } = new NetworkVariable<FixedString64Bytes>(writePerm: NetworkVariableWritePermission.Owner);
-
-    public NetworkVariable<bool> FacingRight { get; } = new NetworkVariable<bool>(true, writePerm: NetworkVariableWritePermission.Owner);
+    public NetworkPlayerState NetworkPlayerState => networkPlayerState;
 
     private void Awake()
     {
@@ -47,99 +28,45 @@ public class Player : NetworkBehaviour
         circleCollider = GetComponent<CircleCollider2D>();
     }
 
-    private void FixedUpdate()
+    public override void OnNetworkSpawn()
     {
-        if (State.Value != PlayerState.Playing || pauseManager.IsPaused)
+        if (IsServer)
         {
-            return;
-        }
+            networkGameState.State.OnValueChanged += OnGameStateChanged;
 
-        float horizontal = inputActions.Player.Move.ReadValue<float>();
-        float horizontalSpeed = horizontal * moveSpeed;
-        if (horizontalSpeed > 0 && !FacingRight.Value)
-        {
-            FacingRight.Value = true;
-        }
-
-        if (horizontalSpeed < 0 && FacingRight.Value)
-        {
-            FacingRight.Value = false;
-        }
-
-        playerRigidbody.velocity = new Vector2(horizontalSpeed, 0);
-    }
-
-    private void Update()
-    {
-        if (State.Value != PlayerState.Playing)
-        {
-            return;
-        }
-
-        if (!canMine)
-        {
-            pickaxeCooldownTimer -= Time.deltaTime;
-            if (pickaxeCooldownTimer <= 0f)
+            SessionPlayerData? sessionPlayerData = SessionManager.Instance.GetPlayerData(OwnerClientId);
+            if (sessionPlayerData.HasValue)
             {
-                canMine = true;
-                pickaxeCooldownTimer = pickaxeCooldownTime;
+                networkPlayerState.Username.Value = sessionPlayerData.Value.PlayerName;
             }
         }
 
-        if (pauseManager.IsPaused)
+        if (IsLocalPlayer)
         {
-            return;
+            OnLocalPlayerSpawned?.Invoke(this);
         }
 
-        RaycastHit2D hit = PerformMouseRaycast();
-
-        if (lastRaycastHit && (!hit || lastRaycastHit.transform != hit.transform))
-        {
-            Block lastHitBlock = lastRaycastHit.transform.GetComponent<BlockRenderer>().block;
-            SpriteRenderer lastHitBlockSpriteRenderer = lastRaycastHit.transform.GetComponent<SpriteRenderer>();
-            lastHitBlockSpriteRenderer.sprite = lastHitBlock.textures[lastHitBlock.textureIndex];
-        }
-
-        lastRaycastHit = hit;
-
-        if (hit && !hit.transform.CompareTag("BORDER"))
-        {
-            Block hitBlock = hit.transform.GetComponent<BlockRenderer>().block;
-            SpriteRenderer hitBlockSpriteRenderer = hit.transform.GetComponent<SpriteRenderer>();
-            hitBlockSpriteRenderer.sprite = hitBlock.outlineTextures[hitBlock.textureIndex];
-        }
-    }
-
-    public override void OnNetworkSpawn()
-    {
-        enabled = IsOwner;
-        if (IsOwner)
-        {
-            LocalPlayer = this;
-            Username.Value = userAccountManager.UserInfo.Username;
-            ServerGameState.Instance.State.OnValueChanged += OnGameStateChanged;
-
-            inputActions = new PlayerInputActions();
-            inputActions.Player.Enable();
-            inputActions.Player.Mine.performed += OnMinePerformed;
-            inputActions.Player.SendChat.performed += OnSendChatPerformed;
-        }
-
-        OnAnyPlayerSpawned?.Invoke(this);
-        State.OnValueChanged += OnPlayerStateChanged;
-        FacingRight.OnValueChanged += OnFacingRightChanged;
+        networkPlayerState.State.OnValueChanged += OnPlayerStateChanged;
+        networkPlayerState.FacingRight.OnValueChanged += OnFacingRightChanged;
     }
 
     public override void OnNetworkDespawn()
     {
-        if (!IsOwner)
+        if (!IsServer)
         {
             return;
         }
 
-        inputActions.Player.Mine.performed -= OnMinePerformed;
-        inputActions.Player.SendChat.performed -= OnSendChatPerformed;
-        inputActions.Dispose();
+        SessionPlayerData? sessionPlayerData = SessionManager.Instance.GetPlayerData(OwnerClientId);
+        if (!sessionPlayerData.HasValue)
+        {
+            return;
+        }
+
+        SessionPlayerData playerData = sessionPlayerData.Value;
+        playerData.PlayerPosition = transform.position;
+        playerData.HasCharacterSpawned = true;
+        SessionManager.Instance.SetPlayerData(OwnerClientId, playerData);
     }
 
     public void ReachedEnd()
@@ -164,16 +91,16 @@ public class Player : NetworkBehaviour
     private void SetModeServerRpc(PlayerState state)
     {
         // If the client wants to move states backwards, ignore the RPC
-        if (State.Value >= state)
+        if (networkPlayerState.State.Value >= state)
         {
             return;
         }
 
-        State.Value = state;
+        networkPlayerState.State.Value = state;
     }
 
     [ServerRpc]
-    private void BreakBlockServerRpc(NetworkObjectReference reference)
+    public void BreakBlockServerRpc(NetworkObjectReference reference)
     {
         // TODO: Validate the block break
         if (reference.TryGet(out NetworkObject networkObject))
@@ -181,62 +108,27 @@ public class Player : NetworkBehaviour
             networkObject.Despawn();
 
             Block block = networkObject.GetComponent<BlockRenderer>().block;
-            Points.Value += block.pointsValue;
+            networkPlayerState.Points.Value += block.pointsValue;
         }
     }
 
     [ServerRpc]
     private void ReachedEndServerRpc()
     {
-        int timeRemainingSeconds = ServerGameState.Instance.TimeRemaining.Value;
-        Points.Value += Mathf.FloorToInt(timeRemainingSeconds / 4f);
-    }
-
-    private void OnMinePerformed(InputAction.CallbackContext context)
-    {
-        if (State.Value != PlayerState.Playing || pauseManager.IsPaused || !canMine)
-        {
-            return;
-        }
-
-        RaycastHit2D hit = PerformMouseRaycast();
-        if (!hit || hit.transform.CompareTag("BORDER"))
-        {
-            return;
-        }
-
-        Block hitBlock = hit.transform.GetComponent<BlockRenderer>().block;
-
-        AudioManager.PlayOneShot(hitBlock.breakSound, hit.transform.position);
-
-        // Temporarily set it to hidden so that even if it takes the server some time to destroy it, you can't mine it twice
-        hit.transform.gameObject.SetActive(false);
-
-        canMine = false;
-
-        BreakBlockServerRpc(hit.transform.gameObject);
-    }
-
-    private void OnSendChatPerformed(InputAction.CallbackContext context)
-    {
-        if (pauseManager.IsPaused)
-        {
-            return;
-        }
-
-        chatManager.SendMessage(Username.Value.ToString(), "This is a chat message");
+        int timeRemainingSeconds = networkGameState.TimeRemaining.Value;
+        networkPlayerState.Points.Value += Mathf.FloorToInt(timeRemainingSeconds / 4f);
     }
 
     // TODO: Think about whether the player should update it's own state based on the movement of the game (current behaviour),
     // or if the game manager has authority to change the players' states (would require "RequireOwnership = false" on the ServerRpc)
     private void OnGameStateChanged(GameState previousState, GameState newState)
     {
-        if (newState == GameState.InGame && State.Value != PlayerState.Playing)
+        if (newState == GameState.InGame && networkPlayerState.State.Value != PlayerState.Playing)
         {
             SetModeServerRpc(PlayerState.Playing);
         }
 
-        if (newState == GameState.Completed && State.Value != PlayerState.Completed)
+        if (newState == GameState.Completed && networkPlayerState.State.Value != PlayerState.Completed)
         {
             SetModeServerRpc(PlayerState.Completed);
         }
@@ -255,15 +147,5 @@ public class Player : NetworkBehaviour
     private void OnFacingRightChanged(bool previousFacingRight, bool newFacingRight)
     {
         spriteRenderer.flipX = !newFacingRight;
-    }
-
-    private RaycastHit2D PerformMouseRaycast()
-    {
-        Vector3 direction = Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue()) - transform.position;
-        direction.z = 0;
-
-        RaycastHit2D hit = Physics2D.Raycast(transform.position, direction, 0.75f);
-        Debug.DrawRay(transform.position, direction, Color.red);
-        return hit;
     }
 }

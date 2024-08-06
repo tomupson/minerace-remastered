@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using MineRace.Audio;
+using MineRace.Authentication;
 using MineRace.ConnectionManagement;
 using MineRace.UGS;
 using Unity.Services.Lobbies.Models;
@@ -13,6 +14,7 @@ public class LobbyUI : MonoBehaviour
 
     [Inject] private readonly ConnectionManager connectionManager;
     [Inject] private readonly LobbyManager lobbyManager;
+    [Inject] private readonly UserAccountManager userAccountManager;
 
     [SerializeField] private Text statusText;
     [SerializeField] private GameObject gameListItemPrefab;
@@ -97,6 +99,6 @@ public class LobbyUI : MonoBehaviour
             return;
         }
 
-        connectionManager.StartClient();
+        connectionManager.StartClient(userAccountManager.UserInfo.Username);
     }
 }

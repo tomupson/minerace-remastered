@@ -15,7 +15,7 @@ public class EndBlock : MonoBehaviour
             return;
         }
 
-        if (finishedPlayer.State.Value != PlayerState.Playing)
+        if (finishedPlayer.NetworkPlayerState.State.Value != PlayerState.Playing)
         {
             return;
         }

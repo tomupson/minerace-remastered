@@ -1,19 +1,23 @@
 using System;
 using System.Threading.Tasks;
-using MineRace.UGS;
 using Unity.Netcode.Transports.UTP;
 using Unity.Networking.Transport.Relay;
 using Unity.Services.Lobbies.Models;
 using Unity.Services.Relay;
 using Unity.Services.Relay.Models;
 using UnityEngine;
-using VContainer;
 
 namespace MineRace.ConnectionManagement.States
 {
     internal class ClientConnectingState : OnlineState
     {
-        [Inject] protected LobbyManager lobbyManager;
+        private string playerName;
+
+        public ClientConnectingState Configure(string playerName)
+        {
+            this.playerName = playerName;
+            return this;
+        }
 
         public override async void Enter()
         {
@@ -57,6 +61,8 @@ namespace MineRace.ConnectionManagement.States
                 {
                     throw new Exception("Trying to start relay while Lobby isn't set");
                 }
+
+                SetConnectionPayload(playerName);
 
                 string relayJoinCode = lobbyManager.ActiveLobby.Data.TryGetValue("RelayJoinCode", out DataObject joinCodeData) ? joinCodeData.Value : null;
 

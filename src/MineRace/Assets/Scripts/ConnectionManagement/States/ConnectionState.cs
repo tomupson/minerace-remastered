@@ -1,4 +1,5 @@
 using MineRace.Infrastructure;
+using MineRace.UGS;
 using Unity.Netcode;
 using VContainer;
 
@@ -6,9 +7,10 @@ namespace MineRace.ConnectionManagement.States
 {
     internal abstract class ConnectionState
     {
-        [Inject] protected ConnectionManager connectionManager;
-        [Inject] protected NetworkManager networkManager;
-        [Inject] protected IPublisher<ConnectStatus> connectStatusPublisher;
+        [Inject] protected readonly ConnectionManager connectionManager;
+        [Inject] protected readonly NetworkManager networkManager;
+        [Inject] protected readonly LobbyManager lobbyManager;
+        [Inject] protected readonly IPublisher<ConnectStatus> connectStatusPublisher;
 
         public abstract void Enter();
 
@@ -20,9 +22,9 @@ namespace MineRace.ConnectionManagement.States
 
         public virtual void OnServerStarted() { }
 
-        public virtual void StartClient() { }
+        public virtual void StartClient(string playerName) { }
 
-        public virtual void StartHost() { }
+        public virtual void StartHost(string playerName) { }
 
         public virtual void OnUserRequestedShutdown() { }
 

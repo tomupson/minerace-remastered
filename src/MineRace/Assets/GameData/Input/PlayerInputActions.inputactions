@@ -2,7 +2,7 @@
     "name": "PlayerInputActions",
     "maps": [
         {
-            "name": "Player",
+            "name": "Game",
             "id": "a40606ac-deb9-443b-8d02-42228d94df40",
             "actions": [
                 {
@@ -15,18 +15,18 @@
                     "initialStateCheck": true
                 },
                 {
-                    "name": "SendChat",
+                    "name": "Pause",
                     "type": "Button",
-                    "id": "f7dbc9fc-5b35-4cf1-b06e-e75599643307",
+                    "id": "84f306fe-c434-4c73-854d-59013061cb24",
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
                 },
                 {
-                    "name": "PauseUnpause",
+                    "name": "Mine",
                     "type": "Button",
-                    "id": "938d17c0-5fe0-4c6a-95ba-1753d17224f9",
+                    "id": "cb748e2e-3a02-4804-aca8-a224564eb17e",
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
@@ -42,9 +42,9 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "Mine",
+                    "name": "SendChat",
                     "type": "Button",
-                    "id": "cb748e2e-3a02-4804-aca8-a224564eb17e",
+                    "id": "f7dbc9fc-5b35-4cf1-b06e-e75599643307",
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
@@ -98,12 +98,12 @@
                 },
                 {
                     "name": "",
-                    "id": "15ef98a0-1752-47bd-84ac-c49e1ec78087",
-                    "path": "<Keyboard>/escape",
+                    "id": "721149cc-faa4-47ee-97c4-c8edbf16f567",
+                    "path": "<Mouse>/leftButton",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "PauseUnpause",
+                    "action": "Mine",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -120,12 +120,40 @@
                 },
                 {
                     "name": "",
-                    "id": "721149cc-faa4-47ee-97c4-c8edbf16f567",
-                    "path": "<Mouse>/leftButton",
+                    "id": "93f2e35e-9af1-457d-a277-7675854df4cc",
+                    "path": "<Keyboard>/escape",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Mine",
+                    "action": "Pause",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        },
+        {
+            "name": "Pause",
+            "id": "87de5e16-3f15-4afd-92f2-d294579cf65d",
+            "actions": [
+                {
+                    "name": "Unpause",
+                    "type": "Button",
+                    "id": "ce657145-f362-4110-a15c-ef02a7610f5f",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "65cfb57e-85bd-4dd6-8e7a-50885260d73e",
+                    "path": "<Keyboard>/escape",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Unpause",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

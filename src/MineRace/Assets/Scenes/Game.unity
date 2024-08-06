@@ -808,10 +808,12 @@ GameObject:
   m_Component:
   - component: {fileID: 662086340}
   - component: {fileID: 662086341}
+  - component: {fileID: 662086344}
   - component: {fileID: 662086338}
+  - component: {fileID: 662086343}
   - component: {fileID: 662086342}
   m_Layer: 0
-  m_Name: ServerGameState
+  m_Name: GameState
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -832,16 +834,12 @@ MonoBehaviour:
   parentReference:
     TypeName: MineRace.ApplicationLifecycle.ApplicationController
   autoRun: 1
-  autoInjectGameObjects:
-  - {fileID: 207951601}
-  - {fileID: 1473463668}
-  chatManager: {fileID: 31181171}
-  pauseManager: {fileID: 207951603}
+  autoInjectGameObjects: []
   playerPrefab: {fileID: 355904156403638674, guid: 4fa2f0f1cbec159409cd3f10b83cf462,
     type: 3}
   levelData: {fileID: 11400000, guid: 3ada6dcb91694ba4bb6cb636d76d61c7, type: 2}
-  gameTime: 18000
-  preGameCountdownTime: 5
+  inputReader: {fileID: 11400000, guid: 79ab672959f699b4191eab3ee024a1c2, type: 2}
+  networkGameState: {fileID: 662086344}
 --- !u!4 &662086340
 Transform:
   m_ObjectHideFlags: 0
@@ -890,6 +888,43 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c10de77d862f93744a60f60de2ae8b21, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &662086343
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 662086337}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a5af15686f513974c9e3d44354a40287, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  parentReference:
+    TypeName: MineRace.ApplicationLifecycle.ApplicationController
+  autoRun: 1
+  autoInjectGameObjects:
+  - {fileID: 31181170}
+  - {fileID: 207951601}
+  - {fileID: 1473463668}
+  inputReader: {fileID: 11400000, guid: 79ab672959f699b4191eab3ee024a1c2, type: 2}
+  chatManager: {fileID: 31181171}
+  pauseManager: {fileID: 207951603}
+  networkGameState: {fileID: 662086344}
+--- !u!114 &662086344
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 662086337}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1c211fd2ad2e93943b1514e833344a89, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  gameTime: 300
+  preGameCountdownTime: 5
 --- !u!1 &741129400
 GameObject:
   m_ObjectHideFlags: 0
@@ -1748,7 +1783,7 @@ Transform:
   m_GameObject: {fileID: 1489464066}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1767,7 +1802,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   lerpSmoothness: 2
-  distanceZ: 10
 --- !u!1 &1652611244
 GameObject:
   m_ObjectHideFlags: 0

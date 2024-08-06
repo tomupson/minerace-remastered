@@ -1,3 +1,8 @@
+using System.Text;
+using Assets.Scripts.ConnectionManagement;
+using Unity.Services.Authentication;
+using UnityEngine;
+
 namespace MineRace.ConnectionManagement.States
 {
     internal abstract class OnlineState : ConnectionState
@@ -11,6 +16,12 @@ namespace MineRace.ConnectionManagement.States
         public override void OnTransportFailure()
         {
             connectionManager.ChangeState(connectionManager.OfflineState);
+        }
+
+        protected void SetConnectionPayload(string playerName)
+        {
+            string payload = JsonUtility.ToJson(new ConnectionPayload(AuthenticationService.Instance.PlayerId, playerName));
+            networkManager.NetworkConfig.ConnectionData = Encoding.UTF8.GetBytes(payload);
         }
     }
 }

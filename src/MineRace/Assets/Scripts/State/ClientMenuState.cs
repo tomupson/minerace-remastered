@@ -1,6 +1,4 @@
-using VContainer.Unity;
-
-public class ClientMenuState : LifetimeScope
+public class ClientMenuState : GameStateBehaviour
 {
-    
+
 }

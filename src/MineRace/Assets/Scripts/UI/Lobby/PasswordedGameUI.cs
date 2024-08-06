@@ -1,5 +1,6 @@
 using System;
 using MineRace.Audio;
+using MineRace.Authentication;
 using MineRace.ConnectionManagement;
 using MineRace.UGS;
 using MineRace.Utils.Animation;
@@ -17,6 +18,7 @@ public class PasswordedGameUI : MonoBehaviour, IAnimationStateHandler
 
     [Inject] private readonly ConnectionManager connectionManager;
     [Inject] private readonly LobbyManager lobbyManager;
+    [Inject] private readonly UserAccountManager userAccountManager;
 
     private Animator animator;
     private Lobby lobby;
@@ -43,6 +45,12 @@ public class PasswordedGameUI : MonoBehaviour, IAnimationStateHandler
     private void Start()
     {
         Hide();
+    }
+
+    private void OnEnable()
+    {
+        statusText.text = "";
+        joinButton.enabled = true;
     }
 
     public void Open(Lobby lobby)
@@ -73,14 +81,16 @@ public class PasswordedGameUI : MonoBehaviour, IAnimationStateHandler
         }
 
         bool joined = await lobbyManager.TryJoinLobby(lobby, new JoinLobbyByIdOptions { Password = passwordField.text });
-        if (!joined)
+
+        joinButton.enabled = true;
+
+        if (joined)
         {
-            AudioManager.PlayOneShot(connectionErrorSound);
-            Close();
+            connectionManager.StartHost(userAccountManager.UserInfo.Username);
             return;
         }
 
-        connectionManager.StartHost();
+        AudioManager.PlayOneShot(connectionErrorSound);
     }
 
     private void Close()
@@ -90,8 +100,6 @@ public class PasswordedGameUI : MonoBehaviour, IAnimationStateHandler
 
     private void Hide()
     {
-        statusText.text = "";
-        joinButton.enabled = true;
         gameObject.SetActive(false);
     }
 

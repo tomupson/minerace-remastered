@@ -1,14 +1,17 @@
 using UnityEngine;
 using UnityEngine.UI;
+using VContainer;
 
 public class PregameCountdownUI : MonoBehaviour
 {
+    [Inject] private readonly NetworkGameState networkGameState;
+
     [SerializeField] private Text pregameTimeText;
 
     private void Start()
     {
-        ServerGameState.Instance.State.OnValueChanged += HandleGameStateChanged;
-        ServerGameState.Instance.PregameTimeRemaining.OnValueChanged += HandlePregameTimeRemainingChanged;
+        networkGameState.State.OnValueChanged += HandleGameStateChanged;
+        networkGameState.PregameTimeRemaining.OnValueChanged += HandlePregameTimeRemainingChanged;
 
         gameObject.SetActive(false);
     }

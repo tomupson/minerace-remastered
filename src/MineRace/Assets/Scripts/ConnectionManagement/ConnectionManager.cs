@@ -69,11 +69,11 @@ namespace MineRace.ConnectionManagement
             currentState.Enter();
         }
 
-        public void StartClient() =>
-            currentState.StartClient();
+        public void StartClient(string playerName) =>
+            currentState.StartClient(playerName);
 
-        public void StartHost() =>
-            currentState.StartHost();
+        public void StartHost(string playerName) =>
+            currentState.StartHost(playerName);
 
         public void RequestShutdown() =>
             currentState.OnUserRequestedShutdown();

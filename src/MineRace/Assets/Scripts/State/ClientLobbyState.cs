@@ -1,6 +1,4 @@
-using VContainer.Unity;
-
-public class ClientLobbyState : LifetimeScope
+public class ClientLobbyState : GameStateBehaviour
 {
 
 }

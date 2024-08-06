@@ -1,5 +1,4 @@
-﻿using Unity.Collections;
-using Unity.Netcode;
+﻿using Unity.Netcode;
 using UnityEngine.UI;
 
 public class PlayerNameplate : NetworkBehaviour
@@ -20,20 +19,14 @@ public class PlayerNameplate : NetworkBehaviour
 
     public override void OnNetworkSpawn()
     {
-        player.State.OnValueChanged += HandlePlayerStateChanged;
-        player.Username.OnValueChanged += HandleUsernameChanged;
-        SetUsername(player.Username.Value.ToString());
+        player.NetworkPlayerState.State.OnValueChanged += HandlePlayerStateChanged;
+        SetUsername(player.NetworkPlayerState.Username.Value.ToString());
     }
 
     private void HandlePlayerStateChanged(PlayerState previousState, PlayerState newState)
     {
         bool isPlaying = newState == PlayerState.Playing;
         gameObject.SetActive(isPlaying);
-    }
-
-    private void HandleUsernameChanged(FixedString64Bytes previousUsername, FixedString64Bytes newUsername)
-    {
-        SetUsername(newUsername.ToString());
     }
 
     private void SetUsername(string username)

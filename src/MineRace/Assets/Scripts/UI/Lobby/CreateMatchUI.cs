@@ -1,4 +1,5 @@
 using MineRace.Audio;
+using MineRace.Authentication;
 using MineRace.ConnectionManagement;
 using MineRace.UGS;
 using MineRace.Utils.Animation;
@@ -14,6 +15,7 @@ public class CreateMatchUI : MonoBehaviour, IAnimationStateHandler
 
     [Inject] private readonly ConnectionManager connectionManager;
     [Inject] private readonly LobbyManager lobbyManager;
+    [Inject] private readonly UserAccountManager userAccountManager;
 
     private Animator animator;
 
@@ -41,6 +43,14 @@ public class CreateMatchUI : MonoBehaviour, IAnimationStateHandler
         Hide();
     }
 
+    private void OnEnable()
+    {
+        nameField.text = "";
+        passwordField.text = "";
+        statusText.text = "";
+        createButton.enabled = true;
+    }
+
     public void Open()
     {
         gameObject.SetActive(true);
@@ -66,8 +76,10 @@ public class CreateMatchUI : MonoBehaviour, IAnimationStateHandler
         bool created = await lobbyManager.TryCreateLobby(gameName, gamePassword, connectionManager.MaxConnectedPlayers);
         if (created)
         {
-            connectionManager.StartHost();
+            connectionManager.StartHost(userAccountManager.UserInfo.Username);
         }
+
+        createButton.enabled = true;
     }
 
     private void Close()
@@ -77,10 +89,6 @@ public class CreateMatchUI : MonoBehaviour, IAnimationStateHandler
 
     private void Hide()
     {
-        nameField.text = "";
-        passwordField.text = "";
-        statusText.text = "";
-        createButton.enabled = true;
         gameObject.SetActive(false);
     }
 

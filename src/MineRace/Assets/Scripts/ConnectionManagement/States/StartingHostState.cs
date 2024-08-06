@@ -1,18 +1,25 @@
 using System.Collections.Generic;
-using MineRace.UGS;
+using System.Text;
+using Assets.Scripts.ConnectionManagement;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
 using Unity.Networking.Transport.Relay;
 using Unity.Services.Lobbies.Models;
 using Unity.Services.Relay;
 using Unity.Services.Relay.Models;
-using VContainer;
+using UnityEngine;
 
 namespace MineRace.ConnectionManagement.States
 {
     internal sealed class StartingHostState : OnlineState
     {
-        [Inject] private readonly LobbyManager lobbyManager;
+        private string playerName;
+
+        public StartingHostState Configure(string playerName)
+        {
+            this.playerName = playerName;
+            return this;
+        }
 
         public override void Enter()
         {
@@ -30,8 +37,14 @@ namespace MineRace.ConnectionManagement.States
         public override void ApprovalCheck(NetworkManager.ConnectionApprovalRequest request, NetworkManager.ConnectionApprovalResponse response)
         {
             ulong clientId = request.ClientNetworkId;
+
             if (clientId == networkManager.LocalClientId)
             {
+                ConnectionPayload connectionPayload = JsonUtility.FromJson<ConnectionPayload>(Encoding.UTF8.GetString(request.Payload));
+
+                SessionManager.Instance.SetupConnectingPlayerSessionData(clientId, connectionPayload.PlayerId,
+                    new SessionPlayerData(clientId, connectionPayload.PlayerName, isConnected: true));
+
                 response.Approved = true;
             }
         }
@@ -45,6 +58,8 @@ namespace MineRace.ConnectionManagement.States
         {
             try
             {
+                SetConnectionPayload(playerName);
+
                 Allocation hostAllocation = await RelayService.Instance.CreateAllocationAsync(connectionManager.MaxConnectedPlayers);
                 string joinCode = await RelayService.Instance.GetJoinCodeAsync(hostAllocation.AllocationId);
 

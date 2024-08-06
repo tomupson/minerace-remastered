@@ -2,14 +2,17 @@ using System.Collections;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UI;
+using VContainer;
 
 public class WaitingForPlayersUI : MonoBehaviour
 {
+    [Inject] private readonly NetworkGameState networkGameState;
+
     [SerializeField] private Text waitingForPlayersText;
 
     private void Start()
     {
-        ServerGameState.Instance.State.OnValueChanged += HandleGameStateChanged;
+        networkGameState.State.OnValueChanged += HandleGameStateChanged;
 
         gameObject.SetActive(true);
 

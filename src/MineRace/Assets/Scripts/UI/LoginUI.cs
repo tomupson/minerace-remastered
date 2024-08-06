@@ -1,4 +1,7 @@
-﻿using MineRace.Authentication;
+﻿using MineRace.ApplicationLifecycle.Messages;
+using MineRace.Authentication;
+using MineRace.Infrastructure;
+using MineRace.Utils;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -6,6 +9,7 @@ using VContainer;
 
 public class LoginUI : MonoBehaviour
 {
+    [Inject] private readonly IPublisher<QuitApplicationMessage> applicationQuitPublisher;
     [Inject] private readonly UserAccountManager userAccountManager;
 
     [SerializeField] private InputField usernameInputField;
@@ -19,14 +23,7 @@ public class LoginUI : MonoBehaviour
     private void Awake()
     {
         loginButton.onClick.AddListener(Login);
-        exitButton.onClick.AddListener(() =>
-        {
-#if UNITY_EDITOR
-            UnityEditor.EditorApplication.isPlaying = false;
-#else
-            Application.Quit();
-#endif
-        });
+        exitButton.onClick.AddListener(() => applicationQuitPublisher.Publish(new QuitApplicationMessage()));
         registerButton.onClick.AddListener(() => Application.OpenURL("https://tomupson.com/minerace/register"));
 
         usernameInputField.onValueChanged.AddListener(OnInputChanged);
@@ -36,28 +33,27 @@ public class LoginUI : MonoBehaviour
     private void Start()
     {
         loginStatusText.text = "";
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
+
+        // Until proper login is implemented, login on start
         Login();
-#endif
     }
 
     private async void Login()
     {
         loginStatusText.text = "";
 
-        string username = usernameInputField.text;
-#if !UNITY_EDITOR && !DEVELOPMENT_BUILD
-        if (string.IsNullOrWhiteSpace(username))
-        {
-            loginStatusText.text = "The field 'Username' is required.";
-            return;
-        }
-#endif
+        string username = ClientPrefs.GetPlayerName();
+        //string username = usernameInputField.text;
+        //if (string.IsNullOrWhiteSpace(username))
+        //{
+        //    loginStatusText.text = "The field 'Username' is required.";
+        //    return;
+        //}
 
         loginButton.enabled = false;
         loginStatusText.text = "Logging you in. Please wait...";
 
-        bool loggedIn = await userAccountManager.Login(usernameInputField.text);
+        bool loggedIn = await userAccountManager.Login(username);
         if (!loggedIn)
         {
             loginButton.enabled = true;

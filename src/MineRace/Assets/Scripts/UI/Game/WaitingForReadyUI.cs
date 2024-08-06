@@ -1,22 +1,28 @@
-using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
+using VContainer;
 
 public class WaitingForReadyUI : MonoBehaviour
 {
+    [Inject] private readonly NetworkGameState networkGameState;
+
     [SerializeField] private Text waitingForPlayerReadyText;
+
+    private void Awake()
+    {
+        Player.OnLocalPlayerSpawned += OnLocalPlayerSpawned;
+    }
 
     private void Start()
     {
-        ServerGameState.Instance.State.OnValueChanged += HandleGameStateChanged;
-        Player.OnAnyPlayerSpawned += OnAnyPlayerSpawned;
+        networkGameState.State.OnValueChanged += HandleGameStateChanged;
 
         Hide();
     }
 
     private void OnDestroy()
     {
-        Player.OnAnyPlayerSpawned -= OnAnyPlayerSpawned;
+        Player.OnLocalPlayerSpawned -= OnLocalPlayerSpawned;
     }
 
     private void HandleGameStateChanged(GameState previousState, GameState newState)
@@ -27,13 +33,10 @@ public class WaitingForReadyUI : MonoBehaviour
         }
     }
 
-    private void OnAnyPlayerSpawned(Player player)
+    private void OnLocalPlayerSpawned(Player player)
     {
-        if (Player.LocalPlayer != null)
-        {
-            Player.LocalPlayer.State.OnValueChanged -= HandlePlayerStateChanged;
-            Player.LocalPlayer.State.OnValueChanged += HandlePlayerStateChanged;
-        }
+        player.NetworkPlayerState.State.OnValueChanged -= HandlePlayerStateChanged;
+        player.NetworkPlayerState.State.OnValueChanged += HandlePlayerStateChanged;
     }
 
     private void HandlePlayerStateChanged(PlayerState previousState, PlayerState newState)
@@ -41,10 +44,7 @@ public class WaitingForReadyUI : MonoBehaviour
         if (newState == PlayerState.Ready)
         {
             gameObject.SetActive(true);
-
-            Player[] players = FindObjectsOfType<Player>();
-            Player otherPlayer = players.FirstOrDefault(p => !p.IsLocalPlayer);
-            waitingForPlayerReadyText.text = $"WAITING FOR '{otherPlayer.Username.Value}' TO READY UP.";
+            waitingForPlayerReadyText.text = $"WAITING FOR PLAYERS TO READY UP.";
         }
     }
 
