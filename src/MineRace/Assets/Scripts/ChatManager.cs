@@ -2,10 +2,13 @@
 using MineRace.ConnectionManagement;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.Assertions;
 using VContainer;
 
 public class ChatManager : NetworkBehaviour
 {
+    private const string ServerSender = "SERVER";
+
     [Inject] private readonly PlayerInputReader inputReader;
 
     [SerializeField] private GameObject chat;
@@ -28,6 +31,12 @@ public class ChatManager : NetworkBehaviour
         SendChatMessageServerRpc(message);
     }
 
+    public void SendServerChatMessage(string message)
+    {
+        Assert.IsTrue(IsServer, "Attempting to send server chat message not as server");
+        SpawnChatMessage(ServerSender, message);
+    }
+
     [ServerRpc(RequireOwnership = false)]
     private void SendChatMessageServerRpc(string message, ServerRpcParams rpcParams = default)
     {
@@ -37,6 +46,11 @@ public class ChatManager : NetworkBehaviour
             return;
         }
 
+        SpawnChatMessage(playerData.Value.PlayerName, message);
+    }
+
+    private void SpawnChatMessage(string playerName, string message)
+    {
         GameObject chatItemObject = Instantiate(chatItemPrefab);
 
         NetworkObject chatItemNetworkObject = chatItemObject.GetComponent<NetworkObject>();
@@ -45,7 +59,7 @@ public class ChatManager : NetworkBehaviour
         chatItemNetworkObject.TrySetParent(chat, worldPositionStays: false);
 
         ChatItemUI chatItem = chatItemObject.GetComponent<ChatItemUI>();
-        chatItem.Setup(playerData.Value.PlayerName, message);
+        chatItem.Setup(playerName, message);
         StartCoroutine(WaitForExpire(chatItemNetworkObject));
     }
 

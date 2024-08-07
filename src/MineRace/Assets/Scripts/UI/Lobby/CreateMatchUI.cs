@@ -77,6 +77,7 @@ public class CreateMatchUI : MonoBehaviour, IAnimationStateHandler
         if (created)
         {
             connectionManager.StartHost(userAccountManager.UserInfo.Username);
+            return;
         }
 
         createButton.enabled = true;
