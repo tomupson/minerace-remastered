@@ -2,6 +2,7 @@ using JetBrains.Annotations;
 using MineRace.ConnectionManagement;
 using MineRace.Infrastructure;
 using Unity.Netcode;
+using UnityEngine;
 using VContainer;
 
 public class ServerChatMessageFeed : NetworkBehaviour
@@ -36,10 +37,10 @@ public class ServerChatMessageFeed : NetworkBehaviour
         switch (message.ConnectStatus)
         {
             case ConnectStatus.Success:
-                chatManager.SendServerChatMessage($"{message.PlayerName} has disconnected");
+                chatManager.SendServerChatMessage($"{message.PlayerName} has connected", Color.green);
                 break;
             case ConnectStatus.GenericDisconnect:
-                chatManager.SendServerChatMessage($"{message.PlayerName} has connected");
+                chatManager.SendServerChatMessage($"{message.PlayerName} has disconnected", Color.red);
                 break;
         }
     }

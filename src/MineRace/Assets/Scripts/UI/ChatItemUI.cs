@@ -1,35 +1,28 @@
-﻿using Unity.Collections;
-using Unity.Netcode;
+﻿using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class ChatItemUI : NetworkBehaviour
 {
-    private readonly NetworkVariable<FixedString64Bytes> sender = new NetworkVariable<FixedString64Bytes>();
-    private readonly NetworkVariable<FixedString512Bytes> message = new NetworkVariable<FixedString512Bytes>();
+    private readonly NetworkVariable<NetworkChatMessage> message = new NetworkVariable<NetworkChatMessage>();
 
     [SerializeField] private Text senderText;
     [SerializeField] private Text messageText;
 
     public override void OnNetworkSpawn()
     {
-        sender.OnValueChanged += OnSenderChanged;
         message.OnValueChanged += OnMessageChanged;
     }
 
-    public void Setup(string sender, string message)
+    public void Setup(string sender, string message, Color colour)
     {
-        this.sender.Value = sender;
-        this.message.Value = message;
+        this.message.Value = new NetworkChatMessage(sender, message, colour);
     }
 
-    private void OnSenderChanged(FixedString64Bytes previousSender, FixedString64Bytes newSender)
+    private void OnMessageChanged(NetworkChatMessage previousMessage, NetworkChatMessage newMessage)
     {
-        senderText.text = $"[{newSender}]:";
-    }
-
-    private void OnMessageChanged(FixedString512Bytes previousMessage, FixedString512Bytes newMessage)
-    {
-        messageText.text = newMessage.ToString();
+        senderText.text = $"[{newMessage.sender}]";
+        messageText.text = newMessage.message.ToString();
+        messageText.color = newMessage.colour;
     }
 }

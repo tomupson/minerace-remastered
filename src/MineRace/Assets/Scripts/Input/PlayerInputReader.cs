@@ -13,6 +13,8 @@ public class PlayerInputReader : ScriptableObject, PlayerInputActions.IGameActio
     public event Action OnSendChatHook;
     public event Action OnPauseHook;
     public event Action OnUnpauseHook;
+    public event Action OnToggleChatHook;
+    public event Action OnToggleNetStatsHook;
 
     private void OnEnable()
     {
@@ -60,6 +62,22 @@ public class PlayerInputReader : ScriptableObject, PlayerInputActions.IGameActio
         {
             SetPauseActive();
             OnPauseHook?.Invoke();
+        }
+    }
+
+    public void OnToggleChat(InputAction.CallbackContext context)
+    {
+        if (context.performed)
+        {
+            OnToggleChatHook?.Invoke();
+        }
+    }
+
+    public void OnToggleNetStats(InputAction.CallbackContext context)
+    {
+        if (context.performed)
+        {
+            OnToggleNetStatsHook?.Invoke();
         }
     }
 

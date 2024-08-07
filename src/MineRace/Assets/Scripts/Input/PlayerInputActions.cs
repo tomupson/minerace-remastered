@@ -71,6 +71,24 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""ToggleChat"",
+                    ""type"": ""Button"",
+                    ""id"": ""d92f00fc-29ea-4d14-a10b-3534205a8d9a"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""ToggleNetStats"",
+                    ""type"": ""Button"",
+                    ""id"": ""70e99494-d49f-40ed-b745-cdb5e8d5dbaa"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -150,6 +168,28 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""action"": ""Pause"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""e06bac9a-cfe0-47b2-a086-f7073e1ada20"",
+                    ""path"": ""<Keyboard>/f1"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""ToggleChat"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""1b366943-38eb-46ba-883e-2571c041461c"",
+                    ""path"": ""<Keyboard>/f3"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""ToggleNetStats"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         },
@@ -191,6 +231,8 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         m_Game_Mine = m_Game.FindAction("Mine", throwIfNotFound: true);
         m_Game_Spectate = m_Game.FindAction("Spectate", throwIfNotFound: true);
         m_Game_SendChat = m_Game.FindAction("SendChat", throwIfNotFound: true);
+        m_Game_ToggleChat = m_Game.FindAction("ToggleChat", throwIfNotFound: true);
+        m_Game_ToggleNetStats = m_Game.FindAction("ToggleNetStats", throwIfNotFound: true);
         // Pause
         m_Pause = asset.FindActionMap("Pause", throwIfNotFound: true);
         m_Pause_Unpause = m_Pause.FindAction("Unpause", throwIfNotFound: true);
@@ -260,6 +302,8 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
     private readonly InputAction m_Game_Mine;
     private readonly InputAction m_Game_Spectate;
     private readonly InputAction m_Game_SendChat;
+    private readonly InputAction m_Game_ToggleChat;
+    private readonly InputAction m_Game_ToggleNetStats;
     public struct GameActions
     {
         private @PlayerInputActions m_Wrapper;
@@ -269,6 +313,8 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         public InputAction @Mine => m_Wrapper.m_Game_Mine;
         public InputAction @Spectate => m_Wrapper.m_Game_Spectate;
         public InputAction @SendChat => m_Wrapper.m_Game_SendChat;
+        public InputAction @ToggleChat => m_Wrapper.m_Game_ToggleChat;
+        public InputAction @ToggleNetStats => m_Wrapper.m_Game_ToggleNetStats;
         public InputActionMap Get() { return m_Wrapper.m_Game; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -293,6 +339,12 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @SendChat.started += instance.OnSendChat;
             @SendChat.performed += instance.OnSendChat;
             @SendChat.canceled += instance.OnSendChat;
+            @ToggleChat.started += instance.OnToggleChat;
+            @ToggleChat.performed += instance.OnToggleChat;
+            @ToggleChat.canceled += instance.OnToggleChat;
+            @ToggleNetStats.started += instance.OnToggleNetStats;
+            @ToggleNetStats.performed += instance.OnToggleNetStats;
+            @ToggleNetStats.canceled += instance.OnToggleNetStats;
         }
 
         private void UnregisterCallbacks(IGameActions instance)
@@ -312,6 +364,12 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @SendChat.started -= instance.OnSendChat;
             @SendChat.performed -= instance.OnSendChat;
             @SendChat.canceled -= instance.OnSendChat;
+            @ToggleChat.started -= instance.OnToggleChat;
+            @ToggleChat.performed -= instance.OnToggleChat;
+            @ToggleChat.canceled -= instance.OnToggleChat;
+            @ToggleNetStats.started -= instance.OnToggleNetStats;
+            @ToggleNetStats.performed -= instance.OnToggleNetStats;
+            @ToggleNetStats.canceled -= instance.OnToggleNetStats;
         }
 
         public void RemoveCallbacks(IGameActions instance)
@@ -382,6 +440,8 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         void OnMine(InputAction.CallbackContext context);
         void OnSpectate(InputAction.CallbackContext context);
         void OnSendChat(InputAction.CallbackContext context);
+        void OnToggleChat(InputAction.CallbackContext context);
+        void OnToggleNetStats(InputAction.CallbackContext context);
     }
     public interface IPauseActions
     {
