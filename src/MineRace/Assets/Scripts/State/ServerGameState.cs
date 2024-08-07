@@ -17,13 +17,11 @@ public class ServerGameState : GameStateBehaviour
 
     [SerializeField] private GameObject playerPrefab;
     [SerializeField] private LevelData levelData;
-    [SerializeField] private PlayerInputReader inputReader;
     [SerializeField] private NetworkGameState networkGameState;
 
     protected override void Configure(IContainerBuilder builder)
     {
         base.Configure(builder);
-        builder.RegisterInstance(inputReader);
         builder.RegisterInstance(networkGameState);
     }
 
@@ -103,7 +101,7 @@ public class ServerGameState : GameStateBehaviour
     {
         const float leftRightPadding = 6;
         float availableWidth = levelData.mapWidth - 2 * leftRightPadding;
-        float spacing = availableWidth / connectionManager.MaxConnectedPlayers - 1;
+        float spacing = availableWidth / connectionManager.MaxConnectedPlayers;
         return leftRightPadding + (clientId + 1) * spacing;
     }
 

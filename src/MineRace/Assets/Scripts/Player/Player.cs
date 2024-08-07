@@ -69,10 +69,14 @@ public class Player : NetworkBehaviour
         SessionManager.Instance.SetPlayerData(OwnerClientId, playerData);
     }
 
+    public void BreakBlock(GameObject block)
+    {
+        BreakBlockServerRpc(block);
+    }
+
     public void ReachedEnd()
     {
         ReachedEndServerRpc();
-        SetModeServerRpc(PlayerState.Completed);
     }
 
     public void Spectate(Player player)
@@ -100,7 +104,7 @@ public class Player : NetworkBehaviour
     }
 
     [ServerRpc]
-    public void BreakBlockServerRpc(NetworkObjectReference reference)
+    private void BreakBlockServerRpc(NetworkObjectReference reference)
     {
         // TODO: Validate the block break
         if (reference.TryGet(out NetworkObject networkObject))
@@ -115,22 +119,22 @@ public class Player : NetworkBehaviour
     [ServerRpc]
     private void ReachedEndServerRpc()
     {
+        networkPlayerState.State.Value = PlayerState.Completed;
+
         int timeRemainingSeconds = networkGameState.TimeRemaining.Value;
         networkPlayerState.Points.Value += Mathf.FloorToInt(timeRemainingSeconds / 4f);
     }
 
-    // TODO: Think about whether the player should update it's own state based on the movement of the game (current behaviour),
-    // or if the game manager has authority to change the players' states (would require "RequireOwnership = false" on the ServerRpc)
     private void OnGameStateChanged(GameState previousState, GameState newState)
     {
         if (newState == GameState.InGame && networkPlayerState.State.Value != PlayerState.Playing)
         {
-            SetModeServerRpc(PlayerState.Playing);
+            NetworkPlayerState.State.Value = PlayerState.Playing;
         }
 
         if (newState == GameState.Completed && networkPlayerState.State.Value != PlayerState.Completed)
         {
-            SetModeServerRpc(PlayerState.Completed);
+            NetworkPlayerState.State.Value = PlayerState.Completed;
         }
     }
 

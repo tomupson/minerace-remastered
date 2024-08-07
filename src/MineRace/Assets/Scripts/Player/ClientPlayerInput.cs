@@ -2,12 +2,11 @@ using MineRace.Audio;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using VContainer;
 
 [RequireComponent(typeof(Player), typeof(Rigidbody2D))]
 public class ClientPlayerInput : NetworkBehaviour
 {
-    [Inject] private readonly PlayerInputReader inputReader;
+    [SerializeField] private PlayerInputReader inputReader;
 
     private Player player;
     private Rigidbody2D playerRigidbody;
@@ -15,6 +14,7 @@ public class ClientPlayerInput : NetworkBehaviour
     private bool canMine = true;
     private float pickaxeCooldownTimer;
     private RaycastHit2D lastRaycastHit;
+    private float moveHorizontal;
 
     [SerializeField] private NetworkPlayerState networkPlayerState;
     [SerializeField] private float moveSpeed;
@@ -52,14 +52,35 @@ public class ClientPlayerInput : NetworkBehaviour
             lastHitBlockSpriteRenderer.sprite = lastHitBlock.textures[lastHitBlock.textureIndex];
         }
 
-        lastRaycastHit = hit;
-
         if (hit && !hit.transform.CompareTag("BORDER"))
         {
+            lastRaycastHit = hit;
+
             Block hitBlock = hit.transform.GetComponent<BlockRenderer>().block;
             SpriteRenderer hitBlockSpriteRenderer = hit.transform.GetComponent<SpriteRenderer>();
             hitBlockSpriteRenderer.sprite = hitBlock.outlineTextures[hitBlock.textureIndex];
         }
+    }
+
+    private void FixedUpdate()
+    {
+        if (networkPlayerState.State.Value != PlayerState.Playing)
+        {
+            return;
+        }
+
+        float horizontalSpeed = moveHorizontal * moveSpeed;
+        if (horizontalSpeed > 0 && !networkPlayerState.FacingRight.Value)
+        {
+            networkPlayerState.FacingRight.Value = true;
+        }
+
+        if (horizontalSpeed < 0 && networkPlayerState.FacingRight.Value)
+        {
+            networkPlayerState.FacingRight.Value = false;
+        }
+
+        playerRigidbody.velocity = new Vector2(horizontalSpeed, 0);
     }
 
     public override void OnNetworkSpawn()
@@ -86,23 +107,7 @@ public class ClientPlayerInput : NetworkBehaviour
 
     private void OnMove(float horizontal)
     {
-        if (networkPlayerState.State.Value != PlayerState.Playing)
-        {
-            return;
-        }
-
-        float horizontalSpeed = horizontal * moveSpeed;
-        if (horizontalSpeed > 0 && !networkPlayerState.FacingRight.Value)
-        {
-            networkPlayerState.FacingRight.Value = true;
-        }
-
-        if (horizontalSpeed < 0 && networkPlayerState.FacingRight.Value)
-        {
-            networkPlayerState.FacingRight.Value = false;
-        }
-
-        playerRigidbody.velocity = new Vector2(horizontalSpeed, 0);
+        moveHorizontal = horizontal;
     }
 
     private void OnMine()
@@ -127,7 +132,7 @@ public class ClientPlayerInput : NetworkBehaviour
 
         canMine = false;
 
-        player.BreakBlockServerRpc(hit.transform.gameObject);
+        player.BreakBlock(hit.transform.gameObject);
     }
 
     private RaycastHit2D PerformMouseRaycast()

@@ -5,21 +5,21 @@ using VContainer;
 
 public class SpectateUI : MonoBehaviour
 {
-    [Inject] private readonly PlayerInputReader inputReader;
     [Inject] private readonly NetworkGameState networkGameState;
 
-    private Player localPlayer;
+    private Player player;
 
+    [SerializeField] private PlayerInputReader inputReader;
     [SerializeField] private Text spectateText;
 
     private void Awake()
     {
         Player.OnLocalPlayerSpawned += OnLocalPlayerSpawned;
+        inputReader.OnSpectateHook += OnSpectate;
     }
 
     private void Start()
     {
-        inputReader.OnSpectateHook += OnSpectate;
         networkGameState.State.OnValueChanged += HandleGameStateChanged;
 
         Hide();
@@ -40,9 +40,8 @@ public class SpectateUI : MonoBehaviour
 
     private void OnLocalPlayerSpawned(Player player)
     {
-        localPlayer = player;
-        localPlayer.NetworkPlayerState.State.OnValueChanged -= HandlePlayerStateChanged;
-        localPlayer.NetworkPlayerState.State.OnValueChanged += HandlePlayerStateChanged;
+        this.player = player;
+        this.player.NetworkPlayerState.State.OnValueChanged += HandlePlayerStateChanged;
     }
 
     private void HandlePlayerStateChanged(PlayerState previousState, PlayerState newState)
@@ -58,7 +57,7 @@ public class SpectateUI : MonoBehaviour
 
     private void OnSpectate()
     {
-        bool localPlayerNotCompleted = localPlayer.NetworkPlayerState.State.Value != PlayerState.Completed;
+        bool localPlayerNotCompleted = player.NetworkPlayerState.State.Value != PlayerState.Completed;
         bool gameNotRunning = networkGameState.State.Value != GameState.InGame;
         if (localPlayerNotCompleted || gameNotRunning)
         {
@@ -68,7 +67,7 @@ public class SpectateUI : MonoBehaviour
         Player[] players = FindObjectsOfType<Player>();
         Player otherPlayer = players.FirstOrDefault(p => !p.IsLocalPlayer);
 
-        localPlayer.Spectate(otherPlayer);
+        player.Spectate(otherPlayer);
 
         Hide();
     }

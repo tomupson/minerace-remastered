@@ -3,19 +3,17 @@ using MineRace.ConnectionManagement;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Assertions;
-using VContainer;
 
 public class ChatManager : NetworkBehaviour
 {
     private const string ServerSender = "SERVER";
 
-    [Inject] private readonly PlayerInputReader inputReader;
-
+    [SerializeField] private PlayerInputReader inputReader;
     [SerializeField] private GameObject chat;
     [SerializeField] private GameObject chatItemPrefab;
     [SerializeField] private float messageExpireTime = 5;
 
-    private void Start()
+    private void Awake()
     {
         inputReader.OnSendChatHook += OnSendChatPerformed;
     }

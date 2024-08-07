@@ -4,12 +4,13 @@ using VContainer;
 
 public class PauseManager : MonoBehaviour
 {
-    [Inject] private readonly PlayerInputReader inputReader;
     [Inject] private readonly IPublisher<PauseStateChangedMessage> pauseStatePublisher;
+
+    [SerializeField] private PlayerInputReader inputReader;
 
     private bool isPaused;
 
-    private void Start()
+    private void Awake()
     {
         inputReader.OnPauseHook += OnPause;
         inputReader.OnUnpauseHook += OnUnpause;

@@ -9,7 +9,6 @@ public class ClientGameState : GameStateBehaviour
 {
     [Inject] private readonly NetworkManager networkManager;
 
-    [SerializeField] private PlayerInputReader inputReader;
     [SerializeField] private ChatManager chatManager;
     [SerializeField] private PauseManager pauseManager;
     [SerializeField] private NetworkGameState networkGameState;
@@ -17,7 +16,6 @@ public class ClientGameState : GameStateBehaviour
     protected override void Configure(IContainerBuilder builder)
     {
         base.Configure(builder);
-        builder.RegisterComponent(inputReader);
         builder.RegisterComponent(chatManager);
         builder.RegisterComponent(pauseManager);
 

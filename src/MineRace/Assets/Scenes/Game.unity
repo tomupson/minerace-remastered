@@ -154,6 +154,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c72f5cd9e4bf8c34c800bf49a664af74, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  inputReader: {fileID: 11400000, guid: 79ab672959f699b4191eab3ee024a1c2, type: 2}
   chat: {fileID: 1068869448}
   chatItemPrefab: {fileID: 1563098427901794, guid: 4e71436a538e8244585df0a00da678ca,
     type: 3}
@@ -250,6 +251,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: afd91d2d70685b144abe5e8ed7b6cedd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  inputReader: {fileID: 11400000, guid: 79ab672959f699b4191eab3ee024a1c2, type: 2}
 --- !u!1 &230211232
 GameObject:
   m_ObjectHideFlags: 0
@@ -497,6 +499,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0d4dd3c5a79887a43bf83c19811784b4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  inputReader: {fileID: 11400000, guid: 79ab672959f699b4191eab3ee024a1c2, type: 2}
   spectateText: {fileID: 114268297343286429}
 --- !u!1 &382883173
 GameObject:
@@ -851,7 +854,6 @@ MonoBehaviour:
   playerPrefab: {fileID: 355904156403638674, guid: 4fa2f0f1cbec159409cd3f10b83cf462,
     type: 3}
   levelData: {fileID: 11400000, guid: 3ada6dcb91694ba4bb6cb636d76d61c7, type: 2}
-  inputReader: {fileID: 11400000, guid: 79ab672959f699b4191eab3ee024a1c2, type: 2}
   networkGameState: {fileID: 662086344}
 --- !u!4 &662086340
 Transform:
@@ -920,7 +922,6 @@ MonoBehaviour:
   - {fileID: 31181170}
   - {fileID: 207951601}
   - {fileID: 1473463668}
-  inputReader: {fileID: 11400000, guid: 79ab672959f699b4191eab3ee024a1c2, type: 2}
   chatManager: {fileID: 31181171}
   pauseManager: {fileID: 207951603}
   networkGameState: {fileID: 662086344}
