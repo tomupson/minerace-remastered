@@ -49,6 +49,12 @@ public class NetworkGameState : NetworkBehaviour
 
     public override void OnNetworkSpawn()
     {
+        if (!IsServer)
+        {
+            enabled = false;
+            return;
+        }
+
         TimeRemaining.Value = gameTime;
         PregameTimeRemaining.Value = preGameCountdownTime;
     }

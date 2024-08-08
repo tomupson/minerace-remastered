@@ -1,19 +1,22 @@
 using System;
+using System.Collections.Generic;
 using MineRace.ConnectionManagement;
 using Unity.Netcode;
 using UnityEngine;
 using VContainer;
 
-[RequireComponent(typeof(Rigidbody2D), typeof(SpriteRenderer), typeof(CircleCollider2D))]
+[RequireComponent(typeof(Rigidbody2D), typeof(SpriteRenderer), typeof(Collider2D))]
 public class Player : NetworkBehaviour
 {
+    private static readonly List<Player> spawnedPlayers = new List<Player>();
+
     public static event Action<Player> OnLocalPlayerSpawned;
 
     [Inject] private readonly NetworkGameState networkGameState;
 
     private Rigidbody2D playerRigidbody;
-    private SpriteRenderer spriteRenderer;
-    private CircleCollider2D circleCollider;
+    private SpriteRenderer playerSpriteRenderer;
+    private Collider2D playerCollider;
 
     public event Action<Player> OnSpectating;
 
@@ -24,8 +27,13 @@ public class Player : NetworkBehaviour
     private void Awake()
     {
         playerRigidbody = GetComponent<Rigidbody2D>();
-        spriteRenderer = GetComponent<SpriteRenderer>();
-        circleCollider = GetComponent<CircleCollider2D>();
+        playerSpriteRenderer = GetComponent<SpriteRenderer>();
+        playerCollider = GetComponent<Collider2D>();
+    }
+
+    public override void OnDestroy()
+    {
+        spawnedPlayers.Remove(this);
     }
 
     public override void OnNetworkSpawn()
@@ -39,6 +47,8 @@ public class Player : NetworkBehaviour
             {
                 networkPlayerState.Username.Value = sessionPlayerData.Value.PlayerName;
             }
+
+            spawnedPlayers.Add(this);
         }
 
         if (IsLocalPlayer)
@@ -91,6 +101,8 @@ public class Player : NetworkBehaviour
         SetModeServerRpc(PlayerState.Ready);
     }
 
+    public static IReadOnlyList<Player> GetSpawnedPlayers() => spawnedPlayers.AsReadOnly();
+
     [ServerRpc]
     private void SetModeServerRpc(PlayerState state)
     {
@@ -142,14 +154,14 @@ public class Player : NetworkBehaviour
     {
         if (newState == PlayerState.Completed)
         {
-            spriteRenderer.enabled = false;
-            circleCollider.enabled = false;
+            playerSpriteRenderer.enabled = false;
+            playerCollider.enabled = false;
             playerRigidbody.bodyType = RigidbodyType2D.Static;
         }
     }
 
     private void OnFacingRightChanged(bool previousFacingRight, bool newFacingRight)
     {
-        spriteRenderer.flipX = !newFacingRight;
+        playerSpriteRenderer.flipX = !newFacingRight;
     }
 }

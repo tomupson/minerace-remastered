@@ -13,8 +13,6 @@ public class ServerGameState : GameStateBehaviour
     [Inject] private readonly ConnectionManager connectionManager;
     [Inject] private readonly NetworkManager networkManager;
 
-    private Player[] players;
-
     [SerializeField] private GameObject playerPrefab;
     [SerializeField] private LevelData levelData;
     [SerializeField] private NetworkGameState networkGameState;
@@ -55,12 +53,7 @@ public class ServerGameState : GameStateBehaviour
     private void OnClientConnected(ulong connectedClientId)
     {
         SpawnPlayer(connectedClientId);
-        players = FindObjectsOfType<Player>();
-
-        if (networkManager.ConnectedClientsIds.Count == connectionManager.MaxConnectedPlayers)
-        {
-            networkGameState.State.Value = GameState.WaitingForPlayersReady;
-        }
+        CheckAllPlayersConnected();
     }
 
     private void OnSceneLoadEventCompleted(string sceneName, LoadSceneMode loadSceneMode, List<ulong> clientsCompleted, List<ulong> clientsTimedOut)
@@ -68,6 +61,7 @@ public class ServerGameState : GameStateBehaviour
         foreach (ulong clientId in clientsCompleted)
         {
             SpawnPlayer(clientId);
+            CheckAllPlayersConnected();
         }
     }
 
@@ -105,6 +99,14 @@ public class ServerGameState : GameStateBehaviour
         return leftRightPadding + (clientId + 1) * spacing;
     }
 
+    private void CheckAllPlayersConnected()
+    {
+        if (networkManager.ConnectedClientsIds.Count == connectionManager.MaxConnectedPlayers)
+        {
+            networkGameState.State.Value = GameState.WaitingForPlayersReady;
+        }
+    }
+
     private void OnPlayerStateChanged(PlayerState previousState, PlayerState newState)
     {
         switch (networkGameState.State.Value)
@@ -120,7 +122,7 @@ public class ServerGameState : GameStateBehaviour
 
     private void CheckForReady(PlayerState playerState)
     {
-        if (playerState == PlayerState.Ready && !players.Any(p => p.NetworkPlayerState.State.Value != PlayerState.Ready))
+        if (playerState == PlayerState.Ready && !Player.GetSpawnedPlayers().Any(p => p.NetworkPlayerState.State.Value != PlayerState.Ready))
         {
             networkGameState.State.Value = GameState.PregameCountdown;
             SessionManager.Instance.OnGameStarted();
@@ -129,7 +131,7 @@ public class ServerGameState : GameStateBehaviour
 
     private void CheckForGameOver(PlayerState playerState)
     {
-        if (playerState == PlayerState.Completed && !players.Any(p => p.NetworkPlayerState.State.Value < PlayerState.Completed))
+        if (playerState == PlayerState.Completed && !Player.GetSpawnedPlayers().Any(p => p.NetworkPlayerState.State.Value < PlayerState.Completed))
         {
             networkGameState.State.Value = GameState.Completed;
             SessionManager.Instance.OnGameEnded();

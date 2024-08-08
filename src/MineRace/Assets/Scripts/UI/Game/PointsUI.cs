@@ -35,6 +35,9 @@ public class PointsUI : MonoBehaviour
     {
         bool isInGame = newState == GameState.InGame;
         gameObject.SetActive(isInGame);
+
+        // TODO: There must be a better way of doing this?
+        HandleTimeRemainingChanged(0, networkGameState.TimeRemaining.Value);
     }
 
     private void HandleTimeRemainingChanged(int previousTime, int newTime)

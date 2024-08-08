@@ -3,27 +3,25 @@ using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-[RequireComponent(typeof(Player), typeof(Rigidbody2D))]
+[RequireComponent(typeof(Player), typeof(ServerPlayerMovement), typeof(Rigidbody2D))]
 public class ClientPlayerInput : NetworkBehaviour
 {
     [SerializeField] private PlayerInputReader inputReader;
 
     private Player player;
-    private Rigidbody2D playerRigidbody;
+    private ServerPlayerMovement serverPlayerMovement;
 
     private bool canMine = true;
     private float pickaxeCooldownTimer;
     private RaycastHit2D lastRaycastHit;
-    private float moveHorizontal;
 
     [SerializeField] private NetworkPlayerState networkPlayerState;
-    [SerializeField] private float moveSpeed;
     [SerializeField] private float pickaxeCooldownTime;
 
     private void Awake()
     {
         player = GetComponent<Player>();
-        playerRigidbody = GetComponent<Rigidbody2D>();
+        serverPlayerMovement = GetComponent<ServerPlayerMovement>();
     }
 
     private void Update()
@@ -62,27 +60,6 @@ public class ClientPlayerInput : NetworkBehaviour
         }
     }
 
-    private void FixedUpdate()
-    {
-        if (networkPlayerState.State.Value != PlayerState.Playing)
-        {
-            return;
-        }
-
-        float horizontalSpeed = moveHorizontal * moveSpeed;
-        if (horizontalSpeed > 0 && !networkPlayerState.FacingRight.Value)
-        {
-            networkPlayerState.FacingRight.Value = true;
-        }
-
-        if (horizontalSpeed < 0 && networkPlayerState.FacingRight.Value)
-        {
-            networkPlayerState.FacingRight.Value = false;
-        }
-
-        playerRigidbody.velocity = new Vector2(horizontalSpeed, 0);
-    }
-
     public override void OnNetworkSpawn()
     {
         if (!IsClient || !IsOwner)
@@ -107,7 +84,7 @@ public class ClientPlayerInput : NetworkBehaviour
 
     private void OnMove(float horizontal)
     {
-        moveHorizontal = horizontal;
+        serverPlayerMovement.Move(horizontal);
     }
 
     private void OnMine()
@@ -125,7 +102,10 @@ public class ClientPlayerInput : NetworkBehaviour
 
         Block hitBlock = hit.transform.GetComponent<BlockRenderer>().block;
 
-        AudioManager.PlayOneShot(hitBlock.breakSound, hit.transform.position);
+        if (hitBlock.breakSound != null)
+        {
+            AudioManager.PlayOneShot(hitBlock.breakSound, hit.transform.position);
+        }
 
         // Temporarily set it to hidden so that even if it takes the server some time to destroy it, you can't mine it twice
         hit.transform.gameObject.SetActive(false);

@@ -20,11 +20,7 @@ public class ServerChatMessageFeed : NetworkBehaviour
 
     public override void OnNetworkSpawn()
     {
-        if (!IsServer)
-        {
-            enabled = false;
-            return;
-        }
+        enabled = IsServer;
     }
 
     public override void OnDestroy()

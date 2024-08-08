@@ -9,5 +9,5 @@ public class NetworkPlayerState : NetworkBehaviour
 
     public NetworkVariable<FixedString64Bytes> Username { get; } = new NetworkVariable<FixedString64Bytes>();
 
-    public NetworkVariable<bool> FacingRight { get; } = new NetworkVariable<bool>(true, writePerm: NetworkVariableWritePermission.Owner);
+    public NetworkVariable<bool> FacingRight { get; } = new NetworkVariable<bool>(true);
 }

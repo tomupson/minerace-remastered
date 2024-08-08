@@ -20,6 +20,8 @@ public class Block : ScriptableObject
     [Tooltip("Set of block outline textures, to allow variance between blocks of the same type")]
     public List<Sprite> outlineTextures;
     public Sound breakSound;
+    public Color primaryColour;
+    public Color secondaryColour;
 
     [HideInInspector] public float[] spawnPercentagesAtLevels;
     [HideInInspector] public int textureIndex;

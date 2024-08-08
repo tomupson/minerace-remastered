@@ -20,6 +20,9 @@ public class PregameCountdownUI : MonoBehaviour
     {
         bool isPregameCountdown = newState == GameState.PregameCountdown;
         gameObject.SetActive(isPregameCountdown);
+
+        // TODO: There must be a better way of doing this?
+        HandlePregameTimeRemainingChanged(0, networkGameState.PregameTimeRemaining.Value);
     }
 
     private void HandlePregameTimeRemainingChanged(int previousTime, int newTime)
