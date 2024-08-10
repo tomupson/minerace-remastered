@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using MineRace.ConnectionManagement;
+using MineRace.Utils.Netcode;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -87,7 +88,8 @@ public class ServerGameState : GameStateBehaviour
         }
 
         Player player = playerObject.GetComponent<Player>();
-        player.NetworkPlayerState.State.OnValueChanged += OnPlayerStateChanged;
+        // TODO: Should we dispose of this?
+        player.NetworkPlayerState.State.Subscribe(OnPlayerStateChanged);
         return player;
     }
 
@@ -95,7 +97,7 @@ public class ServerGameState : GameStateBehaviour
     {
         const float leftRightPadding = 6;
         float availableWidth = levelData.mapWidth - 2 * leftRightPadding;
-        float spacing = availableWidth / connectionManager.MaxConnectedPlayers;
+        float spacing = availableWidth / Mathf.Max(connectionManager.MaxConnectedPlayers, 2f);
         return leftRightPadding + (clientId + 1) * spacing;
     }
 
@@ -107,15 +109,15 @@ public class ServerGameState : GameStateBehaviour
         }
     }
 
-    private void OnPlayerStateChanged(PlayerState previousState, PlayerState newState)
+    private void OnPlayerStateChanged(PlayerState state)
     {
         switch (networkGameState.State.Value)
         {
             case GameState.WaitingForPlayersReady:
-                CheckForReady(newState);
+                CheckForReady(state);
                 break;
             case GameState.InGame:
-                CheckForGameOver(newState);
+                CheckForGameOver(state);
                 break;
         }
     }

@@ -1,10 +1,15 @@
-﻿using Unity.Netcode;
+﻿using System;
+using MineRace.Infrastructure;
+using MineRace.Utils.Netcode;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(SpriteRenderer))]
 public class ClientPlayerPickaxe : NetworkBehaviour
 {
+    private DisposableGroup subscriptions;
+
     private Player player;
     private SpriteRenderer spriteRenderer;
 
@@ -12,13 +17,6 @@ public class ClientPlayerPickaxe : NetworkBehaviour
     {
         player = GetComponentInParent<Player>();
         spriteRenderer = GetComponent<SpriteRenderer>();
-    }
-
-    public override void OnNetworkSpawn()
-    {
-        enabled = IsClient && IsOwner;
-        player.NetworkPlayerState.State.OnValueChanged += OnPlayerStateChanged;
-        player.NetworkPlayerState.FacingRight.OnValueChanged += OnPlayerFacingRightChanged;
     }
 
     private void Update()
@@ -35,17 +33,34 @@ public class ClientPlayerPickaxe : NetworkBehaviour
         transform.rotation = Quaternion.Euler(0f, 0f, rotationZ + 90);
     }
 
-    private void OnPlayerStateChanged(PlayerState previousState, PlayerState newState)
+    public override void OnNetworkSpawn()
     {
-        if (newState == PlayerState.Completed)
+        enabled = IsClient && IsOwner;
+
+        subscriptions = new DisposableGroup();
+        subscriptions.Add(player.NetworkPlayerState.State.Subscribe(OnPlayerStateChanged));
+        subscriptions.Add(player.NetworkPlayerState.FacingRight.Subscribe(OnPlayerFacingRightChanged));
+    }
+
+    public override void OnNetworkDespawn()
+    {
+        subscriptions?.Dispose();
+    }
+
+    private void OnPlayerStateChanged(PlayerState state)
+    {
+        if (state == PlayerState.Completed)
         {
             spriteRenderer.enabled = false;
         }
     }
 
-    private void OnPlayerFacingRightChanged(bool previousFacingRight, bool newFacingRight)
+    private void OnPlayerFacingRightChanged(bool facingRight)
     {
-        spriteRenderer.flipX = !newFacingRight;
-        transform.localPosition = new Vector3(transform.localPosition.x * -1, transform.localPosition.y, transform.localPosition.z);
+        spriteRenderer.flipX = !facingRight;
+
+        float localPositionX = Math.Abs(transform.localPosition.x);
+        localPositionX = facingRight ? localPositionX : -localPositionX;
+        transform.localPosition = new Vector3(localPositionX, transform.localPosition.y, transform.localPosition.z);
     }
 }

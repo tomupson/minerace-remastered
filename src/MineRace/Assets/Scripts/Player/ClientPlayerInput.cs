@@ -80,6 +80,7 @@ public class ClientPlayerInput : NetworkBehaviour
         }
 
         inputReader.OnMineHook -= OnMine;
+        inputReader.OnMoveHook -= OnMove;
     }
 
     private void OnMove(float horizontal)

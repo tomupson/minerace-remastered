@@ -1,3 +1,5 @@
+using MineRace.Infrastructure;
+using MineRace.Utils.Netcode;
 using UnityEngine;
 using UnityEngine.UI;
 using VContainer;
@@ -6,7 +8,8 @@ public class ReadyUI : MonoBehaviour
 {
     [Inject] private readonly NetworkGameState networkGameState;
 
-    private Player localPlayer;
+    private DisposableGroup subscriptions;
+    private Player player;
 
     [SerializeField] private Button readyButton;
 
@@ -17,30 +20,33 @@ public class ReadyUI : MonoBehaviour
         readyButton.onClick.AddListener(() =>
         {
             Hide();
-            localPlayer.Ready();
+            player.Ready();
         });
     }
 
     private void Start()
     {
-        networkGameState.State.OnValueChanged += HandleGameStateChanged;
-
         Hide();
+
+        subscriptions = new DisposableGroup();
+        subscriptions.Add(networkGameState.State.Subscribe(OnGameStateChanged));
     }
 
     private void OnDestroy()
     {
         Player.OnLocalPlayerSpawned -= OnLocalPlayerSpawned;
+
+        subscriptions?.Dispose();
     }
 
     private void OnLocalPlayerSpawned(Player player)
     {
-        localPlayer = player;
+        this.player = player;
     }
 
-    private void HandleGameStateChanged(GameState previousState, GameState newState)
+    private void OnGameStateChanged(GameState state)
     {
-        bool isReadyUp = newState == GameState.WaitingForPlayersReady;
+        bool isReadyUp = state == GameState.WaitingForPlayersReady;
         gameObject.SetActive(isReadyUp);
     }
 

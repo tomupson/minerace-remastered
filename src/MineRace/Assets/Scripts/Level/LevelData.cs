@@ -1,6 +1,6 @@
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "LevelData", menuName = "MineRace/LevelData")]
+[CreateAssetMenu(fileName = "LevelData", menuName = "MineRace/Level Data")]
 public class LevelData : ScriptableObject
 {
     public int mapWidth;

@@ -1,4 +1,6 @@
 using System.Linq;
+using MineRace.Infrastructure;
+using MineRace.Utils.Netcode;
 using UnityEngine;
 using UnityEngine.UI;
 using VContainer;
@@ -7,6 +9,7 @@ public class SpectateUI : MonoBehaviour
 {
     [Inject] private readonly NetworkGameState networkGameState;
 
+    private DisposableGroup subscriptions;
     private Player player;
 
     [SerializeField] private PlayerInputReader inputReader;
@@ -20,19 +23,23 @@ public class SpectateUI : MonoBehaviour
 
     private void Start()
     {
-        networkGameState.State.OnValueChanged += HandleGameStateChanged;
-
         Hide();
+
+        subscriptions ??= new DisposableGroup();
+        subscriptions.Add(networkGameState.State.Subscribe(OnGameStateChanged));
     }
 
     private void OnDestroy()
     {
         Player.OnLocalPlayerSpawned -= OnLocalPlayerSpawned;
+        inputReader.OnSpectateHook -= OnSpectate;
+
+        subscriptions?.Dispose();
     }
 
-    private void HandleGameStateChanged(GameState previousState, GameState newState)
+    private void OnGameStateChanged(GameState state)
     {
-        if (newState == GameState.Completed)
+        if (state == GameState.Completed)
         {
             Hide();
         }
@@ -41,12 +48,14 @@ public class SpectateUI : MonoBehaviour
     private void OnLocalPlayerSpawned(Player player)
     {
         this.player = player;
-        this.player.NetworkPlayerState.State.OnValueChanged += HandlePlayerStateChanged;
+
+        subscriptions ??= new DisposableGroup();
+        subscriptions.Add(this.player.NetworkPlayerState.State.Subscribe(OnPlayerStateChanged));
     }
 
-    private void HandlePlayerStateChanged(PlayerState previousState, PlayerState newState)
+    private void OnPlayerStateChanged(PlayerState state)
     {
-        if (newState != PlayerState.Completed)
+        if (state != PlayerState.Completed)
         {
             return;
         }

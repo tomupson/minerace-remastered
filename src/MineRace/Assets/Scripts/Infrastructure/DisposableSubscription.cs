@@ -9,11 +9,11 @@ namespace MineRace.Infrastructure
     {
         private Action<T> handler;
         private bool isDisposed;
-        private IMessageChannel<T> messageChannel;
+        private ISubscriber<T> subscriber;
 
-        public DisposableSubscription(IMessageChannel<T> messageChannel, Action<T> handler)
+        public DisposableSubscription(ISubscriber<T> subscriber, Action<T> handler)
         {
-            this.messageChannel = messageChannel;
+            this.subscriber = subscriber;
             this.handler = handler;
         }
 
@@ -23,13 +23,10 @@ namespace MineRace.Infrastructure
             {
                 isDisposed = true;
 
-                if (!messageChannel.IsDisposed)
-                {
-                    messageChannel.Unsubscribe(handler);
-                }
+                subscriber.Unsubscribe(handler);
 
                 handler = null;
-                messageChannel = null;
+                subscriber = null;
             }
         }
     }

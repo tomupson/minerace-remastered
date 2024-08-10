@@ -52,12 +52,15 @@ namespace MineRace.ConnectionManagement
 
         private void OnDestroy()
         {
-            networkManager.OnClientConnectedCallback -= OnClientConnectedCallback;
-            networkManager.OnClientDisconnectCallback -= OnClientDisconnectCallback;
-            networkManager.OnServerStarted -= OnServerStarted;
-            networkManager.ConnectionApprovalCallback -= ApprovalCheck;
-            networkManager.OnTransportFailure -= OnTransportFailure;
-            networkManager.OnServerStopped -= OnServerStopped;
+            if (networkManager != null)
+            {
+                networkManager.OnClientConnectedCallback -= OnClientConnectedCallback;
+                networkManager.OnClientDisconnectCallback -= OnClientDisconnectCallback;
+                networkManager.OnServerStarted -= OnServerStarted;
+                networkManager.ConnectionApprovalCallback -= ApprovalCheck;
+                networkManager.OnTransportFailure -= OnTransportFailure;
+                networkManager.OnServerStopped -= OnServerStopped;
+            }
         }
 
         internal void ChangeState(ConnectionState nextState)

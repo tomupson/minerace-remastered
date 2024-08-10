@@ -8,10 +8,10 @@ using VContainer;
 
 public class ConnectStatusMessageUI : MonoBehaviour
 {
+    private DisposableGroup subscriptions;
+
     [SerializeField] private Text messageText;
     [SerializeField] private Button menuButton;
-
-    private DisposableGroup subscriptions;
 
     [Inject, UsedImplicitly]
     private void InjectDependencies(ISubscriber<ConnectStatus> connectStatusSubscriber)

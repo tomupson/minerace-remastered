@@ -18,14 +18,14 @@ public class ServerChatMessageFeed : NetworkBehaviour
         subscriptions.Add(connectionEventSubscriber.Subscribe(OnConnectionEvent));
     }
 
-    public override void OnNetworkSpawn()
-    {
-        enabled = IsServer;
-    }
-
     public override void OnDestroy()
     {
         subscriptions?.Dispose();
+    }
+
+    public override void OnNetworkSpawn()
+    {
+        enabled = IsServer;
     }
 
     private void OnConnectionEvent(ConnectionEventMessage message)

@@ -26,6 +26,7 @@ public class ChatManager : NetworkBehaviour
     public override void OnDestroy()
     {
         inputReader.OnSendChatHook -= OnSendChatPerformed;
+        inputReader.OnToggleChatHook -= OnToggleChat;
         base.OnDestroy();
     }
 

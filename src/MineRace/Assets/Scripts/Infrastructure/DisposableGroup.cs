@@ -5,21 +5,21 @@ namespace MineRace.Infrastructure
 {
     public sealed class DisposableGroup : IDisposable
     {
-        readonly List<IDisposable> m_Disposables = new List<IDisposable>();
+        private readonly List<IDisposable> disposables = new List<IDisposable>();
 
         public void Dispose()
         {
-            foreach (var disposable in m_Disposables)
+            foreach (IDisposable disposable in disposables)
             {
                 disposable.Dispose();
             }
 
-            m_Disposables.Clear();
+            disposables.Clear();
         }
 
         public void Add(IDisposable disposable)
         {
-            m_Disposables.Add(disposable);
+            disposables.Add(disposable);
         }
     }
 }

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Assets.Scripts.ConnectionManagement
+namespace MineRace.ConnectionManagement
 {
     [Serializable]
     internal sealed class ConnectionPayload

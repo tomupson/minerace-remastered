@@ -1,3 +1,5 @@
+using MineRace.Infrastructure;
+using MineRace.Utils.Netcode;
 using UnityEngine;
 using UnityEngine.UI;
 using VContainer;
@@ -5,6 +7,8 @@ using VContainer;
 public class WaitingForReadyUI : MonoBehaviour
 {
     [Inject] private readonly NetworkGameState networkGameState;
+
+    private DisposableGroup subscriptions;
 
     [SerializeField] private Text waitingForPlayerReadyText;
 
@@ -15,19 +19,22 @@ public class WaitingForReadyUI : MonoBehaviour
 
     private void Start()
     {
-        networkGameState.State.OnValueChanged += HandleGameStateChanged;
-
         Hide();
+
+        subscriptions ??= new DisposableGroup();
+        subscriptions.Add(networkGameState.State.Subscribe(OnGameStateChanged));
     }
 
     private void OnDestroy()
     {
         Player.OnLocalPlayerSpawned -= OnLocalPlayerSpawned;
+
+        subscriptions?.Dispose();
     }
 
-    private void HandleGameStateChanged(GameState previousState, GameState newState)
+    private void OnGameStateChanged(GameState state)
     {
-        if (newState == GameState.PregameCountdown)
+        if (state == GameState.PregameCountdown)
         {
             Hide();
         }
@@ -35,13 +42,13 @@ public class WaitingForReadyUI : MonoBehaviour
 
     private void OnLocalPlayerSpawned(Player player)
     {
-        player.NetworkPlayerState.State.OnValueChanged -= HandlePlayerStateChanged;
-        player.NetworkPlayerState.State.OnValueChanged += HandlePlayerStateChanged;
+        subscriptions ??= new DisposableGroup();
+        subscriptions.Add(player.NetworkPlayerState.State.Subscribe(OnPlayerStateChanged));
     }
 
-    private void HandlePlayerStateChanged(PlayerState previousState, PlayerState newState)
+    private void OnPlayerStateChanged(PlayerState state)
     {
-        if (newState == PlayerState.Ready)
+        if (state == PlayerState.Ready)
         {
             gameObject.SetActive(true);
             waitingForPlayerReadyText.text = $"WAITING FOR PLAYERS TO READY UP.";

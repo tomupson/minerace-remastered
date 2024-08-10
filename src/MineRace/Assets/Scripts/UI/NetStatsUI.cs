@@ -16,6 +16,11 @@ public class NetStatsUI : MonoBehaviour
         inputReader.OnToggleNetStatsHook += OnToggleNetStatsHook;
     }
 
+    private void OnDestroy()
+    {
+        inputReader.OnToggleNetStatsHook -= OnToggleNetStatsHook;
+    }
+
     private void OnToggleNetStatsHook()
     {
         monitor.Visible = !monitor.Visible;

@@ -1,8 +1,11 @@
-public enum LobbyStatus
+namespace MineRace.UGS
 {
-    Unknown,
-    Creating,
-    CreationFailed,
-    Joining,
-    JoinFailed
+    public enum LobbyStatus
+    {
+        Unknown,
+        Creating,
+        CreationFailed,
+        Joining,
+        JoinFailed
+    }
 }

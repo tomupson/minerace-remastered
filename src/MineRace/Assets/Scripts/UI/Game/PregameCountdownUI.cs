@@ -1,3 +1,5 @@
+using MineRace.Infrastructure;
+using MineRace.Utils.Netcode;
 using UnityEngine;
 using UnityEngine.UI;
 using VContainer;
@@ -6,28 +8,33 @@ public class PregameCountdownUI : MonoBehaviour
 {
     [Inject] private readonly NetworkGameState networkGameState;
 
+    private DisposableGroup subscriptions;
+
     [SerializeField] private Text pregameTimeText;
 
     private void Start()
     {
-        networkGameState.State.OnValueChanged += HandleGameStateChanged;
-        networkGameState.PregameTimeRemaining.OnValueChanged += HandlePregameTimeRemainingChanged;
-
         gameObject.SetActive(false);
+
+        subscriptions = new DisposableGroup();
+        subscriptions.Add(networkGameState.State.Subscribe(OnGameStateChanged));
+        subscriptions.Add(networkGameState.PregameTimeRemaining.Subscribe(HandlePregameTimeRemainingChanged));
     }
 
-    private void HandleGameStateChanged(GameState previousState, GameState newState)
+    private void OnDestroy()
     {
-        bool isPregameCountdown = newState == GameState.PregameCountdown;
+        subscriptions?.Dispose();
+    }
+
+    private void OnGameStateChanged(GameState state)
+    {
+        bool isPregameCountdown = state == GameState.PregameCountdown;
         gameObject.SetActive(isPregameCountdown);
-
-        // TODO: There must be a better way of doing this?
-        HandlePregameTimeRemainingChanged(0, networkGameState.PregameTimeRemaining.Value);
     }
 
-    private void HandlePregameTimeRemainingChanged(int previousTime, int newTime)
+    private void HandlePregameTimeRemainingChanged(int timeRemaining)
     {
-        string seconds = newTime.ToString("00");
+        string seconds = timeRemaining.ToString("00");
         pregameTimeText.text = seconds;
     }
 }

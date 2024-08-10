@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using MineRace.ConnectionManagement;
+using MineRace.Infrastructure;
+using MineRace.Utils.Netcode;
 using Unity.Netcode;
 using UnityEngine;
 using VContainer;
@@ -17,6 +19,8 @@ public class Player : NetworkBehaviour
     private Rigidbody2D playerRigidbody;
     private SpriteRenderer playerSpriteRenderer;
     private Collider2D playerCollider;
+
+    private DisposableGroup subscriptions;
 
     public event Action<Player> OnSpectating;
 
@@ -38,30 +42,35 @@ public class Player : NetworkBehaviour
 
     public override void OnNetworkSpawn()
     {
-        if (IsServer)
-        {
-            networkGameState.State.OnValueChanged += OnGameStateChanged;
-
-            SessionPlayerData? sessionPlayerData = SessionManager.Instance.GetPlayerData(OwnerClientId);
-            if (sessionPlayerData.HasValue)
-            {
-                networkPlayerState.Username.Value = sessionPlayerData.Value.PlayerName;
-            }
-
-            spawnedPlayers.Add(this);
-        }
+        subscriptions = new DisposableGroup();
+        subscriptions.Add(networkPlayerState.State.Subscribe(OnPlayerStateChanged));
+        subscriptions.Add(networkPlayerState.FacingRight.Subscribe(OnFacingRightChanged));
 
         if (IsLocalPlayer)
         {
             OnLocalPlayerSpawned?.Invoke(this);
         }
 
-        networkPlayerState.State.OnValueChanged += OnPlayerStateChanged;
-        networkPlayerState.FacingRight.OnValueChanged += OnFacingRightChanged;
+        if (!IsServer)
+        {
+            return;
+        }
+
+        subscriptions.Add(networkGameState.State.Subscribe(OnGameStateChanged));
+
+        SessionPlayerData? sessionPlayerData = SessionManager.Instance.GetPlayerData(OwnerClientId);
+        if (sessionPlayerData.HasValue)
+        {
+            networkPlayerState.Username.Value = sessionPlayerData.Value.PlayerName;
+        }
+
+        spawnedPlayers.Add(this);
     }
 
     public override void OnNetworkDespawn()
     {
+        subscriptions?.Dispose();
+
         if (!IsServer)
         {
             return;
@@ -137,22 +146,22 @@ public class Player : NetworkBehaviour
         networkPlayerState.Points.Value += Mathf.FloorToInt(timeRemainingSeconds / 4f);
     }
 
-    private void OnGameStateChanged(GameState previousState, GameState newState)
+    private void OnGameStateChanged(GameState state)
     {
-        if (newState == GameState.InGame && networkPlayerState.State.Value != PlayerState.Playing)
+        if (state == GameState.InGame && networkPlayerState.State.Value != PlayerState.Playing)
         {
             NetworkPlayerState.State.Value = PlayerState.Playing;
         }
 
-        if (newState == GameState.Completed && networkPlayerState.State.Value != PlayerState.Completed)
+        if (state == GameState.Completed && networkPlayerState.State.Value != PlayerState.Completed)
         {
             NetworkPlayerState.State.Value = PlayerState.Completed;
         }
     }
 
-    private void OnPlayerStateChanged(PlayerState previousState, PlayerState newState)
+    private void OnPlayerStateChanged(PlayerState state)
     {
-        if (newState == PlayerState.Completed)
+        if (state == PlayerState.Completed)
         {
             playerSpriteRenderer.enabled = false;
             playerCollider.enabled = false;
@@ -160,8 +169,8 @@ public class Player : NetworkBehaviour
         }
     }
 
-    private void OnFacingRightChanged(bool previousFacingRight, bool newFacingRight)
+    private void OnFacingRightChanged(bool facingRight)
     {
-        playerSpriteRenderer.flipX = !newFacingRight;
+        playerSpriteRenderer.flipX = !facingRight;
     }
 }

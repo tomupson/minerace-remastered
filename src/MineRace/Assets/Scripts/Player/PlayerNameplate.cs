@@ -1,10 +1,14 @@
-﻿using Unity.Netcode;
+﻿using MineRace.Infrastructure;
+using MineRace.Utils.Netcode;
+using Unity.Netcode;
 using UnityEngine.UI;
 
 public class PlayerNameplate : NetworkBehaviour
 {
     private Player player;
     private Text usernameText;
+
+    private DisposableGroup subscriptions;
 
     private void Awake()
     {
@@ -19,18 +23,20 @@ public class PlayerNameplate : NetworkBehaviour
 
     public override void OnNetworkSpawn()
     {
-        player.NetworkPlayerState.State.OnValueChanged += HandlePlayerStateChanged;
-        SetUsername(player.NetworkPlayerState.Username.Value.ToString());
+        subscriptions = new DisposableGroup();
+        subscriptions.Add(player.NetworkPlayerState.State.Subscribe(OnPlayerStateChanged));
+
+        usernameText.text = player.NetworkPlayerState.Username.Value.ToString();
     }
 
-    private void HandlePlayerStateChanged(PlayerState previousState, PlayerState newState)
+    public override void OnNetworkDespawn()
     {
-        bool isPlaying = newState == PlayerState.Playing;
+        subscriptions?.Dispose();
+    }
+
+    private void OnPlayerStateChanged(PlayerState state)
+    {
+        bool isPlaying = state == PlayerState.Playing;
         gameObject.SetActive(isPlaying);
-    }
-
-    private void SetUsername(string username)
-    {
-        usernameText.text = username;
     }
 }

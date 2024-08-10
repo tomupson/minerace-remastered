@@ -13,11 +13,11 @@ namespace MineRace.ApplicationLifecycle
 {
     public class ApplicationController : LifetimeScope
     {
+        private DisposableGroup subscriptions;
+
         [SerializeField] private ConnectionManager connectionManager;
         [SerializeField] private NetworkManager networkManager;
         [SerializeField] private UserAccountManager userAccountManager;
-
-        private DisposableGroup subscriptions;
 
         protected override void Configure(IContainerBuilder builder)
         {

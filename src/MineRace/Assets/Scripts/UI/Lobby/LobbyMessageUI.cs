@@ -1,6 +1,7 @@
 using JetBrains.Annotations;
 using MineRace.ConnectionManagement;
 using MineRace.Infrastructure;
+using MineRace.UGS;
 using UnityEngine;
 using UnityEngine.UI;
 using VContainer;
