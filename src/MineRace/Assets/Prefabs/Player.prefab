@@ -16,7 +16,8 @@ GameObject:
   - component: {fileID: 3744669593790658054}
   - component: {fileID: 1944687328517435485}
   - component: {fileID: 2217335124971035325}
-  - component: {fileID: 6848110233590275391}
+  - component: {fileID: 4098549682392441690}
+  - component: {fileID: -6345681056179323358}
   - component: {fileID: 2800408303651406074}
   - component: {fileID: 5416878069308974451}
   m_Layer: 2
@@ -237,7 +238,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   networkPlayerState: {fileID: 1944687328517435485}
---- !u!114 &6848110233590275391
+--- !u!114 &4098549682392441690
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 355904156403638674}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 616da9d33cf9f72449f790e4da20b492, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  networkPlayerState: {fileID: 1944687328517435485}
+  moveSpeed: 10
+--- !u!114 &-6345681056179323358
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -299,7 +314,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &8272882869723993077
 Transform:
   m_ObjectHideFlags: 0
@@ -384,7 +399,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &8528862756883044319
 Transform:
   m_ObjectHideFlags: 0

@@ -6,7 +6,7 @@ using Unity.Netcode;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody2D))]
-public class PlayerMovement : NetworkBehaviour
+public class PredictivePlayerMovement : NetworkBehaviour
 {
     private Rigidbody2D playerRigidbody;
     private float moveHorizontal;
@@ -74,7 +74,6 @@ public class PlayerMovement : NetworkBehaviour
         }
 
         int currentTick = timer.CurrentTick;
-        //Debug.Log("Handling client tick " + currentTick + ", move: " + moveHorizontal);
         int bufferIndex = currentTick % bufferSize;
 
         if (bufferIndex - 1 >= 0)
@@ -91,7 +90,6 @@ public class PlayerMovement : NetworkBehaviour
 
         SendPlayerInputServerRpc(inputPayload);
 
-        //Debug.Log("Processing movement on client");
         PlayerStatePayload statePayload = ProcessMovement(inputPayload);
         clientSquare.transform.position = statePayload.position;
         clientStateBuffer.Add(statePayload, bufferIndex);
@@ -110,11 +108,9 @@ public class PlayerMovement : NetworkBehaviour
         while (serverInputQueue.Count > 0)
         {
             PlayerInputPayload inputPayload = serverInputQueue.Dequeue();
-            //Debug.Log("handling server input for tick " + inputPayload.tick);
 
             bufferIndex = inputPayload.tick % bufferSize;
 
-            //Debug.Log("Processing movement on server");
             PlayerStatePayload statePayload = ProcessMovement(inputPayload);
             serverSquare.transform.position = statePayload.position;
             serverStateBuffer.Add(statePayload, bufferIndex);
@@ -152,9 +148,6 @@ public class PlayerMovement : NetworkBehaviour
         }
 
         playerRigidbody.velocity = new Vector2(moveHorizontal * moveSpeed, 0);
-        //Debug.Log("velocity " + playerRigidbody.velocity);
-        //float lerpFraction = timer.MinTimeBetweenTicks / (1f / Time.deltaTime);
-        //playerRigidbody.velocity = Vector2.Lerp(playerRigidbody.velocity, moveHorizontal * moveSpeed * Vector2.right, lerpFraction);
     }
 
     private void HandleServerReconciliation()
@@ -181,7 +174,6 @@ public class PlayerMovement : NetworkBehaviour
 
         if (positionError > reconciliationThreshold)
         {
-            Debug.Log($"Reconciling: {positionError}");
             ReconcileState(rewindState);
             reconciliationCooldownTimer.Start();
         }
@@ -215,7 +207,6 @@ public class PlayerMovement : NetworkBehaviour
     [ServerRpc]
     private void SendPlayerInputServerRpc(PlayerInputPayload inputPayload)
     {
-        //Debug.Log("Enqueued input on server");
         serverInputQueue.Enqueue(inputPayload);
     }
 
