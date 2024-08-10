@@ -74,18 +74,13 @@ public class ServerGameState : GameStateBehaviour
     // However, they will be automatically transitioned to the Game scene when the connect, therefore we can spawn them then.
     private Player SpawnPlayer(ulong clientId)
     {
-        GameObject playerObject = Container.Instantiate(playerPrefab);
-        playerObject.GetComponent<NetworkObject>().SpawnAsPlayerObject(clientId, destroyWithScene: true);
-
         SessionPlayerData? sessionPlayerData = SessionManager.Instance.GetPlayerData(clientId);
-        if (sessionPlayerData is { HasCharacterSpawned: true })
-        {
-            playerObject.transform.position = sessionPlayerData.Value.PlayerPosition;
-        }
-        else
-        {
-            playerObject.transform.position = new Vector3(GetSpawnPositionX(clientId), 100, 0);
-        }
+        Vector3 spawnPos = sessionPlayerData is { HasCharacterSpawned: true }
+            ? sessionPlayerData.Value.PlayerPosition
+            : new Vector3(GetSpawnPositionX(clientId), 100, 0);
+
+        GameObject playerObject = Container.Instantiate(playerPrefab, spawnPos, Quaternion.identity);
+        playerObject.GetComponent<NetworkObject>().SpawnAsPlayerObject(clientId, destroyWithScene: true);
 
         Player player = playerObject.GetComponent<Player>();
         // TODO: Should we dispose of this?

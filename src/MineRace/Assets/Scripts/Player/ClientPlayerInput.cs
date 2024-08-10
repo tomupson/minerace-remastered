@@ -1,18 +1,17 @@
 using MineRace.Audio;
+using MineRace.Utils.Timers;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-[RequireComponent(typeof(Player), typeof(ServerPlayerMovement), typeof(Rigidbody2D))]
+[RequireComponent(typeof(Player), typeof(PlayerMovement), typeof(Rigidbody2D))]
 public class ClientPlayerInput : NetworkBehaviour
 {
     [SerializeField] private PlayerInputReader inputReader;
 
     private Player player;
-    private ServerPlayerMovement serverPlayerMovement;
-
-    private bool canMine = true;
-    private float pickaxeCooldownTimer;
+    private PlayerMovement playerMovement;
+    private CountdownTimer pickaxeCooldownTimer;
     private RaycastHit2D lastRaycastHit;
 
     [SerializeField] private NetworkPlayerState networkPlayerState;
@@ -21,7 +20,8 @@ public class ClientPlayerInput : NetworkBehaviour
     private void Awake()
     {
         player = GetComponent<Player>();
-        serverPlayerMovement = GetComponent<ServerPlayerMovement>();
+        playerMovement = GetComponent<PlayerMovement>();
+        pickaxeCooldownTimer = new CountdownTimer(pickaxeCooldownTime);
     }
 
     private void Update()
@@ -31,15 +31,7 @@ public class ClientPlayerInput : NetworkBehaviour
             return;
         }
 
-        if (!canMine)
-        {
-            pickaxeCooldownTimer -= Time.deltaTime;
-            if (pickaxeCooldownTimer <= 0f)
-            {
-                canMine = true;
-                pickaxeCooldownTimer = pickaxeCooldownTime;
-            }
-        }
+        pickaxeCooldownTimer.Tick(Time.deltaTime);
 
         RaycastHit2D hit = PerformMouseRaycast();
 
@@ -85,12 +77,12 @@ public class ClientPlayerInput : NetworkBehaviour
 
     private void OnMove(float horizontal)
     {
-        serverPlayerMovement.Move(horizontal);
+        playerMovement.SetMoveInput(horizontal);
     }
 
     private void OnMine()
     {
-        if (networkPlayerState.State.Value != PlayerState.Playing || !canMine)
+        if (networkPlayerState.State.Value != PlayerState.Playing || pickaxeCooldownTimer.IsRunning)
         {
             return;
         }
@@ -111,7 +103,7 @@ public class ClientPlayerInput : NetworkBehaviour
         // Temporarily set it to hidden so that even if it takes the server some time to destroy it, you can't mine it twice
         hit.transform.gameObject.SetActive(false);
 
-        canMine = false;
+        pickaxeCooldownTimer.Start();
 
         player.BreakBlock(hit.transform.gameObject);
     }
