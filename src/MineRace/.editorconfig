@@ -1,7 +1,9 @@
 ﻿[*.cs]
 
-# IDE0017: Simplify object initialization
-dotnet_diagnostic.IDE0017.severity = silent
+dotnet_style_object_initializer = false:silent
+dotnet_style_collection_initializer = false:silent
 
-# IDE0028: Simplify collection initialization
-dotnet_diagnostic.IDE0028.severity = silent
+dotnet_style_parentheses_in_arithmetic_binary_operators = always_for_clarity:suggestion
+dotnet_style_parentheses_in_relational_binary_operators = always_for_clarity:suggestion
+dotnet_style_parentheses_in_other_binary_operators = always_for_clarity:suggestion
+dotnet_style_parentheses_in_other_operators = always_for_clarity:suggestion

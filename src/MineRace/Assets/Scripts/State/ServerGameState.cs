@@ -91,9 +91,9 @@ public class ServerGameState : GameStateBehaviour
     private float GetSpawnPositionX(ulong clientId)
     {
         const float leftRightPadding = 6;
-        float availableWidth = levelData.mapWidth - 2 * leftRightPadding;
+        float availableWidth = levelData.mapWidth - (2 * leftRightPadding);
         float spacing = availableWidth / Mathf.Max(connectionManager.MaxConnectedPlayers, 2f);
-        return leftRightPadding + (clientId + 1) * spacing;
+        return leftRightPadding + ((clientId + 1) * spacing);
     }
 
     private void CheckAllPlayersConnected()

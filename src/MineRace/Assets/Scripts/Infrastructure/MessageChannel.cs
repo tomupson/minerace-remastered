@@ -82,7 +82,7 @@ namespace MineRace.Infrastructure
         {
             bool isPendingRemoval = pendingHandlers.ContainsKey(handler) && !pendingHandlers[handler];
             bool isPendingAdding = pendingHandlers.ContainsKey(handler) && pendingHandlers[handler];
-            return messageHandlers.Contains(handler) && !isPendingRemoval || isPendingAdding;
+            return (messageHandlers.Contains(handler) && !isPendingRemoval) || isPendingAdding;
         }
     }
 }
