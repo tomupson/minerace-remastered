@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 06a7e38245bc10145b084d0d90418a3f, type: 3}
+  m_Name: Grass
+  m_EditorClassIdentifier: 
+  blockName: Grass
+  blockType: 0
+  prefab: {fileID: 5175018688064030572, guid: 836bdd1dc66caae498cdf044f1364c85, type: 3}
+  rarity: 0
+  pointsValue: 0
+  basePercentage: 100
+  percentageMultiplier: 1
+  textures:
+  - {fileID: 21300000, guid: 42ecea4eae0636644b283861569293e9, type: 3}
+  outlineTextures:
+  - {fileID: 21300000, guid: 5eb5b66b43e369a4abfad7733e6315d9, type: 3}
+  breakSound: {fileID: 11400000, guid: b510cfc25fae5a64095b8fc9039ddaae, type: 2}
+  primaryColour: {r: 0.015686275, g: 0.53333336, b: 0.06666667, a: 0}
+  secondaryColour: {r: 0.43529412, g: 0.3137255, b: 0.15686275, a: 0}
+  spawnPercentagesAtLevels: []
+  textureIndex: 0

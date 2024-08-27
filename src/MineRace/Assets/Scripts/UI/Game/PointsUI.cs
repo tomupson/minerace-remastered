@@ -17,10 +17,11 @@ public class PointsUI : MonoBehaviour
     [SerializeField] private Text pointsText;
     [SerializeField] private Text timeText;
     [SerializeField] private Text spectatingText;
+    [SerializeField] private PlayerGameEvent localPlayerSpawnedEvent;
 
     private void Awake()
     {
-        Player.OnLocalPlayerSpawned += OnLocalPlayerSpawned;
+        localPlayerSpawnedEvent.RegisterListener(OnLocalPlayerSpawned);
     }
 
     private void Start()
@@ -35,7 +36,7 @@ public class PointsUI : MonoBehaviour
 
     private void OnDestroy()
     {
-        Player.OnLocalPlayerSpawned -= OnLocalPlayerSpawned;
+        localPlayerSpawnedEvent.DeregisterListener(OnLocalPlayerSpawned);
 
         subscriptions?.Dispose();
         pointsSubscription?.Dispose();

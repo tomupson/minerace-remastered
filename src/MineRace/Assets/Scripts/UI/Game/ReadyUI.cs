@@ -12,10 +12,11 @@ public class ReadyUI : MonoBehaviour
     private Player player;
 
     [SerializeField] private Button readyButton;
+    [SerializeField] private PlayerGameEvent localPlayerSpawnedEvent;
 
     private void Awake()
     {
-        Player.OnLocalPlayerSpawned += OnLocalPlayerSpawned;
+        localPlayerSpawnedEvent.RegisterListener(OnLocalPlayerSpawned);
 
         readyButton.onClick.AddListener(() =>
         {
@@ -34,7 +35,7 @@ public class ReadyUI : MonoBehaviour
 
     private void OnDestroy()
     {
-        Player.OnLocalPlayerSpawned -= OnLocalPlayerSpawned;
+        localPlayerSpawnedEvent.DeregisterListener(OnLocalPlayerSpawned);
 
         subscriptions?.Dispose();
     }

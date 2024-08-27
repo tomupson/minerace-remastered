@@ -12,8 +12,6 @@ public class Player : NetworkBehaviour
 {
     private static readonly List<Player> spawnedPlayers = new List<Player>();
 
-    public static event Action<Player> OnLocalPlayerSpawned;
-
     [Inject] private readonly NetworkGameState networkGameState;
 
     private Rigidbody2D playerRigidbody;
@@ -25,6 +23,7 @@ public class Player : NetworkBehaviour
     public event Action<Player> OnSpectating;
 
     [SerializeField] private NetworkPlayerState networkPlayerState;
+    [SerializeField] private PlayerGameEvent localPlayerSpawnedEvent;
 
     public NetworkPlayerState NetworkPlayerState => networkPlayerState;
 
@@ -48,7 +47,7 @@ public class Player : NetworkBehaviour
 
         if (IsLocalPlayer)
         {
-            OnLocalPlayerSpawned?.Invoke(this);
+            localPlayerSpawnedEvent.Raise(this);
         }
 
         if (!IsServer)
@@ -127,8 +126,7 @@ public class Player : NetworkBehaviour
     [ServerRpc]
     private void BreakBlockServerRpc(NetworkObjectReference reference)
     {
-        // TODO: Validate the block break
-        if (reference.TryGet(out NetworkObject networkObject))
+        if (reference.TryGet(out NetworkObject networkObject) && Vector3.Distance(transform.position, networkObject.transform.position) <= 0.75f)
         {
             networkObject.Despawn();
 

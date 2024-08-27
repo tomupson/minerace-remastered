@@ -14,10 +14,11 @@ public class SpectateUI : MonoBehaviour
 
     [SerializeField] private PlayerInputReader inputReader;
     [SerializeField] private Text spectateText;
+    [SerializeField] private PlayerGameEvent localPlayerSpawnedEvent;
 
     private void Awake()
     {
-        Player.OnLocalPlayerSpawned += OnLocalPlayerSpawned;
+        localPlayerSpawnedEvent.RegisterListener(OnLocalPlayerSpawned);
         inputReader.OnSpectateHook += OnSpectate;
     }
 
@@ -31,7 +32,7 @@ public class SpectateUI : MonoBehaviour
 
     private void OnDestroy()
     {
-        Player.OnLocalPlayerSpawned -= OnLocalPlayerSpawned;
+        localPlayerSpawnedEvent.DeregisterListener(OnLocalPlayerSpawned);
         inputReader.OnSpectateHook -= OnSpectate;
 
         subscriptions?.Dispose();

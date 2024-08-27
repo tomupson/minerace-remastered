@@ -17,9 +17,10 @@ public class ClientGameState : GameStateBehaviour
     protected override void Configure(IContainerBuilder builder)
     {
         base.Configure(builder);
-        builder.RegisterComponent(chatManager);
-        builder.RegisterComponent(pauseManager);
+        builder.RegisterComponent(new NetworkedMessageChannel<NetworkChatMessage>()).AsImplementedInterfaces();
 
+        builder.RegisterInstance(chatManager);
+        builder.RegisterInstance(pauseManager);
         builder.RegisterInstance(networkGameState);
         builder.RegisterInstance(new MessageChannel<PauseStateChangedMessage>()).AsImplementedInterfaces();
     }

@@ -4,12 +4,11 @@ public class EndBlock : MonoBehaviour
 {
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        if (!collision.transform.CompareTag("PLAYER"))
+        if (!collision.transform.TryGetComponent(out Player finishedPlayer))
         {
             return;
         }
 
-        Player finishedPlayer = collision.transform.GetComponent<Player>();
         if (!finishedPlayer.IsLocalPlayer)
         {
             return;

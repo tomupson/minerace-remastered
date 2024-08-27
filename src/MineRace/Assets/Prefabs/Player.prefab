@@ -22,7 +22,7 @@ GameObject:
   - component: {fileID: 5416878069308974451}
   m_Layer: 2
   m_Name: Player
-  m_TagString: PLAYER
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -173,7 +173,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 1492532102
+  GlobalObjectIdHash: 1384705816
   InScenePlacedSourceGlobalObjectIdHash: 1450865784
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
@@ -238,6 +238,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   networkPlayerState: {fileID: 1944687328517435485}
+  localPlayerSpawnedEvent: {fileID: 11400000, guid: 59aa28e41bcd052408e552474a03eb92,
+    type: 2}
 --- !u!114 &4098549682392441690
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -259,7 +261,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 355904156403638674}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8a611e023d9a0074bbc79dd94af4da27, type: 3}
   m_Name: 
@@ -285,6 +287,9 @@ MonoBehaviour:
   inputReader: {fileID: 11400000, guid: 79ab672959f699b4191eab3ee024a1c2, type: 2}
   networkPlayerState: {fileID: 1944687328517435485}
   pickaxeCooldownTime: 0.2
+  blockLayerMask:
+    serializedVersion: 2
+    m_Bits: 64
 --- !u!114 &5416878069308974451
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -298,6 +303,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   footstepsParticleSystem: {fileID: 5906567187631564708}
+  blockLayerMask:
+    serializedVersion: 2
+    m_Bits: 64
 --- !u!1 &434826570330297450
 GameObject:
   m_ObjectHideFlags: 0
@@ -370,7 +378,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 1
   m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6,
     type: 3}
   m_Color: {r: 1, g: 0.24949251, b: 0, a: 1}
@@ -455,7 +463,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 1
   m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6,
     type: 3}
   m_Color: {r: 0.120120525, g: 1, b: 0, a: 1}
@@ -503,8 +511,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -0.00048828125, y: 0.000061035156}
-  m_SizeDelta: {x: -0.0010986, y: 0.000061035}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &8939227443826628900
 CanvasRenderer:
@@ -534,8 +542,8 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
-  m_Type: 1
+  m_Sprite: {fileID: 0}
+  m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 4
@@ -580,7 +588,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: -115.1, y: -35.9}
+  m_SizeDelta: {x: -99.99999, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &2705137490871605914
 CanvasRenderer:
@@ -676,8 +684,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0.0049438477, y: 0.5544}
-  m_SizeDelta: {x: 1052, y: 328.1384}
+  m_AnchoredPosition: {x: 0, y: 0.6}
+  m_SizeDelta: {x: 1100, y: 300}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!223 &6402408854611166832
 Canvas:
@@ -781,7 +789,7 @@ Transform:
   m_GameObject: {fileID: 8217933357205073613}
   serializedVersion: 2
   m_LocalRotation: {x: -0.7071068, y: 0, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: 0, y: -0.35, z: 0}
+  m_LocalPosition: {x: 0, y: -0.34, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -5612,7 +5620,7 @@ Transform:
   m_GameObject: {fileID: 8706784055429051092}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.12, y: -0.18, z: 0}
+  m_LocalPosition: {x: 0.1192, y: -0.15, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

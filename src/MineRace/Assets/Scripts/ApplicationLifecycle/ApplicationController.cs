@@ -25,7 +25,7 @@ namespace MineRace.ApplicationLifecycle
             builder.RegisterComponent(connectionManager);
             builder.RegisterComponent(networkManager);
             builder.RegisterComponent(userAccountManager);
-            builder.RegisterComponent(new MessageChannel<ConnectionEventMessage>()).AsImplementedInterfaces();
+            builder.RegisterComponent(new NetworkedMessageChannel<NetworkConnectionEventMessage>()).AsImplementedInterfaces();
 
             builder.RegisterInstance(new MessageChannel<QuitApplicationMessage>()).AsImplementedInterfaces();
             builder.RegisterInstance(new MessageChannel<ConnectStatus>()).AsImplementedInterfaces();

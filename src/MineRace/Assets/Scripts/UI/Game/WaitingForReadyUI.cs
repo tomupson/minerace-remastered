@@ -11,10 +11,11 @@ public class WaitingForReadyUI : MonoBehaviour
     private DisposableGroup subscriptions;
 
     [SerializeField] private Text waitingForPlayerReadyText;
+    [SerializeField] private PlayerGameEvent localPlayerSpawnedEvent;
 
     private void Awake()
     {
-        Player.OnLocalPlayerSpawned += OnLocalPlayerSpawned;
+        localPlayerSpawnedEvent.RegisterListener(OnLocalPlayerSpawned);
     }
 
     private void Start()
@@ -27,7 +28,7 @@ public class WaitingForReadyUI : MonoBehaviour
 
     private void OnDestroy()
     {
-        Player.OnLocalPlayerSpawned -= OnLocalPlayerSpawned;
+        localPlayerSpawnedEvent.DeregisterListener(OnLocalPlayerSpawned);
 
         subscriptions?.Dispose();
     }

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using MineRace.ConnectionManagement;
+using MineRace.Infrastructure;
 using MineRace.Utils.Netcode;
 using Unity.Netcode;
 using UnityEngine;
@@ -11,6 +12,8 @@ using VContainer.Unity;
 [RequireComponent(typeof(NetworkHooks))]
 public class ServerGameState : GameStateBehaviour
 {
+    private DisposableGroup subscriptions;
+
     [Inject] private readonly ConnectionManager connectionManager;
     [Inject] private readonly NetworkManager networkManager;
 
@@ -21,6 +24,7 @@ public class ServerGameState : GameStateBehaviour
     protected override void Configure(IContainerBuilder builder)
     {
         base.Configure(builder);
+        builder.RegisterComponent(new NetworkedMessageChannel<NetworkChatMessage>()).AsImplementedInterfaces();
         builder.RegisterInstance(networkGameState);
     }
 
@@ -31,6 +35,11 @@ public class ServerGameState : GameStateBehaviour
         NetworkHooks networkHooks = GetComponent<NetworkHooks>();
         networkHooks.OnNetworkSpawnHook += OnNetworkSpawn;
         networkHooks.OnNetworkDespawnHook += OnNetworkDespawn;
+    }
+
+    protected override void OnDestroy()
+    {
+        subscriptions?.Dispose();
     }
 
     private void OnNetworkSpawn()
@@ -83,8 +92,10 @@ public class ServerGameState : GameStateBehaviour
         playerObject.GetComponent<NetworkObject>().SpawnAsPlayerObject(clientId, destroyWithScene: true);
 
         Player player = playerObject.GetComponent<Player>();
-        // TODO: Should we dispose of this?
-        player.NetworkPlayerState.State.Subscribe(OnPlayerStateChanged);
+
+        subscriptions ??= new DisposableGroup();
+        subscriptions.Add(player.NetworkPlayerState.State.Subscribe(OnPlayerStateChanged));
+
         return player;
     }
 

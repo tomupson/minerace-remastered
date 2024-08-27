@@ -1,18 +1,30 @@
-﻿using System.Collections;
+﻿using JetBrains.Annotations;
 using MineRace.ConnectionManagement;
+using MineRace.Infrastructure;
 using Unity.Netcode;
 using UnityEngine;
-using UnityEngine.Assertions;
+using VContainer;
 
-public class ChatManager : NetworkBehaviour
+public class ChatManager : MonoBehaviour
 {
     private const string ServerSender = "SERVER";
+
+    [Inject] private readonly IPublisher<NetworkChatMessage> chatMessagePublisher;
+
+    private DisposableGroup subscriptions;
 
     [SerializeField] private PlayerInputReader inputReader;
     [SerializeField] private CanvasGroup chatRootCanvasGroup;
     [SerializeField] private Transform chatContent;
     [SerializeField] private GameObject chatItemPrefab;
     [SerializeField] private float messageExpireTime = 5;
+
+    [Inject, UsedImplicitly]
+    private void InjectDependencies(ISubscriber<NetworkChatMessage> chatMessageSubscriber)
+    {
+        subscriptions = new DisposableGroup();
+        subscriptions.Add(chatMessageSubscriber.Subscribe(OnChatMessageReceived));
+    }
 
     private void Awake()
     {
@@ -23,11 +35,12 @@ public class ChatManager : NetworkBehaviour
         chatRootCanvasGroup.blocksRaycasts = false;
     }
 
-    public override void OnDestroy()
+    private void OnDestroy()
     {
+        subscriptions?.Dispose();
+
         inputReader.OnSendChatHook -= OnSendChatPerformed;
         inputReader.OnToggleChatHook -= OnToggleChat;
-        base.OnDestroy();
     }
 
     public void SendChatMessage(string message)
@@ -35,42 +48,34 @@ public class ChatManager : NetworkBehaviour
         SendChatMessageServerRpc(message);
     }
 
-    public void SendServerChatMessage(string message, Color colour = default)
+    public void SpawnServerChatMessage(string message, Color colour = default)
     {
-        Assert.IsTrue(IsServer, "Attempting to send server chat message not as server");
         SpawnChatMessage(ServerSender, message, colour);
+    }
+
+    private void OnChatMessageReceived(NetworkChatMessage message)
+    {
+        SpawnChatMessage(message.sender.ToString(), message.message.ToString(), message.colour);
     }
 
     [ServerRpc(RequireOwnership = false)]
     private void SendChatMessageServerRpc(string message, ServerRpcParams rpcParams = default)
     {
-        SessionPlayerData? playerData = SessionManager.Instance.GetPlayerData(rpcParams.Receive.SenderClientId);
-        if (!playerData.HasValue)
+        SessionPlayerData? sessionPlayerData = SessionManager.Instance.GetPlayerData(rpcParams.Receive.SenderClientId);
+        if (!sessionPlayerData.HasValue)
         {
             return;
         }
 
-        SpawnChatMessage(playerData.Value.PlayerName, message);
+        chatMessagePublisher.Publish(new NetworkChatMessage(sessionPlayerData.Value.PlayerName, message, Color.white));
     }
 
     private void SpawnChatMessage(string playerName, string message, Color colour = default)
     {
-        GameObject chatItemObject = Instantiate(chatItemPrefab);
-
-        NetworkObject chatItemNetworkObject = chatItemObject.GetComponent<NetworkObject>();
-        chatItemNetworkObject.Spawn(destroyWithScene: true);
-
-        chatItemNetworkObject.TrySetParent(chatContent, worldPositionStays: false);
-
+        GameObject chatItemObject = Instantiate(chatItemPrefab, chatContent);
         ChatItemUI chatItem = chatItemObject.GetComponent<ChatItemUI>();
         chatItem.Setup(playerName, message, colour);
-        StartCoroutine(WaitForExpire(chatItemNetworkObject));
-    }
-
-    private IEnumerator WaitForExpire(NetworkObject chatItemNetworkObject)
-    {
-        yield return new WaitForSeconds(messageExpireTime);
-        chatItemNetworkObject.Despawn();
+        Destroy(chatItemObject, messageExpireTime);
     }
 
     private void OnSendChatPerformed() =>

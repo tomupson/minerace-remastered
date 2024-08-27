@@ -9,7 +9,7 @@ namespace MineRace.ConnectionManagement.States
 {
     internal sealed class HostingState : OnlineState
     {
-        [Inject] private readonly IPublisher<ConnectionEventMessage> connectionEventPublisher;
+        [Inject] private readonly IPublisher<NetworkConnectionEventMessage> connectionEventPublisher;
 
         public override void Enter()
         {
@@ -23,10 +23,10 @@ namespace MineRace.ConnectionManagement.States
 
         public override void OnClientConnected(ulong clientId)
         {
-            SessionPlayerData? playerData = SessionManager.Instance.GetPlayerData(clientId);
-            if (playerData.HasValue)
+            SessionPlayerData? sessionPlayerData = SessionManager.Instance.GetPlayerData(clientId);
+            if (sessionPlayerData.HasValue)
             {
-                connectionEventPublisher.Publish(new ConnectionEventMessage(ConnectStatus.Success, playerData.Value.PlayerName));
+                connectionEventPublisher.Publish(new NetworkConnectionEventMessage(clientId, ConnectStatus.Success, sessionPlayerData.Value.PlayerName));
                 return;
             }
 
@@ -49,7 +49,7 @@ namespace MineRace.ConnectionManagement.States
                 SessionPlayerData? sessionData = SessionManager.Instance.GetPlayerData(playerId);
                 if (sessionData.HasValue)
                 {
-                    connectionEventPublisher.Publish(new ConnectionEventMessage(ConnectStatus.GenericDisconnect, sessionData.Value.PlayerName));
+                    connectionEventPublisher.Publish(new NetworkConnectionEventMessage(clientId, ConnectStatus.GenericDisconnect, sessionData.Value.PlayerName));
                 }
 
                 SessionManager.Instance.DisconnectClient(clientId);

@@ -8,9 +8,9 @@ namespace MineRace.Infrastructure
     {
         private readonly List<Action<T>> messageHandlers = new List<Action<T>>();
 
-        /// This dictionary of handlers to be either added or removed is used to prevent problems from immediate
-        /// modification of the list of subscribers. It could happen if one decides to unsubscribe in a message handler
-        /// etc.A true value means this handler should be added, and a false one means it should be removed
+        // This dictionary of handlers to be either added or removed is used to prevent problems from immediate
+        // modification of the list of subscribers. It could happen if one decides to unsubscribe in a message handler
+        // etc.A true value means this handler should be added, and a false one means it should be removed
         private readonly Dictionary<Action<T>, bool> pendingHandlers = new Dictionary<Action<T>, bool>();
 
         public bool IsDisposed { get; private set; }

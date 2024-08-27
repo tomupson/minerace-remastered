@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-[CreateAssetMenu(menuName = "MineRace/Input Reader", fileName = "InputReader")]
+[CreateAssetMenu(fileName = "InputReader", menuName = "MineRace/Input Reader")]
 public class PlayerInputReader : ScriptableObject, PlayerInputActions.IGameActions, PlayerInputActions.IPauseActions
 {
     private PlayerInputActions input;

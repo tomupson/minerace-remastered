@@ -16,6 +16,7 @@ public class ClientPlayerInput : NetworkBehaviour
 
     [SerializeField] private NetworkPlayerState networkPlayerState;
     [SerializeField] private float pickaxeCooldownTime;
+    [SerializeField] private LayerMask blockLayerMask;
 
     private void Awake()
     {
@@ -42,7 +43,7 @@ public class ClientPlayerInput : NetworkBehaviour
             lastHitBlockSpriteRenderer.sprite = lastHitBlock.textures[lastHitBlock.textureIndex];
         }
 
-        if (hit && !hit.transform.CompareTag("BORDER"))
+        if (hit)
         {
             lastRaycastHit = hit;
 
@@ -88,7 +89,7 @@ public class ClientPlayerInput : NetworkBehaviour
         }
 
         RaycastHit2D hit = PerformMouseRaycast();
-        if (!hit || hit.transform.CompareTag("BORDER"))
+        if (!hit)
         {
             return;
         }
@@ -113,7 +114,7 @@ public class ClientPlayerInput : NetworkBehaviour
         Vector3 direction = Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue()) - transform.position;
         direction.z = 0;
 
-        RaycastHit2D hit = Physics2D.Raycast(transform.position, direction, 0.75f);
+        RaycastHit2D hit = Physics2D.Raycast(transform.position, direction, 0.75f, blockLayerMask);
         Debug.DrawRay(transform.position, direction, Color.red);
         return hit;
     }

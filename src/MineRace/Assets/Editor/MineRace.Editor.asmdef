@@ -1,7 +1,9 @@
 {
     "name": "MineRace.Editor",
     "rootNamespace": "",
-    "references": [],
+    "references": [
+        "GUID:596dc45aa26bf354986456d29c157299"
+    ],
     "includePlatforms": [
         "Editor"
     ],
