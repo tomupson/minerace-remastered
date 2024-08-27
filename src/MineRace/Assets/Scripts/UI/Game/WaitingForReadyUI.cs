@@ -52,7 +52,7 @@ public class WaitingForReadyUI : MonoBehaviour
         if (state == PlayerState.Ready)
         {
             gameObject.SetActive(true);
-            waitingForPlayerReadyText.text = $"WAITING FOR PLAYERS TO READY UP.";
+            waitingForPlayerReadyText.text = "WAITING FOR PLAYERS TO READY UP.";
         }
     }
 

@@ -1,4 +1,6 @@
 using MineRace.Audio;
+using MineRace.Infrastructure;
+using MineRace.Utils.Netcode;
 using MineRace.Utils.Timers;
 using Unity.Netcode;
 using UnityEngine;
@@ -7,13 +9,13 @@ using UnityEngine.InputSystem;
 [RequireComponent(typeof(Player), typeof(PlayerMovement), typeof(Rigidbody2D))]
 public class ClientPlayerInput : NetworkBehaviour
 {
-    [SerializeField] private PlayerInputReader inputReader;
-
+    private DisposableGroup subscriptions;
     private Player player;
     private PlayerMovement playerMovement;
     private CountdownTimer pickaxeCooldownTimer;
     private RaycastHit2D lastRaycastHit;
 
+    [SerializeField] private PlayerInputReader inputReader;
     [SerializeField] private NetworkPlayerState networkPlayerState;
     [SerializeField] private float pickaxeCooldownTime;
     [SerializeField] private LayerMask blockLayerMask;
@@ -38,15 +40,13 @@ public class ClientPlayerInput : NetworkBehaviour
 
         if (lastRaycastHit && (!hit || lastRaycastHit.transform != hit.transform))
         {
-            Block lastHitBlock = lastRaycastHit.transform.GetComponent<BlockRenderer>().block;
-            SpriteRenderer lastHitBlockSpriteRenderer = lastRaycastHit.transform.GetComponent<SpriteRenderer>();
-            lastHitBlockSpriteRenderer.sprite = lastHitBlock.textures[lastHitBlock.textureIndex];
+            ClearBlockOutline(lastRaycastHit);
         }
+
+        lastRaycastHit = hit;
 
         if (hit)
         {
-            lastRaycastHit = hit;
-
             Block hitBlock = hit.transform.GetComponent<BlockRenderer>().block;
             SpriteRenderer hitBlockSpriteRenderer = hit.transform.GetComponent<SpriteRenderer>();
             hitBlockSpriteRenderer.sprite = hitBlock.outlineTextures[hitBlock.textureIndex];
@@ -61,8 +61,12 @@ public class ClientPlayerInput : NetworkBehaviour
             return;
         }
 
-        inputReader.OnMineHook += OnMine;
         inputReader.OnMoveHook += OnMove;
+        inputReader.OnJumpHook += OnJump;
+        inputReader.OnMineHook += OnMine;
+
+        subscriptions = new DisposableGroup();
+        subscriptions.Add(player.NetworkPlayerState.State.Subscribe(OnPlayerStateChanged));
     }
 
     public override void OnNetworkDespawn()
@@ -72,13 +76,19 @@ public class ClientPlayerInput : NetworkBehaviour
             return;
         }
 
-        inputReader.OnMineHook -= OnMine;
         inputReader.OnMoveHook -= OnMove;
+        inputReader.OnJumpHook -= OnJump;
+        inputReader.OnMineHook -= OnMine;
     }
 
     private void OnMove(float horizontal)
     {
         playerMovement.SetMoveInput(horizontal);
+    }
+
+    private void OnJump()
+    {
+        playerMovement.Jump();
     }
 
     private void OnMine()
@@ -107,6 +117,22 @@ public class ClientPlayerInput : NetworkBehaviour
         pickaxeCooldownTimer.Start();
 
         player.BreakBlock(hit.transform.gameObject);
+    }
+
+    private void OnPlayerStateChanged(PlayerState state)
+    {
+        if (state == PlayerState.Completed && lastRaycastHit)
+        {
+            ClearBlockOutline(lastRaycastHit);
+            lastRaycastHit = default;
+        }
+    }
+
+    private void ClearBlockOutline(RaycastHit2D hit)
+    {
+        Block lastHitBlock = hit.transform.GetComponent<BlockRenderer>().block;
+        SpriteRenderer lastHitBlockSpriteRenderer = hit.transform.GetComponent<SpriteRenderer>();
+        lastHitBlockSpriteRenderer.sprite = lastHitBlock.textures[lastHitBlock.textureIndex];
     }
 
     private RaycastHit2D PerformMouseRaycast()

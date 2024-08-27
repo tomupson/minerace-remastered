@@ -59,9 +59,9 @@ namespace MineRace.ConnectionManagement.States
         public override void OnUserRequestedShutdown()
         {
             string reason = JsonUtility.ToJson(ConnectStatus.HostEndedSession);
-            for (int i = networkManager.ConnectedClientsIds.Count - 1; i >= 0; i--)
+            for (int clientIdIdx = networkManager.ConnectedClientsIds.Count - 1; clientIdIdx >= 0; clientIdIdx--)
             {
-                ulong clientId = networkManager.ConnectedClientsIds[i];
+                ulong clientId = networkManager.ConnectedClientsIds[clientIdIdx];
                 if (clientId != networkManager.LocalClientId)
                 {
                     networkManager.DisconnectClient(clientId, reason);

@@ -8,6 +8,7 @@ public class PlayerInputReader : ScriptableObject, PlayerInputActions.IGameActio
     private PlayerInputActions input;
 
     public event Action<float> OnMoveHook;
+    public Action OnJumpHook;
     public event Action OnMineHook;
     public event Action OnSpectateHook;
     public event Action OnSendChatHook;
@@ -30,6 +31,14 @@ public class PlayerInputReader : ScriptableObject, PlayerInputActions.IGameActio
     public void OnMove(InputAction.CallbackContext context)
     {
         OnMoveHook?.Invoke(context.ReadValue<float>());
+    }
+
+    public void OnJump(InputAction.CallbackContext context)
+    {
+        if (context.performed)
+        {
+            OnJumpHook?.Invoke();
+        }
     }
 
     public void OnMine(InputAction.CallbackContext context)

@@ -6,8 +6,10 @@ public class PlayerMovement : MonoBehaviour
     private Rigidbody2D playerRigidbody;
     private float moveHorizontal;
 
+    [SerializeField] private GroundCheck groundCheck;
     [SerializeField] private NetworkPlayerState networkPlayerState;
     [SerializeField] private float moveSpeed;
+    [SerializeField] private float jumpForce;
 
     private void Awake()
     {
@@ -31,11 +33,21 @@ public class PlayerMovement : MonoBehaviour
             networkPlayerState.FacingRight.Value = false;
         }
 
-        playerRigidbody.velocity = new Vector2(moveHorizontal * moveSpeed, 0);
+        playerRigidbody.velocity = new Vector2(moveHorizontal * moveSpeed, playerRigidbody.velocity.y);
     }
 
     public void SetMoveInput(float moveHorizontal)
     {
         this.moveHorizontal = moveHorizontal;
+    }
+
+    public void Jump()
+    {
+        if (!groundCheck.IsGrounded)
+        {
+            return;
+        }
+
+        playerRigidbody.velocity = new Vector2(playerRigidbody.velocity.x, jumpForce);
     }
 }

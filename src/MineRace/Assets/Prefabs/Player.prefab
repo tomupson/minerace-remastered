@@ -13,13 +13,14 @@ GameObject:
   - component: {fileID: 8725194382970157320}
   - component: {fileID: 6332749997566561063}
   - component: {fileID: 9021590485571961487}
-  - component: {fileID: 3744669593790658054}
+  - component: {fileID: 8770538453121772973}
+  - component: {fileID: 1795509125677971939}
   - component: {fileID: 1944687328517435485}
   - component: {fileID: 2217335124971035325}
   - component: {fileID: 4098549682392441690}
-  - component: {fileID: -6345681056179323358}
   - component: {fileID: 2800408303651406074}
   - component: {fileID: 5416878069308974451}
+  - component: {fileID: 6629374747479602925}
   m_Layer: 2
   m_Name: Player
   m_TagString: Untagged
@@ -114,7 +115,7 @@ Rigidbody2D:
   m_Mass: 10
   m_LinearDrag: 0
   m_AngularDrag: 0.05
-  m_GravityScale: 50
+  m_GravityScale: 4
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
@@ -122,9 +123,9 @@ Rigidbody2D:
   m_ExcludeLayers:
     serializedVersion: 2
     m_Bits: 0
-  m_Interpolate: 0
+  m_Interpolate: 1
   m_SleepingMode: 1
-  m_CollisionDetection: 0
+  m_CollisionDetection: 1
   m_Constraints: 4
 --- !u!70 &6332749997566561063
 CapsuleCollider2D:
@@ -182,7 +183,7 @@ MonoBehaviour:
   SpawnWithObservers: 1
   DontDestroyWithOwner: 0
   AutoObjectParentSync: 1
---- !u!114 &3744669593790658054
+--- !u!114 &8770538453121772973
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -191,7 +192,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 355904156403638674}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a9bec9668a2197a4fba6fd2af1d07424, type: 3}
+  m_Script: {fileID: 11500000, guid: 97616b67982a4be48d957d421e422433, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   UseUnreliableDeltas: 0
@@ -211,8 +212,21 @@ MonoBehaviour:
   UseQuaternionCompression: 0
   UseHalfFloatPrecision: 0
   InLocalSpace: 0
-  Interpolate: 1
+  Interpolate: 0
   SlerpPosition: 0
+  StaleDataHandling: 1
+--- !u!114 &1795509125677971939
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 355904156403638674}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 80d7c879794dfda4687da0e400131852, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &1944687328517435485
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -252,26 +266,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 616da9d33cf9f72449f790e4da20b492, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  groundCheck: {fileID: 6629374747479602925}
   networkPlayerState: {fileID: 1944687328517435485}
   moveSpeed: 10
---- !u!114 &-6345681056179323358
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 355904156403638674}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8a611e023d9a0074bbc79dd94af4da27, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  networkPlayerState: {fileID: 1944687328517435485}
-  moveSpeed: 10
-  reconciliationCooldownTime: 1
-  reconciliationThreshold: 10
-  serverSquare: {fileID: 434826570330297450}
-  clientSquare: {fileID: 1025174364574266548}
+  jumpForce: 10
 --- !u!114 &2800408303651406074
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -303,6 +301,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   footstepsParticleSystem: {fileID: 5906567187631564708}
+  blockLayerMask:
+    serializedVersion: 2
+    m_Bits: 64
+--- !u!114 &6629374747479602925
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 355904156403638674}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cd93ac4d6d6911440b8de17016e545e4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
   blockLayerMask:
     serializedVersion: 2
     m_Bits: 64

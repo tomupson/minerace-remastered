@@ -51,9 +51,9 @@ public class ServerLevelGenerator : NetworkBehaviour
                 }
 
                 bool resourceSpawned = false;
-                for (int i = resourceBlocks.Count - 1; i >= 0; i--)
+                for (int resourceBlockIdx = resourceBlocks.Count - 1; resourceBlockIdx >= 0; resourceBlockIdx--)
                 {
-                    Block resourceBlock = resourceBlocks[i];
+                    Block resourceBlock = resourceBlocks[resourceBlockIdx];
                     float roll = Random.Range(0.0f, 100.0f);
                     if (roll <= resourceBlock.spawnPercentagesAtLevels[y])
                     {
@@ -71,7 +71,7 @@ public class ServerLevelGenerator : NetworkBehaviour
             }
         }
 
-        for (int y = 0; y < levelData.mapHeight + 1; y++)
+        for (int y = 0; y < levelData.mapHeight + 2; y++)
         {
             SpawnBorder(mapX: -1, mapY: y);
             SpawnBorder(mapX: levelData.mapWidth, mapY: y, isLeft: false);

@@ -15,9 +15,9 @@
                     "initialStateCheck": true
                 },
                 {
-                    "name": "Pause",
+                    "name": "Jump",
                     "type": "Button",
-                    "id": "84f306fe-c434-4c73-854d-59013061cb24",
+                    "id": "cabab5ef-837f-46f4-bf34-b033c531937b",
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
@@ -27,6 +27,15 @@
                     "name": "Mine",
                     "type": "Button",
                     "id": "cb748e2e-3a02-4804-aca8-a224564eb17e",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Pause",
+                    "type": "Button",
+                    "id": "84f306fe-c434-4c73-854d-59013061cb24",
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
@@ -116,17 +125,6 @@
                 },
                 {
                     "name": "",
-                    "id": "721149cc-faa4-47ee-97c4-c8edbf16f567",
-                    "path": "<Mouse>/leftButton",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "Mine",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
                     "id": "c64800d5-a2ce-4873-880a-592a85a5613b",
                     "path": "<Keyboard>/space",
                     "interactions": "",
@@ -166,6 +164,28 @@
                     "processors": "",
                     "groups": "",
                     "action": "ToggleNetStats",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "b1418690-55d6-4d86-98bb-136321bb1b44",
+                    "path": "<Keyboard>/space",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Jump",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "721149cc-faa4-47ee-97c4-c8edbf16f567",
+                    "path": "<Mouse>/leftButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Mine",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
