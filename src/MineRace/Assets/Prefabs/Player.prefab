@@ -288,6 +288,8 @@ MonoBehaviour:
   blockLayerMask:
     serializedVersion: 2
     m_Bits: 64
+  items:
+  - {fileID: 11400000, guid: 951753a8d1ef674468ff88c36fffe9e2, type: 2}
 --- !u!114 &5416878069308974451
 MonoBehaviour:
   m_ObjectHideFlags: 0

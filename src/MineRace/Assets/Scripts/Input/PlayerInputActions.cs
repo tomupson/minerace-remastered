@@ -55,6 +55,15 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""initialStateCheck"": false
                 },
                 {
+                    ""name"": ""Use"",
+                    ""type"": ""Button"",
+                    ""id"": ""05bfd2ff-5fc4-467a-a2c6-638847f7ff49"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
                     ""name"": ""Pause"",
                     ""type"": ""Button"",
                     ""id"": ""84f306fe-c434-4c73-854d-59013061cb24"",
@@ -210,6 +219,17 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""action"": ""Mine"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""39ec412a-f221-40b9-9eb9-77b87d0b3494"",
+                    ""path"": ""<Keyboard>/e"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Use"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         },
@@ -249,6 +269,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         m_Game_Move = m_Game.FindAction("Move", throwIfNotFound: true);
         m_Game_Jump = m_Game.FindAction("Jump", throwIfNotFound: true);
         m_Game_Mine = m_Game.FindAction("Mine", throwIfNotFound: true);
+        m_Game_Use = m_Game.FindAction("Use", throwIfNotFound: true);
         m_Game_Pause = m_Game.FindAction("Pause", throwIfNotFound: true);
         m_Game_Spectate = m_Game.FindAction("Spectate", throwIfNotFound: true);
         m_Game_SendChat = m_Game.FindAction("SendChat", throwIfNotFound: true);
@@ -321,6 +342,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
     private readonly InputAction m_Game_Move;
     private readonly InputAction m_Game_Jump;
     private readonly InputAction m_Game_Mine;
+    private readonly InputAction m_Game_Use;
     private readonly InputAction m_Game_Pause;
     private readonly InputAction m_Game_Spectate;
     private readonly InputAction m_Game_SendChat;
@@ -333,6 +355,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         public InputAction @Move => m_Wrapper.m_Game_Move;
         public InputAction @Jump => m_Wrapper.m_Game_Jump;
         public InputAction @Mine => m_Wrapper.m_Game_Mine;
+        public InputAction @Use => m_Wrapper.m_Game_Use;
         public InputAction @Pause => m_Wrapper.m_Game_Pause;
         public InputAction @Spectate => m_Wrapper.m_Game_Spectate;
         public InputAction @SendChat => m_Wrapper.m_Game_SendChat;
@@ -356,6 +379,9 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @Mine.started += instance.OnMine;
             @Mine.performed += instance.OnMine;
             @Mine.canceled += instance.OnMine;
+            @Use.started += instance.OnUse;
+            @Use.performed += instance.OnUse;
+            @Use.canceled += instance.OnUse;
             @Pause.started += instance.OnPause;
             @Pause.performed += instance.OnPause;
             @Pause.canceled += instance.OnPause;
@@ -384,6 +410,9 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @Mine.started -= instance.OnMine;
             @Mine.performed -= instance.OnMine;
             @Mine.canceled -= instance.OnMine;
+            @Use.started -= instance.OnUse;
+            @Use.performed -= instance.OnUse;
+            @Use.canceled -= instance.OnUse;
             @Pause.started -= instance.OnPause;
             @Pause.performed -= instance.OnPause;
             @Pause.canceled -= instance.OnPause;
@@ -467,6 +496,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         void OnMove(InputAction.CallbackContext context);
         void OnJump(InputAction.CallbackContext context);
         void OnMine(InputAction.CallbackContext context);
+        void OnUse(InputAction.CallbackContext context);
         void OnPause(InputAction.CallbackContext context);
         void OnSpectate(InputAction.CallbackContext context);
         void OnSendChat(InputAction.CallbackContext context);

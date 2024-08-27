@@ -20,6 +20,8 @@ public class ClientPlayerInput : NetworkBehaviour
     [SerializeField] private float pickaxeCooldownTime;
     [SerializeField] private LayerMask blockLayerMask;
 
+    [SerializeField] private Item[] items;
+
     private void Awake()
     {
         player = GetComponent<Player>();
@@ -64,9 +66,20 @@ public class ClientPlayerInput : NetworkBehaviour
         inputReader.OnMoveHook += OnMove;
         inputReader.OnJumpHook += OnJump;
         inputReader.OnMineHook += OnMine;
+        inputReader.OnUseHook += OnUse;
 
         subscriptions = new DisposableGroup();
         subscriptions.Add(player.NetworkPlayerState.State.Subscribe(OnPlayerStateChanged));
+    }
+
+    private void OnUse()
+    {
+        if (networkPlayerState.State.Value != PlayerState.Playing)
+        {
+            return;
+        }
+
+        items[0].Use(player);
     }
 
     public override void OnNetworkDespawn()
@@ -79,6 +92,7 @@ public class ClientPlayerInput : NetworkBehaviour
         inputReader.OnMoveHook -= OnMove;
         inputReader.OnJumpHook -= OnJump;
         inputReader.OnMineHook -= OnMine;
+        inputReader.OnUseHook -= OnUse;
     }
 
     private void OnMove(float horizontal)

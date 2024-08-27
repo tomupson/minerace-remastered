@@ -43,7 +43,7 @@ public class PlayerMovement : MonoBehaviour
 
     public void Jump()
     {
-        if (!groundCheck.IsGrounded)
+        if (networkPlayerState.State.Value != PlayerState.Playing || !groundCheck.IsGrounded)
         {
             return;
         }
