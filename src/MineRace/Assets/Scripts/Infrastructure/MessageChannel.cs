@@ -6,7 +6,7 @@ namespace MineRace.Infrastructure
 {
     public class MessageChannel<T> : IMessageChannel<T>
     {
-        private readonly List<Action<T>> messageHandlers = new List<Action<T>>();
+        private readonly List<Action<T>> messageHandlers = new();
 
         // This dictionary of handlers to be either added or removed is used to prevent problems from immediate
         // modification of the list of subscribers. It could happen if one decides to unsubscribe in a message handler

@@ -18,7 +18,7 @@ GameObject:
   - component: {fileID: 1944687328517435485}
   - component: {fileID: 2217335124971035325}
   - component: {fileID: 4098549682392441690}
-  - component: {fileID: 2800408303651406074}
+  - component: {fileID: 9103023668624272805}
   - component: {fileID: 5416878069308974451}
   - component: {fileID: 6629374747479602925}
   m_Layer: 2
@@ -266,11 +266,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 616da9d33cf9f72449f790e4da20b492, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  inputReader: {fileID: 11400000, guid: 79ab672959f699b4191eab3ee024a1c2, type: 2}
   groundCheck: {fileID: 6629374747479602925}
   networkPlayerState: {fileID: 1944687328517435485}
   moveSpeed: 10
   jumpForce: 10
---- !u!114 &2800408303651406074
+--- !u!114 &9103023668624272805
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -279,17 +280,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 355904156403638674}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c981b07727f528c4daed09cf06b44c87, type: 3}
+  m_Script: {fileID: 11500000, guid: d4c0c88dc5b983545a12144fcc3aa850, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   inputReader: {fileID: 11400000, guid: 79ab672959f699b4191eab3ee024a1c2, type: 2}
   networkPlayerState: {fileID: 1944687328517435485}
-  pickaxeCooldownTime: 0.2
-  blockLayerMask:
-    serializedVersion: 2
-    m_Bits: 64
-  items:
-  - {fileID: 11400000, guid: 951753a8d1ef674468ff88c36fffe9e2, type: 2}
 --- !u!114 &5416878069308974451
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5736,3 +5731,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ce23bfc8f557f664a845ac6be4fef695, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  inputReader: {fileID: 11400000, guid: 79ab672959f699b4191eab3ee024a1c2, type: 2}
+  reach: 0.75
+  pickaxeCooldownTime: 0.2
+  blockLayerMask:
+    serializedVersion: 2
+    m_Bits: 64

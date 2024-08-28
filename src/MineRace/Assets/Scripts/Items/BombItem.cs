@@ -1,7 +1,7 @@
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "Bomb", menuName = "MineRace/Items/Bomb")]
-public class BombItem : Item
+public class BombItem : HeldItem
 {
     public float ignitionTime;
     public float explosionRadius;

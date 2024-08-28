@@ -13,6 +13,9 @@ MonoBehaviour:
   m_Name: Bomb
   m_EditorClassIdentifier: 
   prefab: {fileID: 3397039549557054749, guid: d8b399d20de829f4bb5b62278e73829d, type: 3}
+  stackable: 1
+  stackSize: 1
+  maxStackSize: 3
   ignitionTime: 1
   explosionRadius: 2.5
   throwPower: 2

@@ -10,7 +10,7 @@ using VContainer;
 
 public class LobbyUI : MonoBehaviour
 {
-    private readonly List<GameObject> gameListItemObjects = new List<GameObject>();
+    private readonly List<GameObject> gameListItemObjects = new();
 
     [Inject] private readonly ConnectionManager connectionManager;
     [Inject] private readonly LobbyManager lobbyManager;

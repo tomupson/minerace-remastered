@@ -1,11 +1,13 @@
+using Unity.Netcode;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody2D))]
-public class PlayerMovement : MonoBehaviour
+public class ClientPlayerMovement : NetworkBehaviour
 {
     private Rigidbody2D playerRigidbody;
     private float moveHorizontal;
 
+    [SerializeField] private PlayerInputReader inputReader;
     [SerializeField] private GroundCheck groundCheck;
     [SerializeField] private NetworkPlayerState networkPlayerState;
     [SerializeField] private float moveSpeed;
@@ -36,12 +38,35 @@ public class PlayerMovement : MonoBehaviour
         playerRigidbody.velocity = new Vector2(moveHorizontal * moveSpeed, playerRigidbody.velocity.y);
     }
 
-    public void SetMoveInput(float moveHorizontal)
+    public override void OnNetworkSpawn()
+    {
+        if (!IsClient || !IsOwner)
+        {
+            enabled = false;
+            return;
+        }
+
+        inputReader.OnMoveHook += OnMove;
+        inputReader.OnJumpHook += OnJump;
+    }
+
+    public override void OnNetworkDespawn()
+    {
+        if (!IsClient || !IsOwner)
+        {
+            return;
+        }
+
+        inputReader.OnMoveHook -= OnMove;
+        inputReader.OnJumpHook -= OnJump;
+    }
+
+    private void OnMove(float moveHorizontal)
     {
         this.moveHorizontal = moveHorizontal;
     }
 
-    public void Jump()
+    public void OnJump()
     {
         if (networkPlayerState.State.Value != PlayerState.Playing || !groundCheck.IsGrounded)
         {

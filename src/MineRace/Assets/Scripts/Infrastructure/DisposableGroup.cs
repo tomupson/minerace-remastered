@@ -5,7 +5,7 @@ namespace MineRace.Infrastructure
 {
     public sealed class DisposableGroup : IDisposable
     {
-        private readonly List<IDisposable> disposables = new List<IDisposable>();
+        private readonly List<IDisposable> disposables = new();
 
         public void Dispose()
         {
