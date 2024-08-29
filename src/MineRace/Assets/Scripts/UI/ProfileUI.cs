@@ -1,4 +1,5 @@
 ﻿using MineRace.Authentication;
+using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -8,11 +9,11 @@ public class ProfileUI : MonoBehaviour
 {
     [Inject] private readonly UserAccountManager userAccountManager;
 
-    [SerializeField] private Text titleText;
-    [SerializeField] private Text nameText;
-    [SerializeField] private Text highScoreText;
-    [SerializeField] private Text xpText;
-    [SerializeField] private Text levelText;
+    [SerializeField] private TextMeshProUGUI titleText;
+    [SerializeField] private TextMeshProUGUI nameText;
+    [SerializeField] private TextMeshProUGUI highScoreText;
+    [SerializeField] private TextMeshProUGUI xpText;
+    [SerializeField] private TextMeshProUGUI levelText;
     [SerializeField] private Button menuButton;
 
     private void Awake()
