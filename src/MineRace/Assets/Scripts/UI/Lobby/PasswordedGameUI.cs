@@ -4,6 +4,7 @@ using MineRace.Authentication;
 using MineRace.ConnectionManagement;
 using MineRace.UGS;
 using MineRace.Utils.Animation;
+using TMPro;
 using Unity.Services.Lobbies;
 using Unity.Services.Lobbies.Models;
 using UnityEngine;
@@ -25,8 +26,8 @@ public class PasswordedGameUI : MonoBehaviour, IAnimationStateHandler
 
     public event Action OnClosed;
 
-    [SerializeField] private InputField passwordField;
-    [SerializeField] private Text statusText;
+    [SerializeField] private TMP_InputField passwordField;
+    [SerializeField] private TextMeshProUGUI statusText;
     [SerializeField] private Button joinButton;
     [SerializeField] private Button closeButton;
 

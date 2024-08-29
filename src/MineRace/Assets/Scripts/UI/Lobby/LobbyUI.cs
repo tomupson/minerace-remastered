@@ -3,6 +3,7 @@ using MineRace.Audio;
 using MineRace.Authentication;
 using MineRace.ConnectionManagement;
 using MineRace.UGS;
+using TMPro;
 using Unity.Services.Lobbies.Models;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -17,7 +18,7 @@ public class LobbyUI : MonoBehaviour
     [Inject] private readonly LobbyManager lobbyManager;
     [Inject] private readonly UserAccountManager userAccountManager;
 
-    [SerializeField] private Text statusText;
+    [SerializeField] private TextMeshProUGUI statusText;
     [SerializeField] private GameObject gameListItemPrefab;
     [SerializeField] private Transform gameListTransform;
     [SerializeField] private Button createMatchButton;

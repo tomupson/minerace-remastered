@@ -3,6 +3,7 @@ using MineRace.Authentication;
 using MineRace.ConnectionManagement;
 using MineRace.UGS;
 using MineRace.Utils.Animation;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using VContainer;
@@ -19,9 +20,9 @@ public class CreateMatchUI : MonoBehaviour, IAnimationStateHandler
 
     private Animator animator;
 
-    [SerializeField] private InputField nameField;
-    [SerializeField] private InputField passwordField;
-    [SerializeField] private Text statusText;
+    [SerializeField] private TMP_InputField nameField;
+    [SerializeField] private TMP_InputField passwordField;
+    [SerializeField] private TextMeshProUGUI statusText;
     [SerializeField] private Button createButton;
     [SerializeField] private Button closeButton;
 

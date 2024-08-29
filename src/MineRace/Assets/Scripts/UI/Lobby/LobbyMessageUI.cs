@@ -2,6 +2,7 @@ using JetBrains.Annotations;
 using MineRace.ConnectionManagement;
 using MineRace.Infrastructure;
 using MineRace.UGS;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using VContainer;
@@ -10,7 +11,7 @@ public class LobbyMessageUI : MonoBehaviour
 {
     private DisposableGroup subscriptions;
 
-    [SerializeField] private Text messageText;
+    [SerializeField] private TextMeshProUGUI messageText;
     [SerializeField] private Button closeButton;
 
     [Inject, UsedImplicitly]

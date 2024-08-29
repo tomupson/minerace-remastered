@@ -1,12 +1,13 @@
-﻿using Unity.Services.Lobbies.Models;
+﻿using TMPro;
+using Unity.Services.Lobbies.Models;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
 
 public class GameListItemUI : MonoBehaviour
 {
-    [SerializeField] private Text matchInfoText;
-    [SerializeField] private Text matchTypeText;
+    [SerializeField] private TextMeshProUGUI matchInfoText;
+    [SerializeField] private TextMeshProUGUI matchTypeText;
     [SerializeField] private Button joinButton;
 
     public void Setup(Lobby lobby, UnityAction<Lobby> onJoin)
