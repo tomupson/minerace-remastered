@@ -1,6 +1,7 @@
 using JetBrains.Annotations;
 using MineRace.ConnectionManagement;
 using MineRace.Infrastructure;
+using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -10,7 +11,7 @@ public class ConnectStatusMessageUI : MonoBehaviour
 {
     private DisposableGroup subscriptions;
 
-    [SerializeField] private Text messageText;
+    [SerializeField] private TextMeshProUGUI messageText;
     [SerializeField] private Button menuButton;
 
     [Inject, UsedImplicitly]

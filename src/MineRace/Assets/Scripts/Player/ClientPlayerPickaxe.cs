@@ -6,7 +6,6 @@ using MineRace.Utils.Timers;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using static UnityEngine.UI.Image;
 
 [RequireComponent(typeof(SpriteRenderer))]
 public class ClientPlayerPickaxe : NetworkBehaviour

@@ -6,7 +6,7 @@ using Unity.Netcode;
 using UnityEngine;
 using VContainer;
 
-public class PlayerListManager : MonoBehaviour
+public class PlayerListUI : MonoBehaviour
 {
     private readonly Dictionary<ulong, GameObject> objects = new();
 

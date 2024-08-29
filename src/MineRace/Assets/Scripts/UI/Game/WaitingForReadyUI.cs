@@ -1,7 +1,7 @@
 using MineRace.Infrastructure;
 using MineRace.Utils.Netcode;
+using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 using VContainer;
 
 public class WaitingForReadyUI : MonoBehaviour
@@ -10,7 +10,7 @@ public class WaitingForReadyUI : MonoBehaviour
 
     private DisposableGroup subscriptions;
 
-    [SerializeField] private Text waitingForPlayerReadyText;
+    [SerializeField] private TextMeshProUGUI waitingForPlayerReadyText;
     [SerializeField] private PlayerGameEvent localPlayerSpawnedEvent;
 
     private void Awake()

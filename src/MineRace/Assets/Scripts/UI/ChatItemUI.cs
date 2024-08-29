@@ -1,10 +1,10 @@
-﻿using UnityEngine;
-using UnityEngine.UI;
+﻿using TMPro;
+using UnityEngine;
 
 public class ChatItemUI : MonoBehaviour
 {
-    [SerializeField] private Text senderText;
-    [SerializeField] private Text messageText;
+    [SerializeField] private TextMeshProUGUI senderText;
+    [SerializeField] private TextMeshProUGUI messageText;
 
     public void Setup(string sender, string message, Color colour)
     {

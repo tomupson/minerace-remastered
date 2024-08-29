@@ -1,9 +1,9 @@
+using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class PlayerListItemUI : MonoBehaviour
 {
-    [SerializeField] private Text playerNameText;
+    [SerializeField] private TextMeshProUGUI playerNameText;
 
     public void Setup(string playerName)
     {

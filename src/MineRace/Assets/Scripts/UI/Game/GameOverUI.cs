@@ -1,6 +1,7 @@
 using MineRace.ConnectionManagement;
 using MineRace.Infrastructure;
 using MineRace.Utils.Netcode;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using VContainer;
@@ -12,7 +13,7 @@ public class GameOverUI : MonoBehaviour
 
     private DisposableGroup subscriptions;
 
-    [SerializeField] private Text gameOverText;
+    [SerializeField] private TextMeshProUGUI gameOverText;
     [SerializeField] private Button leaveButton;
 
     private void Awake()

@@ -1,8 +1,8 @@
 using System;
 using MineRace.Infrastructure;
 using MineRace.Utils.Netcode;
+using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 using VContainer;
 
 public class PointsUI : MonoBehaviour
@@ -14,9 +14,9 @@ public class PointsUI : MonoBehaviour
     private Player player;
     private Player spectatingPlayer;
 
-    [SerializeField] private Text pointsText;
-    [SerializeField] private Text timeText;
-    [SerializeField] private Text spectatingText;
+    [SerializeField] private TextMeshProUGUI pointsText;
+    [SerializeField] private TextMeshProUGUI timeRemainingText;
+    [SerializeField] private TextMeshProUGUI spectatingText;
     [SerializeField] private PlayerGameEvent localPlayerSpawnedEvent;
 
     private void Awake()
@@ -52,7 +52,7 @@ public class PointsUI : MonoBehaviour
     {
         string minutes = Mathf.Floor(timeRemaining / 60).ToString("00");
         string seconds = (timeRemaining % 60).ToString("00");
-        timeText.text = $"{minutes}:{seconds} remaining";
+        timeRemainingText.text = $"{minutes}:{seconds} remaining";
     }
 
     private void OnLocalPlayerSpawned(Player player)

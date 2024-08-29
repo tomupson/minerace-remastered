@@ -6,9 +6,9 @@ public class PauseManager : MonoBehaviour
 {
     [Inject] private readonly IPublisher<PauseStateChangedMessage> pauseStatePublisher;
 
-    [SerializeField] private PlayerInputReader inputReader;
-
     private bool isPaused;
+
+    [SerializeField] private PlayerInputReader inputReader;
 
     private void Awake()
     {

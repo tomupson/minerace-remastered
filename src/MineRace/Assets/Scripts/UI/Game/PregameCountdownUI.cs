@@ -1,7 +1,7 @@
 using MineRace.Infrastructure;
 using MineRace.Utils.Netcode;
+using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 using VContainer;
 
 public class PregameCountdownUI : MonoBehaviour
@@ -10,7 +10,7 @@ public class PregameCountdownUI : MonoBehaviour
 
     private DisposableGroup subscriptions;
 
-    [SerializeField] private Text pregameTimeText;
+    [SerializeField] private TextMeshProUGUI pregameTimeText;
 
     private void Start()
     {

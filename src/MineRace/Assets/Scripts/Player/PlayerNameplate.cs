@@ -1,19 +1,19 @@
 ﻿using MineRace.Infrastructure;
 using MineRace.Utils.Netcode;
+using TMPro;
 using Unity.Netcode;
-using UnityEngine.UI;
 
 public class PlayerNameplate : NetworkBehaviour
 {
     private Player player;
-    private Text usernameText;
+    private TextMeshProUGUI usernameText;
 
     private DisposableGroup subscriptions;
 
     private void Awake()
     {
         player = GetComponentInParent<Player>();
-        usernameText = GetComponentInChildren<Text>();
+        usernameText = GetComponentInChildren<TextMeshProUGUI>();
     }
 
     private void Start()

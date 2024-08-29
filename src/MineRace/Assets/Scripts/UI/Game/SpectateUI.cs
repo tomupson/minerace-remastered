@@ -1,8 +1,8 @@
 using System.Linq;
 using MineRace.Infrastructure;
 using MineRace.Utils.Netcode;
+using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 using VContainer;
 
 public class SpectateUI : MonoBehaviour
@@ -13,7 +13,7 @@ public class SpectateUI : MonoBehaviour
     private Player player;
 
     [SerializeField] private PlayerInputReader inputReader;
-    [SerializeField] private Text spectateText;
+    [SerializeField] private TextMeshProUGUI spectateText;
     [SerializeField] private PlayerGameEvent localPlayerSpawnedEvent;
 
     private void Awake()
