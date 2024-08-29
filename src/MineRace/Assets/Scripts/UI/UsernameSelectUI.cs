@@ -1,6 +1,7 @@
 using MineRace.Authentication;
 using MineRace.Utils;
 using MineRace.Utils.Animation;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using VContainer;
@@ -16,9 +17,9 @@ public class UsernameSelectUI : MonoBehaviour, IAnimationStateHandler
     [Inject] private readonly UserAccountManager userAccountManager;
 
     [SerializeField] private Animator animator;
-    [SerializeField] private InputField usernameInputField;
+    [SerializeField] private TMP_InputField usernameInputField;
     [SerializeField] private Button saveButton;
-    [SerializeField] private Text usernameStatusText;
+    [SerializeField] private TextMeshProUGUI usernameStatusText;
 
     private void Awake()
     {

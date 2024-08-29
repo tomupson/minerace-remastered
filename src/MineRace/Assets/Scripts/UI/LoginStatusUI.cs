@@ -1,5 +1,6 @@
 using MineRace.Authentication;
 using MineRace.Utils;
+using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -9,7 +10,7 @@ public class LoginStatusUI : MonoBehaviour
 {
     [Inject] private readonly UserAccountManager userAccountManager;
 
-    [SerializeField] private Text loginNameText;
+    [SerializeField] private TextMeshProUGUI loginNameText;
     [SerializeField] private Button profileButton;
     [SerializeField] private Button logoutButton;
 
