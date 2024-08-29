@@ -2369,7 +2369,7 @@ MonoBehaviour:
   loginButton: {fileID: 1462296185}
   exitButton: {fileID: 1976181629}
   loginStatusText: {fileID: 2094689133}
-  registerButton: {fileID: 0}
+  registerButton: {fileID: 1275951468}
 --- !u!1 &1867547539
 GameObject:
   m_ObjectHideFlags: 0
