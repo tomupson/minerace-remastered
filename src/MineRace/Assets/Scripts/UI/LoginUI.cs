@@ -2,6 +2,7 @@
 using MineRace.Authentication;
 using MineRace.Infrastructure;
 using MineRace.Utils;
+using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -12,12 +13,11 @@ public class LoginUI : MonoBehaviour
     [Inject] private readonly IPublisher<QuitApplicationMessage> applicationQuitPublisher;
     [Inject] private readonly UserAccountManager userAccountManager;
 
-    [SerializeField] private InputField usernameInputField;
-    [SerializeField] private InputField passwordInputField;
-    [SerializeField] private Toggle rememberMeToggle;
+    [SerializeField] private TMP_InputField usernameInputField;
+    [SerializeField] private TMP_InputField passwordInputField;
     [SerializeField] private Button loginButton;
     [SerializeField] private Button exitButton;
-    [SerializeField] private Text loginStatusText;
+    [SerializeField] private TextMeshProUGUI loginStatusText;
     [SerializeField] private Button registerButton;
 
     private void Awake()
