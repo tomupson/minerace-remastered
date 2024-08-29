@@ -1,5 +1,6 @@
 ﻿using MineRace.Authentication;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using VContainer;
 
@@ -12,6 +13,12 @@ public class ProfileUI : MonoBehaviour
     [SerializeField] private Text highScoreText;
     [SerializeField] private Text xpText;
     [SerializeField] private Text levelText;
+    [SerializeField] private Button menuButton;
+
+    private void Awake()
+    {
+        menuButton.onClick.AddListener(() => SceneManager.LoadScene("Menu"));
+    }
 
     private void Start()
     {

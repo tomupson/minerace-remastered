@@ -5,6 +5,7 @@ using MineRace.ConnectionManagement;
 using MineRace.UGS;
 using Unity.Services.Lobbies.Models;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using VContainer;
 
@@ -21,6 +22,7 @@ public class LobbyUI : MonoBehaviour
     [SerializeField] private Transform gameListTransform;
     [SerializeField] private Button createMatchButton;
     [SerializeField] private Button refreshButton;
+    [SerializeField] private Button menuButton;
     [SerializeField] private CreateMatchUI createMatchPopup;
     [SerializeField] private PasswordedGameUI passwordedGamePopup;
 
@@ -30,6 +32,7 @@ public class LobbyUI : MonoBehaviour
     {
         createMatchButton.onClick.AddListener(() => createMatchPopup.Open());
         refreshButton.onClick.AddListener(RefreshGameList);
+        menuButton.onClick.AddListener(() => SceneManager.LoadScene("Menu"));
     }
 
     private void Start()

@@ -1,3 +1,4 @@
+using MineRace.ConnectionManagement;
 using MineRace.Infrastructure;
 using MineRace.Utils.Netcode;
 using UnityEngine;
@@ -6,11 +7,18 @@ using VContainer;
 
 public class GameOverUI : MonoBehaviour
 {
+    [Inject] private readonly ConnectionManager connectionManager;
     [Inject] private readonly NetworkGameState networkGameState;
 
     private DisposableGroup subscriptions;
 
     [SerializeField] private Text gameOverText;
+    [SerializeField] private Button leaveButton;
+
+    private void Awake()
+    {
+        leaveButton.onClick.AddListener(() => connectionManager.RequestShutdown());
+    }
 
     private void Start()
     {

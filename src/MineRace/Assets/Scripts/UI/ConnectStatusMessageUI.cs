@@ -22,7 +22,7 @@ public class ConnectStatusMessageUI : MonoBehaviour
 
     private void Awake()
     {
-        menuButton.onClick.AddListener(ReturnToMenu);
+        menuButton.onClick.AddListener(() => SceneManager.LoadScene("Menu"));
     }
 
     private void Start()
@@ -52,10 +52,5 @@ public class ConnectStatusMessageUI : MonoBehaviour
     {
         messageText.text = message;
         gameObject.SetActive(true);
-    }
-
-    private void ReturnToMenu()
-    {
-        SceneManager.LoadScene("Menu");
     }
 }
