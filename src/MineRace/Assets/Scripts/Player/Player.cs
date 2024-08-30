@@ -126,7 +126,7 @@ public class Player : NetworkBehaviour
     [ServerRpc]
     private void BreakBlockServerRpc(NetworkObjectReference reference)
     {
-        if (reference.TryGet(out NetworkObject networkObject) && Vector3.Distance(transform.position, networkObject.transform.position) <= 0.75f)
+        if (reference.TryGet(out NetworkObject networkObject) && Vector3.Distance(transform.position, networkObject.transform.position) <= 1f)
         {
             networkObject.Despawn();
 

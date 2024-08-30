@@ -9,6 +9,7 @@ public class PlayerInputReader : ScriptableObject, PlayerInputActions.IGameActio
 
     public event Action<float> OnMoveHook;
     public Action OnJumpHook;
+    public Action OnJumpCancelledHook;
     public event Action OnMineHook;
     public event Action OnUseHook;
     public event Action OnSpectateHook;
@@ -36,9 +37,14 @@ public class PlayerInputReader : ScriptableObject, PlayerInputActions.IGameActio
 
     public void OnJump(InputAction.CallbackContext context)
     {
-        if (context.performed)
+        switch (context.phase)
         {
-            OnJumpHook?.Invoke();
+            case InputActionPhase.Performed:
+                OnJumpHook?.Invoke();
+                break;
+            case InputActionPhase.Canceled:
+                OnJumpCancelledHook?.Invoke();
+                break;
         }
     }
 

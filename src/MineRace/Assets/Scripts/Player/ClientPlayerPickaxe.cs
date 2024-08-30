@@ -37,7 +37,8 @@ public class ClientPlayerPickaxe : NetworkBehaviour
 
         pickaxeCooldownTimer.Tick(Time.deltaTime);
 
-        Vector3 direction = Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue()) - transform.position;
+        Vector3 targetPosition = Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue());
+        Vector3 direction = targetPosition - transform.position;
         direction.z = 0;
 
         float rotationZ = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
@@ -93,6 +94,15 @@ public class ClientPlayerPickaxe : NetworkBehaviour
         if (!lastRaycastHit)
         {
             return;
+        }
+
+        if (lastRaycastHit.point.x < transform.position.x)
+        {
+            player.NetworkPlayerState.FacingRight.Value = false;
+        }
+        else if (lastRaycastHit.point.x > transform.position.x)
+        {
+            player.NetworkPlayerState.FacingRight.Value = true;
         }
 
         Transform hitTransform = lastRaycastHit.transform;

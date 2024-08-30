@@ -6,6 +6,7 @@ public class ClientPlayerMovement : NetworkBehaviour
 {
     private Rigidbody2D playerRigidbody;
     private float moveHorizontal;
+    private bool jumping;
 
     [SerializeField] private PlayerInputReader inputReader;
     [SerializeField] private GroundCheck groundCheck;
@@ -35,7 +36,8 @@ public class ClientPlayerMovement : NetworkBehaviour
             networkPlayerState.FacingRight.Value = false;
         }
 
-        playerRigidbody.velocity = new Vector2(moveHorizontal * moveSpeed, playerRigidbody.velocity.y);
+        float yVelocity = groundCheck.IsGrounded && jumping ? jumpForce : playerRigidbody.velocity.y;
+        playerRigidbody.velocity = new Vector2(moveHorizontal * moveSpeed, yVelocity);
     }
 
     public override void OnNetworkSpawn()
@@ -48,6 +50,7 @@ public class ClientPlayerMovement : NetworkBehaviour
 
         inputReader.OnMoveHook += OnMove;
         inputReader.OnJumpHook += OnJump;
+        inputReader.OnJumpCancelledHook += OnJumpCancelled;
     }
 
     public override void OnNetworkDespawn()
@@ -59,20 +62,12 @@ public class ClientPlayerMovement : NetworkBehaviour
 
         inputReader.OnMoveHook -= OnMove;
         inputReader.OnJumpHook -= OnJump;
+        inputReader.OnJumpCancelledHook -= OnJumpCancelled;
     }
 
-    private void OnMove(float moveHorizontal)
-    {
-        this.moveHorizontal = moveHorizontal;
-    }
+    private void OnMove(float moveHorizontal) => this.moveHorizontal = moveHorizontal;
 
-    public void OnJump()
-    {
-        if (networkPlayerState.State.Value != PlayerState.Playing || !groundCheck.IsGrounded)
-        {
-            return;
-        }
+    private void OnJump() => jumping = true;
 
-        playerRigidbody.velocity = new Vector2(playerRigidbody.velocity.x, jumpForce);
-    }
+    private void OnJumpCancelled() => jumping = false;
 }
