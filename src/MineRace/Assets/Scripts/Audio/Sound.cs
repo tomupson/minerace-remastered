@@ -5,7 +5,6 @@ namespace MineRace.Audio
     [CreateAssetMenu(fileName = "Sound", menuName = "MineRace/Sound")]
     public class Sound : ScriptableObject
     {
-        public string soundName;
         public AudioClip clip;
         [Range(0f, 1f)]
         public float volume;
