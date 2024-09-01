@@ -1084,7 +1084,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Enter text...
+  m_text: Enter password...
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: c52163fc5d6732d40a6c4c5a1025c30d, type: 2}
   m_sharedMaterial: {fileID: -4294745747354363140, guid: c52163fc5d6732d40a6c4c5a1025c30d,
@@ -1516,7 +1516,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Enter text...
+  m_text: Enter username...
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: c52163fc5d6732d40a6c4c5a1025c30d, type: 2}
   m_sharedMaterial: {fileID: -4294745747354363140, guid: c52163fc5d6732d40a6c4c5a1025c30d,
