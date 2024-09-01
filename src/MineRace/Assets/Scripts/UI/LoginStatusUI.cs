@@ -35,6 +35,11 @@ public class LoginStatusUI : MonoBehaviour
         OnUsernameChanged(userAccountManager.UserInfo.Username);
     }
 
+    private void OnDestroy()
+    {
+        userAccountManager.OnUsernameChanged -= OnUsernameChanged;
+    }
+
     private void OnUsernameChanged(string username)
     {
         loginNameText.text = $"LOGGED IN AS: {username}";

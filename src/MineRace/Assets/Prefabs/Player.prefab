@@ -172,7 +172,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 1492532102
+  GlobalObjectIdHash: 1384705816
   InScenePlacedSourceGlobalObjectIdHash: 1450865784
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
@@ -5479,7 +5479,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4849254304086362697}
   - component: {fileID: 125088278257766737}
-  - component: {fileID: 4760788116587561739}
+  - component: {fileID: 1248389565562823971}
   - component: {fileID: 8424278227248060671}
   m_Layer: 2
   m_Name: Pickaxe
@@ -5555,7 +5555,7 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!114 &4760788116587561739
+--- !u!114 &1248389565562823971
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}

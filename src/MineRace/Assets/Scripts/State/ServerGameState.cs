@@ -12,10 +12,11 @@ using VContainer.Unity;
 [RequireComponent(typeof(NetworkHooks))]
 public class ServerGameState : GameStateBehaviour
 {
-    private DisposableGroup subscriptions;
-
     [Inject] private readonly ConnectionManager connectionManager;
     [Inject] private readonly NetworkManager networkManager;
+
+    private DisposableGroup subscriptions;
+    private NetworkHooks networkHooks;
 
     [SerializeField] private GameObject playerPrefab;
     [SerializeField] private LevelData levelData;
@@ -32,13 +33,16 @@ public class ServerGameState : GameStateBehaviour
     {
         base.Awake();
 
-        NetworkHooks networkHooks = GetComponent<NetworkHooks>();
+        networkHooks = GetComponent<NetworkHooks>();
         networkHooks.OnNetworkSpawnHook += OnNetworkSpawn;
         networkHooks.OnNetworkDespawnHook += OnNetworkDespawn;
     }
 
     protected override void OnDestroy()
     {
+        networkHooks.OnNetworkSpawnHook -= OnNetworkSpawn;
+        networkHooks.OnNetworkDespawnHook -= OnNetworkDespawn;
+
         subscriptions?.Dispose();
     }
 
@@ -51,19 +55,33 @@ public class ServerGameState : GameStateBehaviour
         }
 
         networkManager.OnClientConnectedCallback += OnClientConnected;
+        networkManager.OnClientDisconnectCallback += OnClientDisconnected;
         networkManager.SceneManager.OnLoadEventCompleted += OnSceneLoadEventCompleted;
     }
 
     private void OnNetworkDespawn()
     {
         networkManager.OnClientConnectedCallback -= OnClientConnected;
+        networkManager.OnClientDisconnectCallback -= OnClientDisconnected;
         networkManager.SceneManager.OnLoadEventCompleted -= OnSceneLoadEventCompleted;
     }
 
-    private void OnClientConnected(ulong connectedClientId)
+    private void OnClientConnected(ulong clientId)
     {
-        SpawnPlayer(connectedClientId);
+        SpawnPlayer(clientId);
         CheckAllPlayersConnected();
+    }
+
+    private void OnClientDisconnected(ulong clientId)
+    {
+        for (int playerIdx = 0; playerIdx < networkGameState.Players.Count; playerIdx++)
+        {
+            if (networkGameState.Players[playerIdx].clientId == clientId)
+            {
+                networkGameState.Players.RemoveAt(playerIdx);
+                break;
+            }
+        }
     }
 
     private void OnSceneLoadEventCompleted(string sceneName, LoadSceneMode loadSceneMode, List<ulong> clientsCompleted, List<ulong> clientsTimedOut)
@@ -81,10 +99,15 @@ public class ServerGameState : GameStateBehaviour
     // Thus, we configure the network manager to not spawn the player, and do it ourselves manually when the SceneManager completes the scene transition for the host.
     // For the clients, they don't exist when the scene transition starts, so aren't listed in the connected clients when the OnLoadEventCompleted event fires.
     // However, they will be automatically transitioned to the Game scene when the connect, therefore we can spawn them then.
-    private Player SpawnPlayer(ulong clientId)
+    private void SpawnPlayer(ulong clientId)
     {
         SessionPlayerData? sessionPlayerData = SessionManager.Instance.GetPlayerData(clientId);
-        Vector3 spawnPos = sessionPlayerData is { HasCharacterSpawned: true }
+        if (!sessionPlayerData.HasValue)
+        {
+            return;
+        }
+
+        Vector3 spawnPos = sessionPlayerData.Value.HasCharacterSpawned
             ? sessionPlayerData.Value.PlayerPosition
             : new Vector3(GetSpawnPositionX(clientId), 100, 0);
 
@@ -96,7 +119,7 @@ public class ServerGameState : GameStateBehaviour
         subscriptions ??= new DisposableGroup();
         subscriptions.Add(player.NetworkPlayerState.State.Subscribe(OnPlayerStateChanged));
 
-        return player;
+        networkGameState.Players.Add(new PlayerListState(clientId, sessionPlayerData.Value.PlayerName));
     }
 
     private float GetSpawnPositionX(ulong clientId)

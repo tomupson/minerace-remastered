@@ -10,6 +10,8 @@ public class ClientGameState : GameStateBehaviour
 {
     [Inject] private readonly NetworkManager networkManager;
 
+    private NetworkHooks networkHooks;
+
     [SerializeField] private ChatManager chatManager;
     [SerializeField] private PauseManager pauseManager;
     [SerializeField] private NetworkGameState networkGameState;
@@ -29,8 +31,13 @@ public class ClientGameState : GameStateBehaviour
     {
         base.Awake();
 
-        NetworkHooks networkHooks = GetComponent<NetworkHooks>();
+        networkHooks = GetComponent<NetworkHooks>();
         networkHooks.OnNetworkSpawnHook += OnNetworkSpawn;
+    }
+
+    protected override void OnDestroy()
+    {
+        networkHooks.OnNetworkSpawnHook -= OnNetworkSpawn;
     }
 
     private void OnNetworkSpawn()

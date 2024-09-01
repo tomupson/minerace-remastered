@@ -1,52 +1,69 @@
 using System.Collections.Generic;
-using JetBrains.Annotations;
-using MineRace.ConnectionManagement;
-using MineRace.Infrastructure;
 using Unity.Netcode;
 using UnityEngine;
 using VContainer;
 
 public class PlayerListUI : MonoBehaviour
 {
-    private readonly Dictionary<ulong, GameObject> objects = new();
+    private readonly Dictionary<ulong, PlayerListItemUI> playerListItems = new();
 
-    [Inject] private readonly NetworkManager networkManager;
-
-    private DisposableGroup subscriptions;
+    [Inject] private readonly NetworkGameState networkGameState;
 
     [SerializeField] private Transform content;
     [SerializeField] private GameObject playerListItemPrefab;
 
-    [Inject, UsedImplicitly]
-    private void InjectDependencies(ISubscriber<NetworkConnectionEventMessage> connectionEventSubscriber)
-    {
-        subscriptions = new DisposableGroup();
-        subscriptions.Add(connectionEventSubscriber.Subscribe(OnConnectionEvent));
-    }
-
     private void Start()
     {
+        networkGameState.Players.OnListChanged += OnPlayersListChanged;
 
+        foreach (PlayerListState player in networkGameState.Players)
+        {
+            SpawnPlayerListItem(player);
+        }
     }
 
     private void OnDestroy()
     {
-        subscriptions?.Dispose();
+        networkGameState.Players.OnListChanged -= OnPlayersListChanged;
     }
 
-    private void OnConnectionEvent(NetworkConnectionEventMessage message)
+    private void OnPlayersListChanged(NetworkListEvent<PlayerListState> @event)
     {
-        if (message.connectStatus == ConnectStatus.Success)
+        switch (@event.Type)
         {
-            GameObject playerListItemObject = Instantiate(playerListItemPrefab, content);
-            PlayerListItemUI playerListItem = playerListItemObject.GetComponent<PlayerListItemUI>();
-            playerListItem.Setup(message.playerName.ToString());
-
-            objects.Add(message.clientId, playerListItemObject);
+            case NetworkListEvent<PlayerListState>.EventType.Add:
+            case NetworkListEvent<PlayerListState>.EventType.Insert:
+                SpawnPlayerListItem(@event.Value);
+                break;
+            case NetworkListEvent<PlayerListState>.EventType.Remove:
+            case NetworkListEvent<PlayerListState>.EventType.RemoveAt:
+                playerListItems.Remove(@event.Value.clientId, out PlayerListItemUI playerListItem);
+                Destroy(playerListItem.gameObject);
+                break;
+            case NetworkListEvent<PlayerListState>.EventType.Value:
+                playerListItems[@event.Value.clientId].Setup(@event.Value.playerName.ToString());
+                break;
+            case NetworkListEvent<PlayerListState>.EventType.Clear:
+                ClearListItems();
+                break;
         }
-        else if (objects.Remove(message.clientId, out GameObject playerListItemObject))
+    }
+
+    private void SpawnPlayerListItem(PlayerListState player)
+    {
+        GameObject playerListItemObject = Instantiate(playerListItemPrefab, content);
+        PlayerListItemUI playerListItem = playerListItemObject.GetComponent<PlayerListItemUI>();
+        playerListItem.Setup(player.playerName.ToString());
+
+        playerListItems.Add(player.clientId, playerListItem);
+    }
+
+    private void ClearListItems()
+    {
+        foreach (KeyValuePair<ulong, PlayerListItemUI> playerListItem in playerListItems)
         {
-            Destroy(playerListItemObject);
+            Destroy(playerListItem.Value);
+            playerListItems.Remove(playerListItem.Key);
         }
     }
 }

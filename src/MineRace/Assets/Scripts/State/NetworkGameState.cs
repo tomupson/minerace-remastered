@@ -4,6 +4,7 @@ using UnityEngine;
 public class NetworkGameState : NetworkBehaviour
 {
     private float ticker = 1f;
+    private NetworkList<PlayerListState> players;
 
     [SerializeField] private int gameTime = 300;
     [SerializeField] private int preGameCountdownTime = 5;
@@ -13,6 +14,13 @@ public class NetworkGameState : NetworkBehaviour
     public NetworkVariable<int> PregameTimeRemaining { get; } = new NetworkVariable<int>();
 
     public NetworkVariable<int> TimeRemaining { get; } = new NetworkVariable<int>();
+
+    public NetworkList<PlayerListState> Players => players;
+
+    private void Awake()
+    {
+        players = new NetworkList<PlayerListState>();
+    }
 
     private void Update()
     {
