@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
 using Unity.Networking.Transport.Relay;
@@ -20,9 +22,9 @@ namespace MineRace.ConnectionManagement.States
             return this;
         }
 
-        public override void Enter()
+        public override async void Enter()
         {
-            StartHostInternal();
+            await StartHostAsync();
         }
 
         public override void Exit() { }
@@ -53,7 +55,7 @@ namespace MineRace.ConnectionManagement.States
             StartHostFailed();
         }
 
-        private async void StartHostInternal()
+        private async Task StartHostAsync()
         {
             try
             {
@@ -62,10 +64,8 @@ namespace MineRace.ConnectionManagement.States
                 Allocation hostAllocation = await RelayService.Instance.CreateAllocationAsync(connectionManager.MaxConnectedPlayers);
                 string joinCode = await RelayService.Instance.GetJoinCodeAsync(hostAllocation.AllocationId);
 
-                Dictionary<string, DataObject> lobbyData = new Dictionary<string, DataObject>();
-                lobbyData.Add("RelayJoinCode", new DataObject(DataObject.VisibilityOptions.Member, joinCode));
-
-                await lobbyManager.UpdateLobbyData(lobbyData);
+                lobbyManager.ActiveLobby.RelayJoinCode = joinCode;
+                await lobbyManager.UpdateActiveLobby();
                 await lobbyManager.UpdatePlayerRelayInfo(hostAllocation.AllocationIdBytes.ToString(), joinCode);
 
                 UnityTransport utp = (UnityTransport)networkManager.NetworkConfig.NetworkTransport;
@@ -76,8 +76,9 @@ namespace MineRace.ConnectionManagement.States
                     StartHostFailed();
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                Debug.LogException(ex);
                 StartHostFailed();
                 throw;
             }

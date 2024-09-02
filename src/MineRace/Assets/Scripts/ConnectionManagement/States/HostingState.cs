@@ -14,6 +14,11 @@ namespace MineRace.ConnectionManagement.States
         public override void Enter()
         {
             networkManager.SceneManager.LoadScene("Game", LoadSceneMode.Single);
+
+            if (lobbyManager.ActiveLobby != null)
+            {
+                lobbyManager.BeginTracking();
+            }
         }
 
         public override void Exit()
@@ -79,19 +84,19 @@ namespace MineRace.ConnectionManagement.States
 
         public override void ApprovalCheck(NetworkManager.ConnectionApprovalRequest request, NetworkManager.ConnectionApprovalResponse response)
         {
+            ulong clientId = request.ClientNetworkId;
+            ConnectionPayload connectionPayload = JsonUtility.FromJson<ConnectionPayload>(Encoding.UTF8.GetString(request.Payload));
+
             if (networkManager.ConnectedClientsIds.Count >= connectionManager.MaxConnectedPlayers)
             {
                 response.Approved = false;
                 response.Reason = JsonUtility.ToJson(ConnectStatus.ServerFull);
-                //if (lobbyManager.ActiveLobby != null)
-                //{
-                //    lobbyManager.RemovePlayerFromLobbyAsync(connectionPayload.playerId);
-                //}
+                if (lobbyManager.ActiveLobby != null)
+                {
+                    lobbyManager.RemovePlayerFromLobbyAsync(connectionPayload.PlayerId);
+                }
                 return;
             }
-
-            ulong clientId = request.ClientNetworkId;
-            ConnectionPayload connectionPayload = JsonUtility.FromJson<ConnectionPayload>(Encoding.UTF8.GetString(request.Payload));
 
             SessionManager.Instance.SetupConnectingPlayerSessionData(clientId, connectionPayload.PlayerId,
                 new SessionPlayerData(clientId, connectionPayload.PlayerName, isConnected: true));

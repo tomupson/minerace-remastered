@@ -74,6 +74,11 @@ public class ServerGameState : GameStateBehaviour
 
     private void OnClientDisconnected(ulong clientId)
     {
+        if (networkManager.ShutdownInProgress)
+        {
+            return;
+        }
+
         for (int playerIdx = 0; playerIdx < networkGameState.Players.Count; playerIdx++)
         {
             if (networkGameState.Players[playerIdx].clientId == clientId)

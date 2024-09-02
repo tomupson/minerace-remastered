@@ -18,18 +18,31 @@ namespace MineRace.UGS
         private readonly RateLimitCooldown queryRateLimit = new RateLimitCooldown(1f);
 
         private float lobbyHeartbeatTimer = LobbyHeartbeatIntervalSeconds;
+        private bool isTracking;
+        private ILobbyEvents lobbyEvents;
+        private LobbyEventConnectionState lobbyEventConnectionState;
 
-        public Lobby ActiveLobby { get; private set; }
+        public TrackedLobby ActiveLobby { get; private set; }
 
         public async void Tick()
         {
-            if (ActiveLobby != null && ActiveLobby.HostId == AuthenticationService.Instance.PlayerId)
+            if (isTracking && ActiveLobby.IsLocalPlayerHost())
             {
                 lobbyHeartbeatTimer -= Time.deltaTime;
                 if (lobbyHeartbeatTimer <= 0f)
                 {
                     lobbyHeartbeatTimer = LobbyHeartbeatIntervalSeconds;
-                    await LobbyService.Instance.SendHeartbeatPingAsync(ActiveLobby.Id);
+                    try
+                    {
+                        await LobbyService.Instance.SendHeartbeatPingAsync(ActiveLobby.LobbyId);
+                    }
+                    catch (LobbyServiceException ex)
+                    {
+                        if (ex.Reason != LobbyExceptionReason.LobbyNotFound)
+                        {
+                            Debug.LogException(ex);
+                        }
+                    }
                 }
             }
         }
@@ -52,7 +65,14 @@ namespace MineRace.UGS
             }
             catch (LobbyServiceException ex)
             {
-                Debug.LogException(ex);
+                if (ex.Reason == LobbyExceptionReason.RateLimited)
+                {
+                    queryRateLimit.PutOnCooldown();
+                }
+                else
+                {
+                    Debug.LogException(ex);
+                }
             }
 
             return null;
@@ -61,6 +81,7 @@ namespace MineRace.UGS
         public async Task<bool> TryCreateLobby(string lobbyName, string lobbyPassword, int lobbySize)
         {
             lobbyStatusPublisher.Publish(LobbyStatus.Creating);
+
             try
             {
                 CreateLobbyOptions options = new CreateLobbyOptions();
@@ -69,13 +90,15 @@ namespace MineRace.UGS
                     options.Password = lobbyPassword;
                 }
 
-                ActiveLobby = await LobbyService.Instance.CreateLobbyAsync(lobbyName, lobbySize, options);
+                Lobby lobby = await LobbyService.Instance.CreateLobbyAsync(lobbyName, lobbySize, options);
+                ActiveLobby = new TrackedLobby(lobby);
                 return true;
             }
             catch (LobbyServiceException ex)
             {
                 Debug.LogException(ex);
             }
+
             lobbyStatusPublisher.Publish(LobbyStatus.CreationFailed);
             return false;
         }
@@ -83,20 +106,23 @@ namespace MineRace.UGS
         public async Task<bool> TryJoinLobby(Lobby lobby, JoinLobbyByIdOptions options = null)
         {
             lobbyStatusPublisher.Publish(LobbyStatus.Joining);
+
             try
             {
-                ActiveLobby = await LobbyService.Instance.JoinLobbyByIdAsync(lobby.Id, options);
+                lobby = await LobbyService.Instance.JoinLobbyByIdAsync(lobby.Id, options);
+                ActiveLobby = new TrackedLobby(lobby);
                 return true;
             }
             catch (LobbyServiceException ex)
             {
                 Debug.LogException(ex);
             }
+
             lobbyStatusPublisher.Publish(LobbyStatus.JoinFailed);
             return false;
         }
 
-        public async Task<bool> UpdateLobbyData(Dictionary<string, DataObject> data)
+        public async Task<bool> UpdateActiveLobby()
         {
             if (ActiveLobby == null)
             {
@@ -104,22 +130,9 @@ namespace MineRace.UGS
                 return false;
             }
 
-            Dictionary<string, DataObject> currentData = ActiveLobby.Data ?? new Dictionary<string, DataObject>();
-            foreach (KeyValuePair<string, DataObject> newData in data)
-            {
-                if (currentData.ContainsKey(newData.Key))
-                {
-                    currentData[newData.Key] = newData.Value;
-                }
-                else
-                {
-                    currentData.Add(newData.Key, newData.Value);
-                }
-            }
-
             try
             {
-                await LobbyService.Instance.UpdateLobbyAsync(ActiveLobby.Id, new UpdateLobbyOptions { Data = currentData });
+                await LobbyService.Instance.UpdateLobbyAsync(ActiveLobby.LobbyId, new UpdateLobbyOptions { Data = ActiveLobby.Data });
             }
             catch (LobbyServiceException ex)
             {
@@ -139,12 +152,16 @@ namespace MineRace.UGS
 
             try
             {
-                ActiveLobby = await LobbyService.Instance.ReconnectToLobbyAsync(ActiveLobby.Id);
+                Lobby lobby = await LobbyService.Instance.ReconnectToLobbyAsync(ActiveLobby.LobbyId);
+                ActiveLobby = new TrackedLobby(lobby);
                 return true;
             }
             catch (LobbyServiceException ex)
             {
-                Debug.LogException(ex);
+                if (ex.Reason != LobbyExceptionReason.LobbyNotFound)
+                {
+                    Debug.LogException(ex);
+                }
             }
 
             return false;
@@ -158,7 +175,7 @@ namespace MineRace.UGS
                 return;
             }
 
-            if (ActiveLobby.HostId != AuthenticationService.Instance.PlayerId)
+            if (!ActiveLobby.IsLocalPlayerHost())
             {
                 Debug.LogError("Only the host can delete a lobby");
                 return;
@@ -166,12 +183,18 @@ namespace MineRace.UGS
 
             try
             {
-                await LobbyService.Instance.DeleteLobbyAsync(ActiveLobby.Id);
-                ActiveLobby = null;
+                await LobbyService.Instance.DeleteLobbyAsync(ActiveLobby.LobbyId);
             }
             catch (LobbyServiceException ex)
             {
-                Debug.LogException(ex);
+                if (ex.Reason != LobbyExceptionReason.LobbyNotFound)
+                {
+                    Debug.LogException(ex);
+                }
+            }
+            finally
+            {
+                ActiveLobby = null;
             }
         }
 
@@ -185,12 +208,18 @@ namespace MineRace.UGS
 
             try
             {
-                await LobbyService.Instance.RemovePlayerAsync(ActiveLobby.Id, AuthenticationService.Instance.PlayerId);
-                ActiveLobby = null;
+                await LobbyService.Instance.RemovePlayerAsync(ActiveLobby.LobbyId, AuthenticationService.Instance.PlayerId);
             }
             catch (LobbyServiceException ex)
             {
-                Debug.LogException(ex);
+                if (ex.Reason != LobbyExceptionReason.LobbyNotFound)
+                {
+                    Debug.LogException(ex);
+                }
+            }
+            finally
+            {
+                ActiveLobby = null;
             }
         }
 
@@ -204,7 +233,7 @@ namespace MineRace.UGS
 
             try
             {
-                await LobbyService.Instance.UpdatePlayerAsync(ActiveLobby.Id, AuthenticationService.Instance.PlayerId, new UpdatePlayerOptions
+                await LobbyService.Instance.UpdatePlayerAsync(ActiveLobby.LobbyId, AuthenticationService.Instance.PlayerId, new UpdatePlayerOptions
                 {
                     AllocationId = allocationId,
                     ConnectionInfo = connectionInfo
@@ -213,6 +242,98 @@ namespace MineRace.UGS
             catch (LobbyServiceException ex)
             {
                 Debug.LogException(ex);
+            }
+        }
+
+        public async void RemovePlayerFromLobbyAsync(string playerId)
+        {
+            if (ActiveLobby == null)
+            {
+                Debug.LogWarning("Tried to remove player from a lobby when not tracking a lobby");
+                return;
+            }
+
+            if (!ActiveLobby.IsLocalPlayerHost())
+            {
+                Debug.LogError("Only the host can remove other players from the lobby");
+                return;
+            }
+
+            try
+            {
+                await LobbyService.Instance.RemovePlayerAsync(ActiveLobby.LobbyId, playerId);
+            }
+            catch (LobbyServiceException ex)
+            {
+                Debug.Log(ex.Reason);
+                if (ex.Reason != LobbyExceptionReason.PlayerNotFound)
+                {
+                    Debug.LogException(ex);
+                }
+            }
+        }
+
+        public async void BeginTracking()
+        {
+            if (!isTracking)
+            {
+                isTracking = true;
+
+                LobbyEventCallbacks lobbyEventCallbacks = new LobbyEventCallbacks();
+                lobbyEventCallbacks.LobbyChanged += OnLobbyChanged;
+                lobbyEventCallbacks.LobbyEventConnectionStateChanged += OnLobbyEventConnectionStateChanged;
+                lobbyEvents = await LobbyService.Instance.SubscribeToLobbyEventsAsync(ActiveLobby.LobbyId, lobbyEventCallbacks);
+            }
+        }
+
+        private void OnLobbyChanged(ILobbyChanges changes)
+        {
+            if (changes.LobbyDeleted)
+            {
+                ActiveLobby = null;
+                EndTracking();
+                return;
+            }
+
+            ActiveLobby.ApplyChanges(changes);
+        }
+
+        private void OnLobbyEventConnectionStateChanged(LobbyEventConnectionState state)
+        {
+            lobbyEventConnectionState = state;
+        }
+
+        public async void EndTracking()
+        {
+            if (isTracking)
+            {
+                isTracking = false;
+                if (lobbyEvents != null && lobbyEventConnectionState != LobbyEventConnectionState.Unsubscribed)
+                {
+#if UNITY_EDITOR
+                    try
+                    {
+                        await lobbyEvents.UnsubscribeAsync();
+                    }
+                    catch (LobbyServiceException ex) when (ex.Reason == LobbyExceptionReason.SubscriptionToLobbyLostWhileBusy) { }
+#else
+                    await lobbyEvents.UnsubscribeAsync();
+#endif
+                }
+            }
+
+            if (ActiveLobby == null)
+            {
+                return;
+            }
+
+            if (ActiveLobby.IsLocalPlayerHost())
+            {
+                await DeleteLobby();
+            }
+            else
+            {
+                await LeaveLobby();
             }
         }
     }

@@ -1,4 +1,3 @@
-using Unity.Services.Authentication;
 using UnityEngine.SceneManagement;
 
 namespace MineRace.ConnectionManagement.States
@@ -7,20 +6,9 @@ namespace MineRace.ConnectionManagement.States
     {
         private const string LobbySceneName = "Lobby";
 
-        public override async void Enter()
+        public override void Enter()
         {
-            if (lobbyManager.ActiveLobby != null)
-            {
-                if (lobbyManager.ActiveLobby.HostId == AuthenticationService.Instance.PlayerId)
-                {
-                    await lobbyManager.DeleteLobby();
-                }
-                else
-                {
-                    await lobbyManager.LeaveLobby();
-                }
-            }
-
+            lobbyManager.EndTracking();
             networkManager.Shutdown();
             if (SceneManager.GetActiveScene().name != LobbySceneName)
             {

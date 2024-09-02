@@ -1,3 +1,5 @@
+using System;
+using System.Collections;
 using MineRace.ApplicationLifecycle.Messages;
 using MineRace.Authentication;
 using MineRace.ConnectionManagement;
@@ -14,6 +16,7 @@ namespace MineRace.ApplicationLifecycle
     public class ApplicationController : LifetimeScope
     {
         private DisposableGroup subscriptions;
+        private LobbyManager lobbyManager;
 
         [SerializeField] private ConnectionManager connectionManager;
         [SerializeField] private NetworkManager networkManager;
@@ -43,10 +46,14 @@ namespace MineRace.ApplicationLifecycle
 
         private void Start()
         {
+            lobbyManager = Container.Resolve<LobbyManager>();
+
             subscriptions = new DisposableGroup();
 
             ISubscriber<QuitApplicationMessage> applicationQuitSubscriber = Container.Resolve<ISubscriber<QuitApplicationMessage>>();
             subscriptions.Add(applicationQuitSubscriber.Subscribe(QuitGame));
+
+            Application.wantsToQuit += OnWantsToQuit;
 
             SceneManager.LoadScene("Login");
         }
@@ -54,6 +61,7 @@ namespace MineRace.ApplicationLifecycle
         protected override void OnDestroy()
         {
             subscriptions?.Dispose();
+            lobbyManager?.EndTracking();
             base.OnDestroy();
         }
 
@@ -64,6 +72,38 @@ namespace MineRace.ApplicationLifecycle
 #else
             Application.Quit();
 #endif
+        }
+
+        private bool OnWantsToQuit()
+        {
+            Application.wantsToQuit -= OnWantsToQuit;
+
+            bool canQuit = lobbyManager?.ActiveLobby == null;
+            if (!canQuit)
+            {
+                StartCoroutine(LeaveBeforeQuit());
+            }
+
+            return canQuit;
+        }
+
+        /// <summary>
+        /// In builds, if we are in a lobby and try to send a Leave request on application quit, it won't go through if we're quitting on the same frame.
+        /// So, we need to delay just briefly to let the request happen (though we don't need to wait for the result).
+        /// </summary>
+        private IEnumerator LeaveBeforeQuit()
+        {
+            try
+            {
+                lobbyManager.EndTracking();
+            }
+            catch (Exception ex)
+            {
+                Debug.LogException(ex);
+            }
+
+            yield return null;
+            Application.Quit();
         }
     }
 }

@@ -57,14 +57,9 @@ namespace MineRace.ConnectionManagement.States
         {
             try
             {
-                if (lobbyManager.ActiveLobby == null)
-                {
-                    throw new Exception("Trying to start relay while Lobby isn't set");
-                }
-
                 SetConnectionPayload(playerName);
 
-                string relayJoinCode = lobbyManager.ActiveLobby.Data.TryGetValue("RelayJoinCode", out DataObject joinCodeData) ? joinCodeData.Value : null;
+                string relayJoinCode = lobbyManager.ActiveLobby.RelayJoinCode;
 
                 JoinAllocation joinedAllocation = await RelayService.Instance.JoinAllocationAsync(relayJoinCode);
                 await lobbyManager.UpdatePlayerRelayInfo(joinedAllocation.AllocationId.ToString(), relayJoinCode);
@@ -74,12 +69,11 @@ namespace MineRace.ConnectionManagement.States
 
                 if (!networkManager.StartClient())
                 {
-                    throw new Exception("NetworkManager StartClient failed");
+                    StartingClientFailed();
                 }
             }
             catch (Exception ex)
             {
-                Debug.LogError("Error connecting client, see following exception");
                 Debug.LogException(ex);
                 StartingClientFailed();
                 throw;

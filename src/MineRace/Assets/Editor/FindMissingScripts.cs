@@ -135,9 +135,9 @@ public static class FindMissingScripts
             {
                 scene = EditorSceneManager.OpenScene(sceneAssetPath, OpenSceneMode.Additive);
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                Debug.LogError(e);
+                Debug.LogError(ex);
                 return;
             }
         }

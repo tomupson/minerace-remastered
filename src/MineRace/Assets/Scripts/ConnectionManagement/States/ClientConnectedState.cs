@@ -4,7 +4,13 @@ namespace MineRace.ConnectionManagement.States
 {
     internal sealed class ClientConnectedState : OnlineState
     {
-        public override void Enter() { }
+        public override void Enter()
+        {
+            if (lobbyManager.ActiveLobby != null)
+            {
+                lobbyManager.BeginTracking();
+            }
+        }
 
         public override void Exit() { }
 
