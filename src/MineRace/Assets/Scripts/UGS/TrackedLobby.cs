@@ -14,7 +14,7 @@ public sealed class TrackedLobby
     public string RelayJoinCode
     {
         get => lobby.Data.TryGetValue(RelayJoinCodeKey, out DataObject joinCodeData) ? joinCodeData.Value : null;
-        set => lobby.Data[RelayJoinCode] = new DataObject(DataObject.VisibilityOptions.Member, value);
+        set => lobby.Data[RelayJoinCodeKey] = new DataObject(DataObject.VisibilityOptions.Member, value);
     }
 
     internal Dictionary<string, DataObject> Data => lobby.Data;
