@@ -64,8 +64,7 @@ namespace MineRace.ConnectionManagement.States
                 Allocation hostAllocation = await RelayService.Instance.CreateAllocationAsync(connectionManager.MaxConnectedPlayers);
                 string joinCode = await RelayService.Instance.GetJoinCodeAsync(hostAllocation.AllocationId);
 
-                lobbyManager.ActiveLobby.RelayJoinCode = joinCode;
-                await lobbyManager.UpdateActiveLobby();
+                await lobbyManager.UpdateLobbyRelayJoinCode(joinCode);
                 await lobbyManager.UpdatePlayerRelayInfo(hostAllocation.AllocationIdBytes.ToString(), joinCode);
 
                 UnityTransport utp = (UnityTransport)networkManager.NetworkConfig.NetworkTransport;

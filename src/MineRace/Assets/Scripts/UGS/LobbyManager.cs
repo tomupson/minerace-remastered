@@ -122,7 +122,7 @@ namespace MineRace.UGS
             return false;
         }
 
-        public async Task<bool> UpdateActiveLobby()
+        public async Task<bool> UpdateLobbyRelayJoinCode(string relayJoinCode)
         {
             if (ActiveLobby == null)
             {
@@ -130,9 +130,12 @@ namespace MineRace.UGS
                 return false;
             }
 
+            Dictionary<string, DataObject> lobbyData = ActiveLobby.Data ?? new Dictionary<string, DataObject>();
+            lobbyData[LobbyDataKeys.RelayJoinCode] = new DataObject(DataObject.VisibilityOptions.Member, relayJoinCode);
+
             try
             {
-                await LobbyService.Instance.UpdateLobbyAsync(ActiveLobby.LobbyId, new UpdateLobbyOptions { Data = ActiveLobby.Data });
+                await LobbyService.Instance.UpdateLobbyAsync(ActiveLobby.LobbyId, new UpdateLobbyOptions { Data = lobbyData });
             }
             catch (LobbyServiceException ex)
             {

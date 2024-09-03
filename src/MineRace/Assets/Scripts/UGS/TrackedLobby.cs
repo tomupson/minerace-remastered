@@ -6,16 +6,11 @@ using Unity.Services.Lobbies.Models;
 
 public sealed class TrackedLobby
 {
-    private const string RelayJoinCodeKey = "RelayJoinCode";
-    internal readonly Lobby lobby;
+    private readonly Lobby lobby;
 
     public string LobbyId => lobby.Id;
 
-    public string RelayJoinCode
-    {
-        get => lobby.Data.TryGetValue(RelayJoinCodeKey, out DataObject joinCodeData) ? joinCodeData.Value : null;
-        set => lobby.Data[RelayJoinCodeKey] = new DataObject(DataObject.VisibilityOptions.Member, value);
-    }
+    public string RelayJoinCode => lobby.Data != null && lobby.Data.TryGetValue(LobbyDataKeys.RelayJoinCode, out DataObject joinCodeData) ? joinCodeData.Value : null;
 
     internal Dictionary<string, DataObject> Data => lobby.Data;
 
