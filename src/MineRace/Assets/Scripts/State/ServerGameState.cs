@@ -87,6 +87,15 @@ public class ServerGameState : GameStateBehaviour
                 break;
             }
         }
+
+        if (networkManager.ConnectedClientsIds.Count < connectionManager.MaxConnectedPlayers && networkGameState.State.Value <= GameState.WaitingForPlayersReady)
+        {
+            networkGameState.State.Value = GameState.WaitingForPlayers;
+            foreach (Player player in Player.GetSpawnedPlayers())
+            {
+                player.NetworkPlayerState.State.Value = PlayerState.WaitingForPlayers;
+            }
+        }
     }
 
     private void OnSceneLoadEventCompleted(string sceneName, LoadSceneMode loadSceneMode, List<ulong> clientsCompleted, List<ulong> clientsTimedOut)

@@ -54,6 +54,10 @@ public class WaitingForReadyUI : MonoBehaviour
             gameObject.SetActive(true);
             waitingForPlayerReadyText.text = "WAITING FOR PLAYERS TO READY UP.";
         }
+        else
+        {
+            Hide();
+        }
     }
 
     private void Hide()

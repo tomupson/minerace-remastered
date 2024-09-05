@@ -18,8 +18,6 @@ public class WaitingForPlayersUI : MonoBehaviour
     {
         gameObject.SetActive(true);
 
-        waitForPlayersCoroutine = StartCoroutine(WaitForPlayers());
-
         subscriptions = new DisposableGroup();
         subscriptions.Add(networkGameState.State.Subscribe(OnGameStateChanged));
     }
@@ -38,6 +36,10 @@ public class WaitingForPlayersUI : MonoBehaviour
         {
             StopCoroutine(waitForPlayersCoroutine);
             waitForPlayersCoroutine = null;
+        }
+        else if (isWaitingForPlayers && waitForPlayersCoroutine == null)
+        {
+            waitForPlayersCoroutine = StartCoroutine(WaitForPlayers());
         }
     }
 
