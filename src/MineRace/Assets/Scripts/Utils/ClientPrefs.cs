@@ -10,8 +10,6 @@ namespace MineRace.Utils
 
         public static void SetPlayerName(string playerName) => PlayerPrefs.SetString(PlayerNameKey, playerName);
 
-        public static bool IsPlayerNameSet() => !string.IsNullOrWhiteSpace(GetPlayerName());
-
         public static void ClearPlayerName() => PlayerPrefs.SetString(PlayerNameKey, null);
     }
 }

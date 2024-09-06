@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 3890013770633038298}
   - component: {fileID: 1345689675840675344}
   m_Layer: 5
-  m_Name: ProfileButton
+  m_Name: OptionsButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -110,7 +110,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: PROFILE
+  m_text: OPTIONS
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: c52163fc5d6732d40a6c4c5a1025c30d, type: 2}
   m_sharedMaterial: {fileID: 2100000, guid: 6a3c0cc39e3588f49aa192e38f481425, type: 2}
@@ -503,7 +503,7 @@ GameObject:
   - component: {fileID: 4692536069425350390}
   - component: {fileID: 3751413304665942629}
   m_Layer: 5
-  m_Name: LoginStatusUI
+  m_Name: LoginStatus
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -544,5 +544,5 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   loginNameText: {fileID: 8955855663655370060}
-  profileButton: {fileID: 3890013770633038298}
+  optionsButton: {fileID: 3890013770633038298}
   logoutButton: {fileID: 6502350048571324612}

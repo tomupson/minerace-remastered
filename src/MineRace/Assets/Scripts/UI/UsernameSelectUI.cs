@@ -32,16 +32,10 @@ public class UsernameSelectUI : MonoBehaviour, IAnimationStateHandler
     {
         usernameStatusText.text = "";
 
-        if (ClientPrefs.IsPlayerNameSet())
-        {
-            Hide();
-            return;
-        }
-
-        Open();
+        Hide();
     }
 
-    private void Open()
+    public void Open()
     {
         animator.SetTrigger(growTriggerHash);
         gameObject.SetActive(true);

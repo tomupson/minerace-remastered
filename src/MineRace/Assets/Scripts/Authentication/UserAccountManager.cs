@@ -9,6 +9,7 @@ namespace MineRace.Authentication
     public class UserAccountManager : MonoBehaviour
     {
         public event Action<string> OnUsernameChanged;
+        public event Action OnLogout;
 
         public UserInfo UserInfo { get; private set; }
 
@@ -45,13 +46,13 @@ namespace MineRace.Authentication
 
                 await AuthenticationService.Instance.SignInAnonymouslyAsync();
 
-                int id = UnityEngine.Random.Range(1000, 10000);
-                UserInfo = new UserInfo { UserId = id, Username = username };
-
                 if (string.IsNullOrWhiteSpace(username))
                 {
-                    UserInfo.Username = $"User#{id}";
+                    username = AuthenticationService.Instance.PlayerId;
                 }
+
+                UserInfo = new UserInfo();
+                SetUsername(username);
 
                 return true;
             }
@@ -65,6 +66,7 @@ namespace MineRace.Authentication
         public void Logout()
         {
             AuthenticationService.Instance.SignOut();
+            OnLogout?.Invoke();
         }
 
         public void SetUsername(string username)

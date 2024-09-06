@@ -268,7 +268,6 @@ namespace MineRace.UGS
             }
             catch (LobbyServiceException ex)
             {
-                Debug.Log(ex.Reason);
                 if (ex.Reason != LobbyExceptionReason.PlayerNotFound)
                 {
                     Debug.LogException(ex);
