@@ -51,11 +51,11 @@ namespace MineRace.ApplicationLifecycle
             subscriptions = new DisposableGroup();
 
             ISubscriber<QuitApplicationMessage> applicationQuitSubscriber = Container.Resolve<ISubscriber<QuitApplicationMessage>>();
-            subscriptions.Add(applicationQuitSubscriber.Subscribe(QuitGame));
+            subscriptions.Add(applicationQuitSubscriber.Subscribe(OnQuitGame));
 
             Application.wantsToQuit += OnWantsToQuit;
 
-            SceneManager.LoadScene("Login");
+            SceneManager.LoadScene("Menu");
         }
 
         protected override void OnDestroy()
@@ -65,7 +65,7 @@ namespace MineRace.ApplicationLifecycle
             base.OnDestroy();
         }
 
-        private void QuitGame(QuitApplicationMessage msg)
+        private void OnQuitGame(QuitApplicationMessage msg)
         {
 #if UNITY_EDITOR
             UnityEditor.EditorApplication.isPlaying = false;

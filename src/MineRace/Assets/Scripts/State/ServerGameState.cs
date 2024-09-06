@@ -141,7 +141,16 @@ public class ServerGameState : GameStateBehaviour
         const float leftRightPadding = 6;
         float availableWidth = levelData.mapWidth - (2 * leftRightPadding);
         float spacing = availableWidth / Mathf.Max(connectionManager.MaxConnectedPlayers, 2f);
-        return leftRightPadding + ((clientId + 1) * spacing);
+        int clientIdIdx = 0;
+        for (; clientIdIdx < networkManager.ConnectedClientsIds.Count; clientIdIdx++)
+        {
+            if (networkManager.ConnectedClientsIds[clientIdIdx] == clientId)
+            {
+                break;
+            }
+        }
+
+        return leftRightPadding + ((clientIdIdx + 1) * spacing);
     }
 
     private void CheckAllPlayersConnected()

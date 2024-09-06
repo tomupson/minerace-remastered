@@ -723,6 +723,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   playButton: {fileID: 2145321046}
   exitButton: {fileID: 416945258}
+  usernameSelectPopup: {fileID: 589629901}
 --- !u!1 &589629899
 GameObject:
   m_ObjectHideFlags: 0

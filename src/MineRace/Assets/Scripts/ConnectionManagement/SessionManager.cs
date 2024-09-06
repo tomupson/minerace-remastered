@@ -54,12 +54,9 @@ namespace MineRace.ConnectionManagement
                 return;
             }
 
-            if (clientData.ContainsKey(playerId))
+            if (clientData.ContainsKey(playerId) && !clientData[playerId].IsConnected)
             {
-                if (!clientData[playerId].IsConnected)
-                {
-                    isReconnecting = true;
-                }
+                isReconnecting = true;
             }
 
             if (isReconnecting)
