@@ -314,7 +314,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_EffectColor: {r: 0, g: 0, b: 0, a: 1}
-  m_EffectDistance: {x: 0.5, y: -0.5}
+  m_EffectDistance: {x: 1, y: -1}
   m_UseGraphicAlpha: 1
 --- !u!114 &328243083
 MonoBehaviour:
@@ -728,8 +728,7 @@ MonoBehaviour:
   m_text: MENU
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: c52163fc5d6732d40a6c4c5a1025c30d, type: 2}
-  m_sharedMaterial: {fileID: -4294745747354363140, guid: c52163fc5d6732d40a6c4c5a1025c30d,
-    type: 2}
+  m_sharedMaterial: {fileID: 2100000, guid: c196a8aca0a41774786b0a4c2aebbebc, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []

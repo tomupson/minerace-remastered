@@ -1,4 +1,5 @@
 using System.Linq;
+using JetBrains.Annotations;
 using MineRace.Infrastructure;
 using MineRace.Utils.Netcode;
 using TMPro;
@@ -10,11 +11,20 @@ public class SpectateUI : MonoBehaviour
     [Inject] private readonly NetworkGameState networkGameState;
 
     private DisposableGroup subscriptions;
+    private bool isActive;
+    private bool isPaused;
     private Player player;
 
     [SerializeField] private PlayerInputReader inputReader;
     [SerializeField] private TextMeshProUGUI spectateText;
     [SerializeField] private PlayerGameEvent localPlayerSpawnedEvent;
+
+    [Inject, UsedImplicitly]
+    private void InjectDependencies(ISubscriber<PauseStateChangedMessage> pauseStateSubscriber)
+    {
+        subscriptions ??= new DisposableGroup();
+        subscriptions.Add(pauseStateSubscriber.Subscribe(OnPauseStateChanged));
+    }
 
     private void Awake()
     {
@@ -24,7 +34,7 @@ public class SpectateUI : MonoBehaviour
 
     private void Start()
     {
-        Hide();
+        UpdateActiveState(isActive);
 
         subscriptions ??= new DisposableGroup();
         subscriptions.Add(networkGameState.State.Subscribe(OnGameStateChanged));
@@ -38,12 +48,10 @@ public class SpectateUI : MonoBehaviour
         subscriptions?.Dispose();
     }
 
-    private void OnGameStateChanged(GameState state)
+    private void OnPauseStateChanged(PauseStateChangedMessage message)
     {
-        if (state == GameState.Completed)
-        {
-            Hide();
-        }
+        isPaused = message.IsPaused;
+        UpdateActiveState(isActive);
     }
 
     private void OnLocalPlayerSpawned(Player player)
@@ -54,6 +62,14 @@ public class SpectateUI : MonoBehaviour
         subscriptions.Add(this.player.NetworkPlayerState.State.Subscribe(OnPlayerStateChanged));
     }
 
+    private void OnGameStateChanged(GameState state)
+    {
+        if (state == GameState.Completed)
+        {
+            UpdateActiveState(isActive: false);
+        }
+    }
+
     private void OnPlayerStateChanged(PlayerState state)
     {
         if (state != PlayerState.Completed)
@@ -62,7 +78,7 @@ public class SpectateUI : MonoBehaviour
         }
 
         bool isGameRunning = networkGameState.State.Value == GameState.InGame;
-        gameObject.SetActive(isGameRunning);
+        UpdateActiveState(isGameRunning);
     }
 
     private void OnSpectate()
@@ -79,11 +95,12 @@ public class SpectateUI : MonoBehaviour
 
         player.Spectate(otherPlayer);
 
-        Hide();
+        UpdateActiveState(isActive: false);
     }
 
-    private void Hide()
+    private void UpdateActiveState(bool isActive)
     {
-        gameObject.SetActive(false);
+        this.isActive = isActive;
+        gameObject.SetActive(isActive && !isPaused);
     }
 }

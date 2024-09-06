@@ -1,3 +1,4 @@
+using JetBrains.Annotations;
 using MineRace.ConnectionManagement;
 using MineRace.Infrastructure;
 using MineRace.Utils.Netcode;
@@ -12,9 +13,18 @@ public class GameOverUI : MonoBehaviour
     [Inject] private readonly NetworkGameState networkGameState;
 
     private DisposableGroup subscriptions;
+    private bool isActive;
+    private bool isPaused;
 
     [SerializeField] private TextMeshProUGUI gameOverText;
     [SerializeField] private Button leaveButton;
+
+    [Inject, UsedImplicitly]
+    private void InjectDependencies(ISubscriber<PauseStateChangedMessage> pauseStateSubscriber)
+    {
+        subscriptions ??= new DisposableGroup();
+        subscriptions.Add(pauseStateSubscriber.Subscribe(OnPauseStateChanged));
+    }
 
     private void Awake()
     {
@@ -23,7 +33,7 @@ public class GameOverUI : MonoBehaviour
 
     private void Start()
     {
-        gameObject.SetActive(false);
+        UpdateActiveState(isActive);
 
         subscriptions = new DisposableGroup();
         subscriptions.Add(networkGameState.State.Subscribe(OnGameStateChanged));
@@ -34,13 +44,25 @@ public class GameOverUI : MonoBehaviour
         subscriptions?.Dispose();
     }
 
+    private void OnPauseStateChanged(PauseStateChangedMessage message)
+    {
+        isPaused = message.IsPaused;
+        UpdateActiveState(isActive);
+    }
+
     private void OnGameStateChanged(NetworkVariableChangedEvent<GameState> @event)
     {
         if (@event.newValue == GameState.Completed && @event.previousValue != GameState.Completed)
         {
-            gameObject.SetActive(true);
+            UpdateActiveState(isActive: true);
             Debug.Log(networkGameState.TimeRemaining.Value);
             gameOverText.text = networkGameState.TimeRemaining.Value == 0 ? "TIMES UP!" : "MATCH COMPLETE!";
         }
+    }
+
+    private void UpdateActiveState(bool isActive)
+    {
+        this.isActive = isActive;
+        gameObject.SetActive(isActive && !isPaused);
     }
 }

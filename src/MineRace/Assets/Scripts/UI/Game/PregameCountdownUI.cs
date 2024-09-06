@@ -1,3 +1,4 @@
+using JetBrains.Annotations;
 using MineRace.Infrastructure;
 using MineRace.Utils.Netcode;
 using TMPro;
@@ -9,12 +10,21 @@ public class PregameCountdownUI : MonoBehaviour
     [Inject] private readonly NetworkGameState networkGameState;
 
     private DisposableGroup subscriptions;
+    private bool isActive;
+    private bool isPaused;
 
     [SerializeField] private TextMeshProUGUI pregameTimeText;
 
+    [Inject, UsedImplicitly]
+    private void InjectDependencies(ISubscriber<PauseStateChangedMessage> pauseStateSubscriber)
+    {
+        subscriptions ??= new DisposableGroup();
+        subscriptions.Add(pauseStateSubscriber.Subscribe(OnPauseStateChanged));
+    }
+
     private void Start()
     {
-        gameObject.SetActive(false);
+        UpdateActiveState(isActive);
 
         subscriptions = new DisposableGroup();
         subscriptions.Add(networkGameState.State.Subscribe(OnGameStateChanged));
@@ -26,15 +36,27 @@ public class PregameCountdownUI : MonoBehaviour
         subscriptions?.Dispose();
     }
 
+    private void OnPauseStateChanged(PauseStateChangedMessage message)
+    {
+        isPaused = message.IsPaused;
+        UpdateActiveState(isActive);
+    }
+
     private void OnGameStateChanged(GameState state)
     {
         bool isPregameCountdown = state == GameState.PregameCountdown;
-        gameObject.SetActive(isPregameCountdown);
+        UpdateActiveState(isPregameCountdown);
     }
 
     private void HandlePregameTimeRemainingChanged(int timeRemaining)
     {
         string seconds = timeRemaining.ToString("00");
         pregameTimeText.text = seconds;
+    }
+
+    private void UpdateActiveState(bool isActive)
+    {
+        this.isActive = isActive;
+        gameObject.SetActive(isActive && !isPaused);
     }
 }

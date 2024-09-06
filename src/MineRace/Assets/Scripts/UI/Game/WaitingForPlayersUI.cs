@@ -1,4 +1,5 @@
 using System.Collections;
+using JetBrains.Annotations;
 using MineRace.Infrastructure;
 using MineRace.Utils.Netcode;
 using TMPro;
@@ -10,13 +11,22 @@ public class WaitingForPlayersUI : MonoBehaviour
     [Inject] private readonly NetworkGameState networkGameState;
 
     private DisposableGroup subscriptions;
+    private bool isActive = true;
+    private bool isPaused;
     private Coroutine waitForPlayersCoroutine;
 
     [SerializeField] private TextMeshProUGUI waitingForPlayersText;
 
+    [Inject, UsedImplicitly]
+    private void InjectDependencies(ISubscriber<PauseStateChangedMessage> pauseStateSubscriber)
+    {
+        subscriptions ??= new DisposableGroup();
+        subscriptions.Add(pauseStateSubscriber.Subscribe(OnPauseStateChanged));
+    }
+
     private void Start()
     {
-        gameObject.SetActive(true);
+        UpdateActiveState(isActive);
 
         subscriptions = new DisposableGroup();
         subscriptions.Add(networkGameState.State.Subscribe(OnGameStateChanged));
@@ -27,20 +37,16 @@ public class WaitingForPlayersUI : MonoBehaviour
         subscriptions?.Dispose();
     }
 
+    private void OnPauseStateChanged(PauseStateChangedMessage message)
+    {
+        isPaused = message.IsPaused;
+        UpdateActiveState(isActive);
+    }
+
     private void OnGameStateChanged(GameState state)
     {
         bool isWaitingForPlayers = state == GameState.WaitingForPlayers;
-        gameObject.SetActive(isWaitingForPlayers);
-
-        if (!isWaitingForPlayers && waitForPlayersCoroutine != null)
-        {
-            StopCoroutine(waitForPlayersCoroutine);
-            waitForPlayersCoroutine = null;
-        }
-        else if (isWaitingForPlayers && waitForPlayersCoroutine == null)
-        {
-            waitForPlayersCoroutine = StartCoroutine(WaitForPlayers());
-        }
+        UpdateActiveState(isWaitingForPlayers);
     }
 
     private IEnumerator WaitForPlayers()
@@ -52,6 +58,24 @@ public class WaitingForPlayersUI : MonoBehaviour
             waitingForPlayersText.text = $"WAITING FOR PLAYERS{new string('.', index)}";
             index++;
             index %= 4;
+        }
+    }
+
+    private void UpdateActiveState(bool isActive)
+    {
+        this.isActive = isActive;
+
+        bool activeState = isActive && !isPaused;
+        gameObject.SetActive(activeState);
+
+        if (!activeState && waitForPlayersCoroutine != null)
+        {
+            StopCoroutine(waitForPlayersCoroutine);
+            waitForPlayersCoroutine = null;
+        }
+        else if (activeState && waitForPlayersCoroutine == null)
+        {
+            waitForPlayersCoroutine = StartCoroutine(WaitForPlayers());
         }
     }
 }

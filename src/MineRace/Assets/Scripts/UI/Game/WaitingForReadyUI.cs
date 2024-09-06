@@ -1,3 +1,4 @@
+using JetBrains.Annotations;
 using MineRace.Infrastructure;
 using MineRace.Utils.Netcode;
 using TMPro;
@@ -9,9 +10,18 @@ public class WaitingForReadyUI : MonoBehaviour
     [Inject] private readonly NetworkGameState networkGameState;
 
     private DisposableGroup subscriptions;
+    private bool isActive;
+    private bool isPaused;
 
     [SerializeField] private TextMeshProUGUI waitingForPlayerReadyText;
     [SerializeField] private PlayerGameEvent localPlayerSpawnedEvent;
+
+    [Inject, UsedImplicitly]
+    private void InjectDependencies(ISubscriber<PauseStateChangedMessage> pauseStateSubscriber)
+    {
+        subscriptions ??= new DisposableGroup();
+        subscriptions.Add(pauseStateSubscriber.Subscribe(OnPauseStateChanged));
+    }
 
     private void Awake()
     {
@@ -20,7 +30,8 @@ public class WaitingForReadyUI : MonoBehaviour
 
     private void Start()
     {
-        Hide();
+        UpdateActiveState(isActive);
+        waitingForPlayerReadyText.text = "WAITING FOR PLAYERS TO READY UP.";
 
         subscriptions ??= new DisposableGroup();
         subscriptions.Add(networkGameState.State.Subscribe(OnGameStateChanged));
@@ -33,12 +44,10 @@ public class WaitingForReadyUI : MonoBehaviour
         subscriptions?.Dispose();
     }
 
-    private void OnGameStateChanged(GameState state)
+    private void OnPauseStateChanged(PauseStateChangedMessage message)
     {
-        if (state == GameState.PregameCountdown)
-        {
-            Hide();
-        }
+        isPaused = message.IsPaused;
+        UpdateActiveState(isActive);
     }
 
     private void OnLocalPlayerSpawned(Player player)
@@ -47,21 +56,23 @@ public class WaitingForReadyUI : MonoBehaviour
         subscriptions.Add(player.NetworkPlayerState.State.Subscribe(OnPlayerStateChanged));
     }
 
-    private void OnPlayerStateChanged(PlayerState state)
+    private void OnGameStateChanged(GameState state)
     {
-        if (state == PlayerState.Ready)
+        if (state == GameState.PregameCountdown)
         {
-            gameObject.SetActive(true);
-            waitingForPlayerReadyText.text = "WAITING FOR PLAYERS TO READY UP.";
-        }
-        else
-        {
-            Hide();
+            UpdateActiveState(isActive: false);
         }
     }
 
-    private void Hide()
+    private void OnPlayerStateChanged(PlayerState state)
     {
-        gameObject.SetActive(false);
+        bool isReady = state == PlayerState.Ready;
+        UpdateActiveState(isReady);
+    }
+
+    private void UpdateActiveState(bool isActive)
+    {
+        this.isActive = isActive;
+        gameObject.SetActive(isActive && !isPaused);
     }
 }

@@ -1,3 +1,4 @@
+using JetBrains.Annotations;
 using MineRace.Infrastructure;
 using MineRace.Utils.Netcode;
 using UnityEngine;
@@ -9,10 +10,19 @@ public class ReadyUI : MonoBehaviour
     [Inject] private readonly NetworkGameState networkGameState;
 
     private DisposableGroup subscriptions;
+    private bool isActive;
+    private bool isPaused;
     private Player player;
 
     [SerializeField] private Button readyButton;
     [SerializeField] private PlayerGameEvent localPlayerSpawnedEvent;
+
+    [Inject, UsedImplicitly]
+    private void InjectDependencies(ISubscriber<PauseStateChangedMessage> pauseStateSubscriber)
+    {
+        subscriptions ??= new DisposableGroup();
+        subscriptions.Add(pauseStateSubscriber.Subscribe(OnPauseStateChanged));
+    }
 
     private void Awake()
     {
@@ -20,14 +30,14 @@ public class ReadyUI : MonoBehaviour
 
         readyButton.onClick.AddListener(() =>
         {
-            Hide();
+            UpdateActiveState(isActive: false);
             player.Ready();
         });
     }
 
     private void Start()
     {
-        Hide();
+        UpdateActiveState(isActive);
 
         subscriptions = new DisposableGroup();
         subscriptions.Add(networkGameState.State.Subscribe(OnGameStateChanged));
@@ -40,6 +50,12 @@ public class ReadyUI : MonoBehaviour
         subscriptions?.Dispose();
     }
 
+    private void OnPauseStateChanged(PauseStateChangedMessage message)
+    {
+        isPaused = message.IsPaused;
+        UpdateActiveState(isActive);
+    }
+
     private void OnLocalPlayerSpawned(Player player)
     {
         this.player = player;
@@ -48,11 +64,12 @@ public class ReadyUI : MonoBehaviour
     private void OnGameStateChanged(GameState state)
     {
         bool isReadyUp = state == GameState.WaitingForPlayersReady;
-        gameObject.SetActive(isReadyUp);
+        UpdateActiveState(isReadyUp);
     }
 
-    private void Hide()
+    private void UpdateActiveState(bool isActive)
     {
-        gameObject.SetActive(false);
+        this.isActive = isActive;
+        gameObject.SetActive(isActive && !isPaused);
     }
 }
