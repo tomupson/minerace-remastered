@@ -17,8 +17,7 @@ namespace MineRace.Authentication
         {
             DontDestroyOnLoad(gameObject);
 
-            AuthenticationService.Instance.SignedIn += () => Debug.Log($"Signed in: {AuthenticationService.Instance.PlayerId}");
-            AuthenticationService.Instance.SignedOut += () => Debug.Log("Signed out");
+            UnityServices.Initialized += OnUnityServicesInitialised;
         }
 
         public async Task<bool> Login(string username)
@@ -79,6 +78,13 @@ namespace MineRace.Authentication
         {
             UserInfo.Username = username;
             OnUsernameChanged?.Invoke(username);
+        }
+
+        private void OnUnityServicesInitialised()
+        {
+            UnityServices.Initialized -= OnUnityServicesInitialised;
+            AuthenticationService.Instance.SignedIn += () => Debug.Log($"Signed in: {AuthenticationService.Instance.PlayerId}");
+            AuthenticationService.Instance.SignedOut += () => Debug.Log("Signed out");
         }
     }
 }
