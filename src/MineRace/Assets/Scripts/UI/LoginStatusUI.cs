@@ -25,10 +25,7 @@ public class LoginStatusUI : MonoBehaviour
             ClientPrefs.ClearPlayerName();
             userAccountManager.Logout();
         });
-    }
 
-    private void Start()
-    {
         userAccountManager.OnUsernameChanged += OnUsernameChanged;
         if (userAccountManager.UserInfo != null)
         {

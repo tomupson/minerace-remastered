@@ -33,10 +33,7 @@ public class ReadyUI : MonoBehaviour
             UpdateActiveState(isActive: false);
             player.Ready();
         });
-    }
 
-    private void Start()
-    {
         UpdateActiveState(isActive);
 
         subscriptions = new DisposableGroup();

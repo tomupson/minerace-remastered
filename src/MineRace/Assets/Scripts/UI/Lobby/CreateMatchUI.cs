@@ -37,10 +37,7 @@ public class CreateMatchUI : MonoBehaviour, IAnimationStateHandler
 
         createButton.onClick.AddListener(CreateGame);
         closeButton.onClick.AddListener(Close);
-    }
 
-    private void Start()
-    {
         Hide();
     }
 

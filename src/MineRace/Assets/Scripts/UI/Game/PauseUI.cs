@@ -26,10 +26,7 @@ public class PauseUI : MonoBehaviour
     {
         resumeButton.onClick.AddListener(() => pauseManager.Unpause());
         leaveButton.onClick.AddListener(() => connectionManager.RequestShutdown());
-    }
 
-    private void Start()
-    {
         gameObject.SetActive(false);
     }
 

@@ -82,7 +82,7 @@ namespace MineRace.ConnectionManagement.States
             connectionManager.ChangeState(connectionManager.OfflineState);
         }
 
-        public override void ApprovalCheck(NetworkManager.ConnectionApprovalRequest request, NetworkManager.ConnectionApprovalResponse response)
+        public override async void ApprovalCheck(NetworkManager.ConnectionApprovalRequest request, NetworkManager.ConnectionApprovalResponse response)
         {
             ulong clientId = request.ClientNetworkId;
             ConnectionPayload connectionPayload = JsonUtility.FromJson<ConnectionPayload>(Encoding.UTF8.GetString(request.Payload));
@@ -93,7 +93,7 @@ namespace MineRace.ConnectionManagement.States
                 response.Reason = JsonUtility.ToJson(ConnectStatus.ServerFull);
                 if (lobbyManager.ActiveLobby != null)
                 {
-                    lobbyManager.RemovePlayerFromLobbyAsync(connectionPayload.PlayerId);
+                    await lobbyManager.RemovePlayerFromLobby(connectionPayload.PlayerId);
                 }
                 return;
             }

@@ -26,10 +26,7 @@ public class WaitingForReadyUI : MonoBehaviour
     private void Awake()
     {
         localPlayerSpawnedEvent.RegisterListener(OnLocalPlayerSpawned);
-    }
 
-    private void Start()
-    {
         UpdateActiveState(isActive);
         waitingForPlayerReadyText.text = "WAITING FOR PLAYERS TO READY UP.";
 

@@ -22,7 +22,7 @@ public class PregameCountdownUI : MonoBehaviour
         subscriptions.Add(pauseStateSubscriber.Subscribe(OnPauseStateChanged));
     }
 
-    private void Start()
+    private void Awake()
     {
         UpdateActiveState(isActive);
 

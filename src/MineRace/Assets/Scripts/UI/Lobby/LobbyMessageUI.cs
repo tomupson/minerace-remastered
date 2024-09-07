@@ -29,10 +29,7 @@ public class LobbyMessageUI : MonoBehaviour
     private void Awake()
     {
         closeButton.onClick.AddListener(Hide);
-    }
 
-    private void Start()
-    {
         Hide();
     }
 

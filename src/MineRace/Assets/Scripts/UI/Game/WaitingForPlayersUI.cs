@@ -22,10 +22,7 @@ public class WaitingForPlayersUI : MonoBehaviour
     {
         subscriptions ??= new DisposableGroup();
         subscriptions.Add(pauseStateSubscriber.Subscribe(OnPauseStateChanged));
-    }
 
-    private void Start()
-    {
         UpdateActiveState(isActive);
 
         subscriptions = new DisposableGroup();

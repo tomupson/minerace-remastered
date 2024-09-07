@@ -1,7 +1,7 @@
-﻿using TMPro;
+﻿using System;
+using TMPro;
 using Unity.Services.Lobbies.Models;
 using UnityEngine;
-using UnityEngine.Events;
 using UnityEngine.UI;
 
 public class GameListItemUI : MonoBehaviour
@@ -10,7 +10,7 @@ public class GameListItemUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI matchTypeText;
     [SerializeField] private Button joinButton;
 
-    public void Setup(Lobby lobby, UnityAction<Lobby> onJoin)
+    public void Setup(Lobby lobby, Action<Lobby> onJoin)
     {
         matchInfoText.text = $"{lobby.Name} ({lobby.AvailableSlots}/{lobby.MaxPlayers})";
         if (lobby.HasPassword)
@@ -25,9 +25,6 @@ public class GameListItemUI : MonoBehaviour
         }
 
         joinButton.onClick.RemoveAllListeners();
-        joinButton.onClick.AddListener(() =>
-        {
-            onJoin(lobby);
-        });
+        joinButton.onClick.AddListener(() => onJoin(lobby));
     }
 }

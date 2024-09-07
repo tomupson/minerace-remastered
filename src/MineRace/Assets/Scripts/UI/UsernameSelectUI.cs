@@ -9,7 +9,6 @@ using VContainer;
 public class UsernameSelectUI : MonoBehaviour, IAnimationStateHandler
 {
     private const ushort UsernameMaxLength = 64;
-
     private static readonly int collapseStateHash = Animator.StringToHash("Collapse");
     private static readonly int growTriggerHash = Animator.StringToHash("Grow");
     private static readonly int collapseTriggerHash = Animator.StringToHash("Collapse");
@@ -24,12 +23,8 @@ public class UsernameSelectUI : MonoBehaviour, IAnimationStateHandler
     private void Awake()
     {
         saveButton.onClick.AddListener(Save);
-
         usernameInputField.onValueChanged.AddListener(OnUsernameChanged);
-    }
 
-    private void Start()
-    {
         usernameStatusText.text = "";
 
         Hide();

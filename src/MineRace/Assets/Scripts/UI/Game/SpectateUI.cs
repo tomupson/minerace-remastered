@@ -30,10 +30,7 @@ public class SpectateUI : MonoBehaviour
     {
         localPlayerSpawnedEvent.RegisterListener(OnLocalPlayerSpawned);
         inputReader.OnSpectateHook += OnSpectate;
-    }
 
-    private void Start()
-    {
         UpdateActiveState(isActive);
 
         subscriptions ??= new DisposableGroup();

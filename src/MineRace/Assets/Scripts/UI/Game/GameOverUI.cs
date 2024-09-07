@@ -29,10 +29,7 @@ public class GameOverUI : MonoBehaviour
     private void Awake()
     {
         leaveButton.onClick.AddListener(() => connectionManager.RequestShutdown());
-    }
 
-    private void Start()
-    {
         UpdateActiveState(isActive);
 
         subscriptions = new DisposableGroup();

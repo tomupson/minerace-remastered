@@ -24,10 +24,7 @@ public class ConnectStatusMessageUI : MonoBehaviour
     private void Awake()
     {
         menuButton.onClick.AddListener(() => SceneManager.LoadScene("Menu"));
-    }
 
-    private void Start()
-    {
         gameObject.SetActive(false);
     }
 

@@ -22,10 +22,7 @@ public class PointsUI : MonoBehaviour
     private void Awake()
     {
         localPlayerSpawnedEvent.RegisterListener(OnLocalPlayerSpawned);
-    }
 
-    private void Start()
-    {
         spectatingText.gameObject.SetActive(false);
         gameObject.SetActive(false);
 

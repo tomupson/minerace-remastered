@@ -41,10 +41,7 @@ public class PasswordedGameUI : MonoBehaviour, IAnimationStateHandler
 
         joinButton.onClick.AddListener(Join);
         closeButton.onClick.AddListener(Close);
-    }
 
-    private void Start()
-    {
         Hide();
     }
 

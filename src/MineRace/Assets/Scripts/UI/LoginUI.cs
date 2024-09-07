@@ -28,12 +28,12 @@ public class LoginUI : MonoBehaviour
 
         usernameInputField.onValueChanged.AddListener(OnInputChanged);
         passwordInputField.onValueChanged.AddListener(OnInputChanged);
+
+        loginStatusText.text = "";
     }
 
     private void Start()
     {
-        loginStatusText.text = "";
-
         // Until proper login is implemented, login on start
         Login();
     }

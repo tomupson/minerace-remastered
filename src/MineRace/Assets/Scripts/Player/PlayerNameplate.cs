@@ -14,10 +14,7 @@ public class PlayerNameplate : NetworkBehaviour
     {
         player = GetComponentInParent<Player>();
         usernameText = GetComponentInChildren<TextMeshProUGUI>();
-    }
 
-    private void Start()
-    {
         gameObject.SetActive(false);
     }
 

@@ -34,12 +34,12 @@ public class LobbyUI : MonoBehaviour
         createMatchButton.onClick.AddListener(() => createMatchPopup.Open());
         refreshButton.onClick.AddListener(RefreshGameList);
         menuButton.onClick.AddListener(() => SceneManager.LoadScene("Menu"));
+
+        passwordedGamePopup.OnClosed += () => RefreshGameList();
     }
 
     private void Start()
     {
-        passwordedGamePopup.OnClosed += () => RefreshGameList();
-
         RefreshGameList();
     }
 
