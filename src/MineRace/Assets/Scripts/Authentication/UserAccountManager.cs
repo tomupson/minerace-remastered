@@ -16,6 +16,9 @@ namespace MineRace.Authentication
         private void Awake()
         {
             DontDestroyOnLoad(gameObject);
+
+            AuthenticationService.Instance.SignedIn += () => Debug.Log($"Signed in: {AuthenticationService.Instance.PlayerId}");
+            AuthenticationService.Instance.SignedOut += () => Debug.Log("Signed out");
         }
 
         public async Task<bool> Login(string username)
@@ -41,18 +44,21 @@ namespace MineRace.Authentication
 #endif
                 }
 
-                AuthenticationService.Instance.SignedIn += () => Debug.Log($"Signed in: {AuthenticationService.Instance.PlayerId}");
-                AuthenticationService.Instance.SignedOut += () => Debug.Log("Signed out");
-
-                await AuthenticationService.Instance.SignInAnonymouslyAsync();
+                if (!AuthenticationService.Instance.IsSignedIn)
+                {
+                    await AuthenticationService.Instance.SignInAnonymouslyAsync();
+                }
 
                 if (string.IsNullOrWhiteSpace(username))
                 {
                     username = AuthenticationService.Instance.PlayerId;
                 }
 
-                UserInfo = new UserInfo();
-                SetUsername(username);
+                if (string.IsNullOrWhiteSpace(UserInfo?.Username) || !UserInfo.Username.Equals(username, StringComparison.OrdinalIgnoreCase))
+                {
+                    UserInfo ??= new UserInfo();
+                    SetUsername(username);
+                }
 
                 return true;
             }
